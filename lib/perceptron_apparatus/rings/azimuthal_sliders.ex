@@ -6,7 +6,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 
   @type t :: %__MODULE__{
           # min, max
-          range: {float(), float()},
+          range: Range.t(),
           # {groups, sliders_per_group}
           shape: {integer(), integer()},
           # radial size (often the default will be fine)
@@ -19,7 +19,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
     # shape is required
     shape = Keyword.fetch!(opts, :shape)
     # use default values when it makes sense
-    range = Keyword.get(opts, :range, {0, 10})
+    range = Keyword.get(opts, :range, 0..10)
     size = Keyword.get(opts, :radial_size, 50.0)
     # layer index can be added later, nil ok at first
     layer_index = Keyword.get(opts, :layer_index)
