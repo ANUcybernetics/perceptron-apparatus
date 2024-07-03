@@ -15,8 +15,17 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
           layer_index: integer()
         }
 
-  def radial_slider(r_inner, r_outer, theta) do
-    length = r_outer - r_inner
+  def new(position, range, shape, layer_index) do
+    %__MODULE__{
+      position: position,
+      range: range,
+      shape: shape,
+      layer_index: layer_index
+    }
+  end
+
+  def radial_slider(r_outer, length, theta) do
+    r_inner = r_outer - length
 
     labels =
       0..10
@@ -54,13 +63,13 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     """
   end
 
-  def radial_slider_group(r_inner, r_outer, n_sliders, d_theta, offset_theta) do
+  def radial_slider_group(r_outer, length, n_sliders, d_theta, offset_theta) do
     0..(n_sliders - 1)
-    |> Enum.map(fn x -> radial_slider(r_inner, r_outer, offset_theta + x * d_theta) end)
+    |> Enum.map(fn x -> radial_slider(r_outer, length, offset_theta + x * d_theta) end)
     |> Enum.join()
   end
 
-  def radial_slider_ring(r_inner, r_outer, n_groups, sliders_per_group) do
+  def radial_slider_ring(r_outer, length, n_groups, sliders_per_group) do
     d_theta =
       case n_groups do
         1 -> 360 / (sliders_per_group * n_groups)
@@ -69,18 +78,21 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 
     0..(n_groups - 1)
     |> Enum.map(fn x ->
-      radial_slider_group(r_inner, r_outer, sliders_per_group, d_theta, 360 * x / n_groups)
+      radial_slider_group(r_outer, length, sliders_per_group, d_theta, 360 * x / n_groups)
     end)
     |> Enum.join()
   end
-
-  # hidden_1_ring = radial_slider_ring.(200, 300, 5, 25)
-  # hidden_2_ring = radial_slider_ring.(80, 160, 10, 5)
-  # disk_kino.(hidden_1_ring <> hidden_2_ring)
 end
 
 defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSliders do
-  def render(_ring) do
-    "TODO"
+  def render(ring) do
+    %{position: {radius, length}, shape: {n_groups, sliders_per_group}} = ring
+
+    PerceptronApparatus.Rings.RadialSliders.radial_slider_ring(
+      radius,
+      length,
+      n_groups,
+      sliders_per_group
+    )
   end
 end
