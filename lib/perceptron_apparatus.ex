@@ -3,16 +3,5 @@ defmodule PerceptronApparatus do
   Documentation for `PerceptronApparatus`.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> PerceptronApparatus.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  defstruct [:a, :b, :c]
 end
