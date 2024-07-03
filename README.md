@@ -20,6 +20,8 @@ the (MLP) neural network.
 ## TODO
 
 - migrate to a Module-based design
+- add shared tick lines to radial slider rings
+- update all sliders based on notebook design
 - in the SVG, add classes for the different fabrication layers and cut types
   (top board, bottom board, v-cut, etc.)
 - design a prototype "board fragment"
