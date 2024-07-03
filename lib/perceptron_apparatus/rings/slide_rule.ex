@@ -2,10 +2,18 @@ defmodule PerceptronApparatus.Rings.SlideRule do
   @moduledoc """
   Documentation for `SlideRule`.
   """
-  defstruct [:a, :b, :c]
+  defstruct [:position, :outer_scale, :inner_scale]
 
+  @type t :: %__MODULE__{
+          # outer radius, width
+          position: {float(), float()},
+          # min, max, type
+          outer_scale: {float(), float(), atom()},
+          # min, max, type
+          inner_scale: {float(), float(), atom()}
+        }
 
-  rotating_ring = fn r, outer_scale, inner_scale ->
+  def rotating_ring(r, outer_scale, inner_scale) do
     outer_ticks =
       outer_scale
       |> Enum.map(fn {pos, label} ->
@@ -34,10 +42,8 @@ defmodule PerceptronApparatus.Rings.SlideRule do
       inner_ticks
     ])
   end
-  ```
 
-  ```elixir
-  log_scale =
+  def log_scale do
     10..99
     |> Enum.map(fn x ->
       pos = (Math.log(x / 10.0) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
@@ -49,8 +55,9 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         true -> {pos, ""}
       end
     end)
+  end
 
-  relu_outer =
+  def relu_outer do
     -180..179//3
     |> Enum.map(fn x ->
       cond do
@@ -58,8 +65,9 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         true -> {x, ""}
       end
     end)
+  end
 
-  relu_inner =
+  def relu_inner do
     -180..179//3
     |> Enum.map(fn x ->
       cond do
@@ -68,10 +76,11 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         true -> {x, ""}
       end
     end)
+  end
+end
 
-  log_ring = rotating_ring.(370, log_scale, log_scale)
-  activation_ring = rotating_ring.(310, relu_outer, relu_inner)
-
-  disk_kino.(log_ring <> activation_ring)
-
+defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.SlideRule do
+  def render(_ring) do
+    "TODO"
+  end
 end

@@ -21,7 +21,7 @@ defmodule PerceptronApparatus.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:kino, "~> 0.12.0"},
+      {:kino, "~> 0.13.0"},
       {:math, "~> 0.7"}
     ]
   end

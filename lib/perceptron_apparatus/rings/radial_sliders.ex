@@ -2,9 +2,20 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   @moduledoc """
   Documentation for `RadialSliders`.
   """
-  defstruct [:a, :b, :c]
+  defstruct [:position, :range, :shape, :layer_index]
 
-  radial_slider = fn r_inner, r_outer, theta ->
+  @type t :: %__MODULE__{
+          # outer radius, width
+          position: {float(), float()},
+          # min, max
+          range: {float(), float()},
+          # {num_groups, num_sliders_per_group}
+          shape: {integer(), integer()},
+          # layer index, counted from outside-to-inside
+          layer_index: integer()
+        }
+
+  def radial_slider(r_inner, r_outer, theta) do
     length = r_outer - r_inner
 
     labels =
@@ -43,17 +54,13 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     """
   end
 
-  svg_kino.(radial_slider.(150, 250, 0), "-100 140 200 120")
-  ```
-
-  ```elixir
-  radial_slider_group = fn r_inner, r_outer, n_sliders, d_theta, offset_theta ->
+  def radial_slider_group(r_inner, r_outer, n_sliders, d_theta, offset_theta) do
     0..(n_sliders - 1)
-    |> Enum.map(fn x -> radial_slider.(r_inner, r_outer, offset_theta + x * d_theta) end)
+    |> Enum.map(fn x -> radial_slider(r_inner, r_outer, offset_theta + x * d_theta) end)
     |> Enum.join()
   end
 
-  radial_slider_ring = fn r_inner, r_outer, n_groups, sliders_per_group ->
+  def radial_slider_ring(r_inner, r_outer, n_groups, sliders_per_group) do
     d_theta =
       case n_groups do
         1 -> 360 / (sliders_per_group * n_groups)
@@ -62,12 +69,18 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 
     0..(n_groups - 1)
     |> Enum.map(fn x ->
-      radial_slider_group.(r_inner, r_outer, sliders_per_group, d_theta, 360 * x / n_groups)
+      radial_slider_group(r_inner, r_outer, sliders_per_group, d_theta, 360 * x / n_groups)
     end)
     |> Enum.join()
   end
 
-  hidden_1_ring = radial_slider_ring.(200, 300, 5, 25)
-  hidden_2_ring = radial_slider_ring.(80, 160, 10, 5)
-  disk_kino.(hidden_1_ring <> hidden_2_ring)
+  # hidden_1_ring = radial_slider_ring.(200, 300, 5, 25)
+  # hidden_2_ring = radial_slider_ring.(80, 160, 10, 5)
+  # disk_kino.(hidden_1_ring <> hidden_2_ring)
+end
+
+defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSliders do
+  def render(_ring) do
+    "TODO"
+  end
 end

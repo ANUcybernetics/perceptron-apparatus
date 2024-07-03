@@ -5,17 +5,17 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
   defstruct [:position, :range, :shape, :layer_index]
 
   @type t :: %__MODULE__{
-    # outer radius, width
-    position: {float(), float()},
-    # min, max
-    range: {float(), float()},
-    # {num_groups, num_sliders_per_group}
-    shape: {integer(), integer()},
-    # layer index, counted from outside-to-inside
-    layer_index: integer()
-             }
+          # outer radius, width
+          position: {float(), float()},
+          # min, max
+          range: {float(), float()},
+          # {num_groups, num_sliders_per_group}
+          shape: {integer(), integer()},
+          # layer index, counted from outside-to-inside
+          layer_index: integer()
+        }
 
-  azimuthal_slider = fn r, theta, theta_offset ->
+  def slider(r, theta, theta_offset) do
     labels =
       0..10
       |> Enum.map(fn val ->
@@ -60,18 +60,20 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
       </g>
     """
   end
+end
 
-  svg_kino.(azimuthal_slider.(150, 45, 0), "-20 80 160 100")
-  ```
+defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.AzimuthalSliders do
+  def render(ring) do
+    %{position: {radius, _width}, shape: {_num_groups, num_sliders}} = ring
 
-  ```elixir
-  azimuthal_slider_ring = fn r, n_sliders ->
-    0..(n_sliders - 1)
+    0..(num_sliders - 1)
     |> Enum.map(fn val ->
-      azimuthal_slider.(r, 0.8 * 360 / n_sliders, 360 * val / n_sliders)
+      PerceptronApparatus.Rings.AzimuthalSliders.slider(
+        radius,
+        0.8 * 360 / num_sliders,
+        360 * val / num_sliders
+      )
     end)
     |> Enum.join()
   end
-
-  disk_kino.(azimuthal_slider_ring.(200, 5))
 end
