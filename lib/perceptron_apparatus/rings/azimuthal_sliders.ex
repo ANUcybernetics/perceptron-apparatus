@@ -2,18 +2,30 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
   @moduledoc """
   Documentation for `AzimuthalSliders`.
   """
-  defstruct [:position, :range, :shape, :layer_index]
+  defstruct [:radial_size, :range, :shape, :layer_index]
 
   @type t :: %__MODULE__{
-          # outer radius, width
-          position: {float(), float()},
           # min, max
           range: {float(), float()},
-          # {num_groups, num_sliders_per_group}
+          # {groups, sliders_per_group}
           shape: {integer(), integer()},
+          # radial size (often the default will be fine)
+          radial_size: float(),
           # layer index, counted from outside-to-inside
           layer_index: integer()
         }
+
+  def new(opts \\ []) do
+    # shape is required
+    shape = Keyword.fetch!(opts, :shape)
+    # use default values when it makes sense
+    range = Keyword.get(opts, :range, {0, 10})
+    size = Keyword.get(opts, :radial_size, 50.0)
+    # layer index can be added later, nil ok at first
+    layer_index = Keyword.get(opts, :layer_index)
+
+    %__MODULE__{radial_size: size, range: range, shape: shape, layer_index: layer_index}
+  end
 
   def slider(r, theta, theta_offset) do
     labels =
@@ -63,15 +75,19 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 end
 
 defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.AzimuthalSliders do
-  def render(ring) do
-    %{position: {radius, _width}, shape: {_num_groups, num_sliders}} = ring
+  def render(%PerceptronApparatus.Rings.AzimuthalSliders{layer_index: nil}) do
+    raise "layer_index is required for renderng"
+  end
 
-    0..(num_sliders - 1)
+  def render(ring) do
+    %{size: {diameter, _width}, shape: {_, sliders_per_group}} = ring
+
+    0..(sliders_per_group - 1)
     |> Enum.map(fn val ->
       PerceptronApparatus.Rings.AzimuthalSliders.slider(
-        radius,
-        0.8 * 360 / num_sliders,
-        360 * val / num_sliders
+        diameter / 2,
+        0.8 * 360 / sliders_per_group,
+        360 * val / sliders_per_group
       )
     end)
     |> Enum.join()

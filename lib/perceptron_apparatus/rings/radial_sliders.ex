@@ -2,26 +2,29 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   @moduledoc """
   Documentation for `RadialSliders`.
   """
-  defstruct [:position, :range, :shape, :layer_index]
+  defstruct [:radial_size, :range, :shape, :layer_index]
 
   @type t :: %__MODULE__{
-          # outer radius, width
-          position: {float(), float()},
           # min, max
           range: {float(), float()},
-          # {num_groups, num_sliders_per_group}
+          # {groups, sliders_per_group}
           shape: {integer(), integer()},
+          # radial size (often the default will be fine)
+          radial_size: float(),
           # layer index, counted from outside-to-inside
           layer_index: integer()
         }
 
-  def new(position, range, shape, layer_index) do
-    %__MODULE__{
-      position: position,
-      range: range,
-      shape: shape,
-      layer_index: layer_index
-    }
+  def new(opts \\ []) do
+    # shape is required
+    shape = Keyword.fetch!(opts, :shape)
+    # use default values when it makes sense
+    range = Keyword.get(opts, :range, {0, 10})
+    size = Keyword.get(opts, :radial_size, 100.0)
+    # layer index can be added later, nil ok at first
+    layer_index = Keyword.get(opts, :layer_index)
+
+    %__MODULE__{radial_size: size, range: range, shape: shape, layer_index: layer_index}
   end
 
   def radial_slider(r_outer, length, theta) do
