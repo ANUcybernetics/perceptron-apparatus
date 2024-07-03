@@ -1,21 +1,17 @@
-# PerceptronApparatus
+# Perceptron Apparatus
 
-**TODO: Add description**
+Elixir lib for configuring and generating an (svg) design file for a perceptron apparatus---suitable for CNC routing/laser cutting.
+
+See [project page](https://anu365.sharepoint.com/sites/CyberneticsHub/SitePages/CyberneticStudio-Human-Scale.aspx) for description.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `perceptron_apparatus` to your list of dependencies in `mix.exs`:
+This package is not (currently) on hex. You can clone the repo and import it via a [`:path`](https://hexdocs.pm/mix/Mix.Tasks.Deps.html).
 
-```elixir
-def deps do
-  [
-    {:perceptron_apparatus, "~> 0.1.0"}
-  ]
-end
-```
+## Author
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/perceptron_apparatus>.
+(c) 2024 Ben Swift
 
+## Licence
+
+MIT
