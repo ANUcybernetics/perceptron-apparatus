@@ -2,16 +2,22 @@ defmodule PerceptronApparatus.Rings.SlideRule do
   @moduledoc """
   Documentation for `SlideRule`.
   """
-  defstruct [:position, :outer_scale, :inner_scale]
+  defstruct [:width, :outer_range, :inner_range, :context]
 
   @type t :: %__MODULE__{
-          # outer radius, width
-          position: {float(), float()},
-          # min, max, type
-          outer_scale: {float(), float(), atom()},
-          # min, max, type
-          inner_scale: {float(), float(), atom()}
+          # atom is scale type: :linear or :log
+          outer_range: {Range.t(), :atom},
+          inner_range: {Range.t(), :atom},
+          # ring width (fixed for slide rules)
+          width: float(),
+          # drawing context: {outer_radius, layer_index}
+          context: {float(), integer()}
         }
+
+  def new(outer_range, inner_range) do
+    # use default values when it makes sense
+    %__MODULE__{width: 20.0, outer_range: outer_range, inner_range: inner_range}
+  end
 
   def rotating_ring(r, outer_scale, inner_scale) do
     outer_ticks =
@@ -77,10 +83,25 @@ defmodule PerceptronApparatus.Rings.SlideRule do
       end
     end)
   end
+
+  defp ticks_and_labels(val) do
+    cond do
+      Integer.mod(val, 5) == 0 -> %{label: Integer.to_string(val), stroke_width: "1.0"}
+      true -> %{label: nil, stroke_width: "0.5"}
+    end
+  end
 end
 
 defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.SlideRule do
-  def render(_ring) do
-    "TODO"
+  alias PerceptronApparatus.Rings.SlideRule
+
+  def render(%SlideRule{context: nil}) do
+    raise "cannot render without context"
+  end
+
+  def render(ring) do
+    %{outer_range: outer_range, inner_range: inner_range, context: {radius, _layer_index}} = ring
+
+    SlideRule.render(radius, outer_range, inner_range)
   end
 end
