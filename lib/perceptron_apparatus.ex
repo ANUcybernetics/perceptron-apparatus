@@ -2,15 +2,13 @@ defmodule PerceptronApparatus do
   @moduledoc """
   Documentation for `PerceptronApparatus`.
   """
-  alias PerceptronApparatus.Rings.AzimuthalSliders
-  alias PerceptronApparatus.Rings.RadialSliders
-  alias PerceptronApparatus.Rings.SlideRule
+  alias PerceptronApparatus.Rings
 
   defstruct [:size, :rings]
 
   @type t :: %__MODULE__{
           size: {float(), float()},
-          rings: [AzimuthalSliders.t() | RadialSliders.t() | SlideRule.t()]
+          rings: [Rings.AzimuthalSliders.t() | Rings.RadialSliders.t() | Rings.SlideRule.t()]
         }
 
   def new(size) do
@@ -27,9 +25,9 @@ defmodule PerceptronApparatus do
   def validate!(%__MODULE__{} = board) do
     Enum.each(board.rings, fn ring ->
       case ring do
-        %AzimuthalSliders{} -> :ok
-        %RadialSliders{} -> :ok
-        %SlideRule{} -> :ok
+        %Rings.AzimuthalSliders{} -> :ok
+        %Rings.RadialSliders{} -> :ok
+        %Rings.SlideRule{} -> :ok
         _ -> raise "Invalid ring type"
       end
     end)
@@ -37,10 +35,15 @@ defmodule PerceptronApparatus do
 
   def render(%__MODULE__{size: size} = apparatus) do
     view_box = "-#{size / 2} -#{size / 2} #{size} #{size}"
+    radius = size / 2
 
     apparatus.rings
-    |> Enum.map(&PerceptronApparatus.Renderable.render/1)
-    |> List.insert_at(0, ~s|<circle cx="0" cy="0" r="#{size / 2}" stroke-width="2"/>|)
+    |> Enum.with_index(fn ring, idx ->
+      # add one to index because layers use 1-based indexing
+      %{ring | context: {radius, idx + 1}}
+      |> PerceptronApparatus.Renderable.render()
+    end)
+    |> List.insert_at(0, ~s|<circle cx="0" cy="0" r="#{radius}" stroke-width="2"/>|)
     |> render_body(view_box)
   end
 
