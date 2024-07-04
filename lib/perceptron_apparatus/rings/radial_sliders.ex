@@ -19,9 +19,9 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   def new(shape, opts \\ []) do
     # use default values when it makes sense
     range = Keyword.get(opts, :range, 0..10)
-    size = Keyword.get(opts, :width, 100.0)
+    width = Keyword.get(opts, :width, 100.0)
 
-    %__MODULE__{width: size, range: range, shape: shape}
+    %__MODULE__{width: width, range: range, shape: shape}
   end
 
   def render_slider(radius, width, theta) do
@@ -87,16 +87,13 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   end
 
   def render(radius, width, groups, sliders_per_group, range) do
-    theta =
-      case groups do
-        1 -> 360 / (sliders_per_group * groups)
-        _ -> 360 / ((sliders_per_group + 1) * groups)
-      end
+    theta_sweep = 360 / groups
 
     0..(groups - 1)
-    |> Enum.map(fn x ->
-      render_group(radius, width, sliders_per_group, theta, 360 * x / groups)
+    |> Enum.map(fn i ->
+      render_group(radius, width, sliders_per_group, theta_sweep, theta_sweep * i)
     end)
+    |> List.insert_at(0, render_guides(radius, width, groups, range))
     |> Enum.join()
   end
 
@@ -113,7 +110,20 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSli
     raise "cannot render without context"
   end
 
-  def render(_ring) do
-    "TODO"
+  def render(ring) do
+    %{
+      width: width,
+      range: range,
+      shape: {groups, sliders_per_group},
+      context: {radius, _layer_index}
+    } = ring
+
+    PerceptronApparatus.Rings.RadialSliders.render(
+      radius,
+      width,
+      groups,
+      sliders_per_group,
+      range
+    )
   end
 end
