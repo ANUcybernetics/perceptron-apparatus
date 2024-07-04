@@ -9,24 +9,35 @@ Mix.install([
 ## Setup
 
 ```elixir
+input_ring = PerceptronApparatus.Rings.AzimuthalSliders.new({25})
+w1_ring = PerceptronApparatus.Rings.RadialSliders.new({5, 25})
+h1_ring = PerceptronApparatus.Rings.AzimuthalSliders.new({5})
+w2_ring = PerceptronApparatus.Rings.RadialSliders.new({10, 5})
+# output_ring = PerceptronApparatus.Rings.AzimuthalSliders.new({10})
+output_ring = PerceptronApparatus.Rings.RadialSliders.new({10, 1})
+
+PerceptronApparatus.new(1200)
+|> PerceptronApparatus.add_ring(input_ring)
+|> PerceptronApparatus.add_ring(w1_ring)
+|> PerceptronApparatus.add_ring(h1_ring)
+|> PerceptronApparatus.add_ring(w2_ring)
+|> PerceptronApparatus.add_ring(output_ring)
+|> PerceptronApparatus.render()
+|> Kino.HTML.new()
+
+# # PerceptronApparatus.Rings.RadialSliders.render_group(600, 200, 9, 30, 10)
+# PerceptronApparatus.Rings.RadialSliders.render_guides(600, 300, 5, 0..10)
+# |> PerceptronApparatus.Utils.wrap_in_svg("-600 -600 1200 1200")
+# |> Kino.HTML.new()
+```
+
+```elixir
 PerceptronApparatus.new(1200)
 |> PerceptronApparatus.render()
 |> Kino.HTML.new()
 ```
 
 ## Radial sliders
-
-```elixir
-ring = PerceptronApparatus.Rings.RadialSliders.new({1200, 200}, {0, 10}, {5, 25}, 1)
-
-PerceptronApparatus.new(1200)
-|> PerceptronApparatus.add_ring(ring)
-|> PerceptronApparatus.render()
-|> Kino.HTML.new()
-
-
-PerceptronApparatus.Renderable.render(ring)
-```
 
 ```elixir
 radial_slider_group = fn r_inner, r_outer, n_sliders, d_theta, offset_theta ->
