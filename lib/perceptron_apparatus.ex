@@ -34,7 +34,11 @@ defmodule PerceptronApparatus do
   end
 
   def render(%__MODULE__{size: size} = apparatus) do
-    view_box = "-#{size / 2} -#{size / 2} #{size} #{size}"
+    padding = 10
+
+    view_box =
+      "-#{size / 2 + padding} -#{size / 2 + padding} #{size + 2 * padding} #{size + 2 * padding}"
+
     radius = size / 2
 
     apparatus.rings
