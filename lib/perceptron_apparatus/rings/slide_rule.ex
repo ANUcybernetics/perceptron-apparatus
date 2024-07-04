@@ -15,18 +15,17 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         }
 
   def new(outer_range, inner_range) do
-    # use default values when it makes sense
     %__MODULE__{width: 20.0, outer_range: outer_range, inner_range: inner_range}
   end
 
-  def rotating_ring(r, outer_scale, inner_scale) do
+  def render_slider(radius, outer_scale, inner_scale) do
     outer_ticks =
       outer_scale
       |> Enum.map(fn {pos, label} ->
         """
           <g transform="rotate(#{-pos})" transform-origin="0 0">
-            <text x="0" y="#{r + 20}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
-            <line x1="0" y1="#{r}" x2="0" y2="#{if label != "", do: r + 8, else: r + 4}" />
+            <text x="0" y="#{radius + 20}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
+            <line x1="0" y1="#{radius}" x2="0" y2="#{if label != "", do: radius + 8, else: radius + 4}" />
           </g>
         """
       end)
@@ -36,15 +35,15 @@ defmodule PerceptronApparatus.Rings.SlideRule do
       |> Enum.map(fn {pos, label} ->
         """
           <g transform="rotate(#{-pos})" transform-origin="0 0">
-            <text x="0" y="#{r - 20}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="hanging">#{label}</text>
-            <line x1="0" y1="#{if label != "", do: r - 8, else: r - 4}" x2="0" y2="#{r}" />
+            <text x="0" y="#{radius - 20}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="hanging">#{label}</text>
+            <line x1="0" y1="#{if label != "", do: radius - 8, else: radius - 4}" x2="0" y2="#{radius}" />
           </g>
         """
       end)
 
     Enum.join([
-      ~s|<circle cx="0" ch="0" r="#{r}" stroke="red" />|,
       outer_ticks,
+      ~s|<circle class="top full" cx="0" ch="0" r="#{radius}" />|,
       inner_ticks
     ])
   end

@@ -19,14 +19,23 @@ the (MLP) neural network.
 
 ## TODO
 
-- add layer/param index markers to each slider
+- add layer/param index labels to each slider
 - change the way the radius is handled so that the "size" parameter is a bit
   more meaningful
-- update all sliders based on notebook design
+- add `Utils.write_files` which writes out all the necessary svgs (baseboard + topboard, plus individual files for each cut type)
+- design a 400x400 prototype (same radius, inc markings, arc + couple of sliders)
+- check no quirks in the final svg output which will trip up the CNC machine (e.g. empty text nodes)
+- replace the "interp and concat strings" approach with proper HEEX templates
 - in the SVG, add classes for the different fabrication layers and cut types
   (top board, bottom board, v-cut, etc.)
-- design a prototype "board fragment"
+- for the `range`s, it doesn't actually have to be a `Range.t`---it could be any
+  enumerable (not sure if this needs to be changed; at least to keep the
+  dialyzer happy?)
 - add drill holes, etc
+- add Axon support
+  - training model based on inputs
+  - auto-generating the SVG based on the model (i.e. `%Axon{}` -> `%PerceptronApparatus{}`)
+  - examples (5x5 MNIST digits, maybe something with language?)
 
 ## Author
 
