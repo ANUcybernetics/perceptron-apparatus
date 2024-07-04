@@ -19,7 +19,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
       |> Enum.map(fn {pos, label} ->
         """
           <g transform="rotate(#{-pos})" transform-origin="0 0">
-            <text x="0" y="#{r + 20}" style="font-size: 10px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
+            <text x="0" y="#{r + 20}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
             <line x1="0" y1="#{r}" x2="0" y2="#{if label != "", do: r + 8, else: r + 4}" />
           </g>
         """
@@ -30,7 +30,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
       |> Enum.map(fn {pos, label} ->
         """
           <g transform="rotate(#{-pos})" transform-origin="0 0">
-            <text x="0" y="#{r - 20}" style="font-size: 10px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="hanging">#{label}</text>
+            <text x="0" y="#{r - 20}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="hanging">#{label}</text>
             <line x1="0" y1="#{if label != "", do: r - 8, else: r - 4}" x2="0" y2="#{r}" />
           </g>
         """
