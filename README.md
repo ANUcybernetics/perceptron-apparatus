@@ -19,8 +19,6 @@ the (MLP) neural network.
 
 ## TODO
 
-- rename `r_outer` to just `radius` for all rings, because it's not actually a
-  hard "clip" radius; more of a guide
 - migrate to a Module-based design
 - add shared tick lines to radial slider rings
 - update all sliders based on notebook design

@@ -24,18 +24,11 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     %__MODULE__{width: size, range: range, shape: shape}
   end
 
-  defp labeller(x) do
-    cond do
-      Integer.mod(x, 5) == 0 -> Integer.to_string(x)
-      true -> ""
-    end
-  end
-
-  def render_slider(r_outer, width, theta) do
+  def render_slider(radius, width, theta) do
     slider_hwidth = 5
 
     """
-    <g class="top full" transform="rotate(#{-theta}) translate(0 #{r_outer})" transform-origin="0 0">
+    <g class="top full" transform="rotate(#{-theta}) translate(0 #{radius})" transform-origin="0 0">
      <path
       d="M -#{slider_hwidth} 0
         a #{slider_hwidth} #{slider_hwidth} 0 0 0 #{2 * slider_hwidth} 0
@@ -48,56 +41,57 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   end
 
   @doc """
-  - `theta` is the sweep angle of the slider group in degrees
+  - `radius` is the outer radius of the slider group
+  - `theta_sweep` is the sweep angle of the slider group in degrees
   - `theta_offset` is the angle offset of the slider group in degrees
-  - `range` is the range of values to be displayed
   """
-  def render_group(
-        r_outer,
-        width,
-        sliders_per_group,
-        theta,
-        theta_offset,
-        range
-      ) do
-    _guide_lines =
+  def render_group(radius, width, sliders_per_group, theta_sweep, theta_offset) do
+    # the extra 1s are to two "gaps" at the beginning and end of the [theta_sweep, theta_sweep + theta_offset] range (where the labels will go)
+    1..sliders_per_group
+    |> Enum.map(fn i ->
+      render_slider(radius, width, theta_offset + i * (theta_sweep / (sliders_per_group + 1)))
+    end)
+    |> Enum.join()
+  end
+
+  def render(radius, width, groups, sliders_per_group, range) do
+    guide_lines =
       range
       |> Enum.map(fn val ->
         range_min = Enum.min(range)
         dynamic_range = Enum.max(range) - range_min
-        r = r_outer - width * (val - range_min) / dynamic_range
+        r = radius - width * (val - range_min) / dynamic_range
+        %{label: label, stroke_width: stroke_width} = ticks_and_labels(val)
 
         """
-          <circle class="top etch" cx="0" cy="0" r="#{r}" stroke-width="0.3" />
+          <circle class="top etch" cx="0" cy="0" r="#{r}" stroke-width="#{stroke_width}" />
           <text class="top etch" x="0" y="#{r}"
                 style="font-size: 5px;" fill="black" stroke="none" stroke-width="0.3"
                 text-anchor="middle" dominant-baseline="middle"
-                >#{labeller(val)}</text>
+                >#{label}</text>
         """
       end)
       |> Enum.join()
 
-    0..(sliders_per_group - 1)
-    |> Enum.map(fn i -> render_slider(r_outer, width, theta_offset + i * theta) end)
+    theta =
+      case groups do
+        1 -> 360 / (sliders_per_group * groups)
+        _ -> 360 / ((sliders_per_group + 1) * groups)
+      end
+
+    0..(groups - 1)
+    |> Enum.map(fn x ->
+      render_group(radius, width, sliders_per_group, theta, 360 * x / groups)
+    end)
     |> Enum.join()
   end
 
-  # def render(%__MODULE__{} = ring, {r_outer, layer_index}) do
-  #   # r_outer, length, n_groups, sliders_per_group
-  #   %{shape: {n_groups, sliders_per_group}, range: range, width: length} = ring
-
-  #   d_theta =
-  #     case n_groups do
-  #       1 -> 360 / (sliders_per_group * n_groups)
-  #       _ -> 360 / ((sliders_per_group + 1) * n_groups)
-  #     end
-
-  #   0..(n_groups - 1)
-  #   |> Enum.map(fn x ->
-  #     group(r_outer, length, sliders_per_group, d_theta, 360 * x / n_groups)
-  #   end)
-  #   |> Enum.join()
-  # end
+  defp ticks_and_labels(val) do
+    cond do
+      Integer.mod(val, 5) == 0 -> %{label: Integer.to_string(val), stroke_width: "1.0"}
+      true -> %{label: nil, stroke_width: "0.5"}
+    end
+  end
 end
 
 defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSliders do
