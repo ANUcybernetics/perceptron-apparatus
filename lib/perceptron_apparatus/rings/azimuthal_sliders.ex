@@ -70,13 +70,15 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
     """
   end
 
-  def render(radius, n_sliders, range) do
-    0..(n_sliders - 1)
+  def render(radius, sliders, range) do
+    0..(sliders - 1)
     |> Enum.map(fn val ->
       render_slider(
+        # -10 to leave some space for the labels
         radius - 10,
-        360 / n_sliders - 4,
-        360 * val / n_sliders,
+        # -4 to leave some space between sliders
+        360 / sliders - 4,
+        360 * val / sliders,
         range
       )
     end)
