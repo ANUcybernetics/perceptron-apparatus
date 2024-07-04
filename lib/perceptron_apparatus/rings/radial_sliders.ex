@@ -54,25 +54,39 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     |> Enum.join()
   end
 
+  def render_guides(radius, width, groups, range) do
+    range
+    |> Enum.map(fn val ->
+      range_min = Enum.min(range)
+      dynamic_range = Enum.max(range) - range_min
+      r = radius - width * (val - range_min) / dynamic_range
+      %{label: label, stroke_width: stroke_width} = ticks_and_labels(val)
+
+      circle =
+        ~s|<circle class="top etch" cx="0" cy="0" r="#{r}" stroke-width="#{stroke_width}" />|
+
+      labels =
+        0..(groups - 1)
+        |> Enum.map(fn i ->
+          theta = 360 * i / groups
+
+          """
+          <g class="top etch" transform="rotate(#{-theta})" transform-origin="0 0">
+           <text class="top etch" x="0" y="#{r - 4}"
+                 style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{stroke_width}"
+                 text-anchor="middle"
+                 >#{label}</text>
+          </g>
+          """
+        end)
+        |> Enum.join()
+
+      circle <> labels
+    end)
+    |> Enum.join()
+  end
+
   def render(radius, width, groups, sliders_per_group, range) do
-    guide_lines =
-      range
-      |> Enum.map(fn val ->
-        range_min = Enum.min(range)
-        dynamic_range = Enum.max(range) - range_min
-        r = radius - width * (val - range_min) / dynamic_range
-        %{label: label, stroke_width: stroke_width} = ticks_and_labels(val)
-
-        """
-          <circle class="top etch" cx="0" cy="0" r="#{r}" stroke-width="#{stroke_width}" />
-          <text class="top etch" x="0" y="#{r}"
-                style="font-size: 5px;" fill="black" stroke="none" stroke-width="0.3"
-                text-anchor="middle" dominant-baseline="middle"
-                >#{label}</text>
-        """
-      end)
-      |> Enum.join()
-
     theta =
       case groups do
         1 -> 360 / (sliders_per_group * groups)
