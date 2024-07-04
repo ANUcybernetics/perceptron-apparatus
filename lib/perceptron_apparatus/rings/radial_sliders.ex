@@ -24,10 +24,6 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     %__MODULE__{width: size, range: range, shape: shape}
   end
 
-  def put_context(ring, context) do
-    %{ring | context: context}
-  end
-
   defp labeller(x) do
     cond do
       Integer.mod(x, 5) == 0 -> Integer.to_string(x)
