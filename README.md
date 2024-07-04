@@ -27,6 +27,7 @@ the (MLP) neural network.
 - in the SVG, add classes for the different fabrication layers and cut types
   (top board, bottom board, v-cut, etc.)
 - design a prototype "board fragment"
+- add drill holes, etc
 
 ## Author
 
