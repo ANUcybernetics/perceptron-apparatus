@@ -19,6 +19,9 @@ the (MLP) neural network.
 
 ## TODO
 
+- add layer/param index markers to each slider
+- change the way the radius is handled so that the "size" parameter is a bit
+  more meaningful
 - update all sliders based on notebook design
 - in the SVG, add classes for the different fabrication layers and cut types
   (top board, bottom board, v-cut, etc.)
