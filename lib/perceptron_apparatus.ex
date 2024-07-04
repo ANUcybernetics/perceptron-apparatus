@@ -33,21 +33,35 @@ defmodule PerceptronApparatus do
     end)
   end
 
-  def render(%__MODULE__{size: size} = apparatus) do
-    padding = 10
-
-    view_box =
-      "-#{size / 2 + padding} -#{size / 2 + padding} #{size + 2 * padding} #{size + 2 * padding}"
+  def render(apparatus) do
+    %{size: size, rings: rings} = apparatus
 
     radius = size / 2
+    total_ring_width = rings |> Enum.map(& &1.width) |> Enum.sum()
 
-    apparatus.rings
-    |> Enum.with_index(fn ring, idx ->
-      # add one to index because layers use 1-based indexing
-      %{ring | context: {radius, idx + 1}}
-      |> PerceptronApparatus.Renderable.render()
+    if total_ring_width > radius do
+      raise "Total ring width exceeds apparatus radius"
+    end
+
+    radial_padding = 50
+
+    svg_padding = 10
+
+    view_box =
+      "-#{size / 2 + svg_padding} -#{size / 2 + svg_padding} #{size + 2 * svg_padding} #{size + 2 * svg_padding}"
+
+    rings
+    |> Enum.reduce({radius - radial_padding / 2, 1, ""}, fn ring, {r, idx, output} ->
+      {
+        r - ring.width - radial_padding,
+        idx + 1,
+        output <> PerceptronApparatus.Renderable.render(%{ring | context: {r, idx}})
+      }
     end)
-    |> List.insert_at(0, ~s|<circle cx="0" cy="0" r="#{radius}" stroke-width="2"/>|)
+    # add the "board edge" circle
+    |> then(fn {_, _, output} ->
+      ~s|<circle cx="0" cy="0" r="#{radius}" stroke-width="2"/>| <> output
+    end)
     |> render_body(view_box)
   end
 
