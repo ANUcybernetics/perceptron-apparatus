@@ -105,6 +105,10 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 end
 
 defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSliders do
+  def render(%PerceptronApparatus.Rings.RadialSliders{context: nil}) do
+    raise "cannot render without context"
+  end
+
   def render(_ring) do
     "TODO"
   end
