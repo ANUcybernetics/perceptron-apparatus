@@ -35,7 +35,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     slider_hwidth = 5
 
     """
-    <g class="top full" transform="rotate(#{theta}) translate(0 #{r_outer})" transform-origin="0 0">
+    <g class="top full" transform="rotate(#{-theta}) translate(0 #{r_outer})" transform-origin="0 0">
      <path
       d="M -#{slider_hwidth} 0
         a #{slider_hwidth} #{slider_hwidth} 0 0 0 #{2 * slider_hwidth} 0
