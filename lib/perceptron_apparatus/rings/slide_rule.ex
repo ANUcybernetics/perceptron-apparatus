@@ -166,6 +166,6 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.SlideRule
   def render(ring) do
     %{rule: rule, context: {radius, _layer_index}} = ring
 
-    SlideRule.render(radius - 25, rule)
+    SlideRule.render(radius - 26, rule)
   end
 end

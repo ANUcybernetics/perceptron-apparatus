@@ -28,7 +28,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     slider_hwidth = 3
 
     """
-    <g class="top full" transform="rotate(#{-theta}) translate(0 #{radius})" transform-origin="0 0">
+    <g class="top full visual-hack" transform="rotate(#{-theta}) translate(0 #{radius})" transform-origin="0 0">
      <path
       fill="white"
       d="M -#{slider_hwidth} 0
@@ -71,14 +71,27 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
         |> Enum.map(fn i ->
           theta = 360 * i / groups
 
-          """
-          <g class="top etch" transform="rotate(#{-theta})" transform-origin="0 0">
-           <text class="top etch" x="0" y="#{r - 4}"
-                 style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{stroke_width}"
-                 text-anchor="middle"
-                 >#{label}</text>
-          </g>
-          """
+          label_backing_rect =
+            if val == range_min do
+              ~s|<rect class="top visual-hack" fill="pink" stroke="transparent" x="-10" y="#{radius - width - 10}" width="20" height="#{width + 20}" />|
+            else
+              ""
+            end
+
+          # this is gross, but it'll do
+          if label do
+            """
+            <g class="top etch" transform="rotate(#{-theta})" transform-origin="0 0">
+             #{label_backing_rect}
+             <text class="top etch" x="0" y="#{r + 1}"
+                   style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{stroke_width}"
+                   text-anchor="middle" dominant-baseline="middle"
+                   >#{label}</text>
+            </g>
+            """
+          else
+            ""
+          end
         end)
         |> Enum.join()
 
@@ -121,7 +134,7 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSli
 
     PerceptronApparatus.Rings.RadialSliders.render(
       radius - 5,
-      width - 20,
+      width - 10,
       groups,
       sliders_per_group,
       range

@@ -20,7 +20,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
     # use default values when it makes sense
     range = Keyword.get(opts, :range, 0..10)
 
-    %__MODULE__{width: 20.0, range: range, shape: shape}
+    %__MODULE__{width: 26.0, range: range, shape: shape}
   end
 
   def render_slider(radius, theta_sweep, theta_offset, range) do
@@ -36,8 +36,8 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 
         """
         <g transform="rotate(#{-theta})"  transform-origin="0 0">
-          <line class="top etch" x1="0" y1="#{radius + slider_hwidth}" x2="0" y2="#{radius + slider_hwidth * 2}" stroke-width="#{stroke_width}" />
-          <text class="top etch" x="0" y="#{radius + slider_hwidth * 4}"
+          <line class="top etch" x1="0" y1="#{radius + slider_hwidth}" x2="0" y2="#{radius + slider_hwidth * 3}" stroke-width="#{stroke_width}" />
+          <text class="top etch" x="0" y="#{radius + slider_hwidth * 6}"
                 style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{stroke_width}"
                 text-anchor="middle" dominant-baseline="middle"
                 >#{label}</text>
@@ -101,6 +101,6 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.Azimuthal
   def render(ring) do
     %{range: range, shape: {sliders}, context: {radius, _layer_index}} = ring
 
-    AzimuthalSliders.render(radius - 16, sliders, range)
+    AzimuthalSliders.render(radius - 22, sliders, range)
   end
 end
