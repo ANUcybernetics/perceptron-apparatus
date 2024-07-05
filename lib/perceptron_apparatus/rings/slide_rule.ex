@@ -96,7 +96,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
       |> Stream.iterate(fn {val, theta} ->
         {D.add(val, delta_value), theta + delta_theta}
       end)
-      |> Enum.take_while(fn {val, _theta} -> D.lt?(val, max_value) end)
+      |> Enum.take_while(fn {val, _theta} -> !D.gt?(val, max_value) end)
 
     outer_negative =
       outer_positive
@@ -147,7 +147,11 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         %{label: nil, tick_length: 10, stroke_width: "0.5"}
 
       _ ->
-        %{label: val |> D.normalize() |> D.to_string(), tick_length: 10, stroke_width: "1.0"}
+        %{
+          label: val |> D.normalize() |> D.to_string(:normal),
+          tick_length: 10,
+          stroke_width: "1.0"
+        }
     end
   end
 end
