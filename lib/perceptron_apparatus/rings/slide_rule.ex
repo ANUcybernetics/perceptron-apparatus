@@ -2,12 +2,14 @@ defmodule PerceptronApparatus.Rings.SlideRule do
   @moduledoc """
   Documentation for `SlideRule`.
   """
+  alias Decimal, as: D
+
   defstruct [:width, :rule, :context]
 
   @type t :: %__MODULE__{
           # rule consists of {outer_rule, inner_rule}
           # each rule is a list of {value, theta} tuples
-          rule: {[{float(), float() | nil}], [{float(), float() | nil}]},
+          rule: {[{Decimal.t() | nil, float()}], [{Decimal.t() | nil, float()}]},
           # ring width (fixed for slide rules)
           width: float(),
           # drawing context: {outer_radius, layer_index}
@@ -19,7 +21,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
   end
 
   # each rule should be a list of tuples {theta, label}, where label can be nil (for a minor tick with no label)
-  def render_slider(radius, {outer_rule, inner_rule}) do
+  def render(radius, {outer_rule, inner_rule}) do
     outer_ticks =
       outer_rule
       |> Enum.map(fn {theta, val} ->
@@ -55,53 +57,79 @@ defmodule PerceptronApparatus.Rings.SlideRule do
   # no params for log_rule, since it only really makes sense for rules which range from 1.0 - 9.9
   def log_rule do
     10..99
+    |> Enum.map(fn x -> D.new(1, x, -1) end)
     |> Enum.map(fn val ->
-      theta = (Math.log(val / 10.0) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
+      theta =
+        (Math.log(D.to_float(val)) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
 
       cond do
-        val <= 20 -> {val / 10.0, theta}
-        Integer.mod(val, 2) == 0 && val <= 50 -> {val / 10.0, theta}
-        Integer.mod(val, 5) == 0 && val > 50 -> {val / 10.0, theta}
-        true -> {nil, theta}
+        # this is all much more verbose than before, because Decimal
+        D.lt?(val, 2) ->
+          {val, theta}
+
+        val |> D.rem(D.new(1, 2, -1)) |> D.equal?(0) && !D.gt?(val, 5) ->
+          {val, theta}
+
+        val |> D.rem(D.new(1, 5, -1)) |> D.equal?(0) && D.gt?(val, 5) ->
+          {val, theta}
+
+        true ->
+          {nil, theta}
       end
     end)
   end
 
   def relu_rule(max_value, delta_value) do
-    delta_theta = 180.0 * delta_value / max_value
+    # convert args to Decimal
+    {:ok, max_value} = D.cast(max_value)
+    {:ok, delta_value} = D.cast(delta_value)
+    delta_theta = D.div(delta_value, max_value) |> D.mult(180)
 
     outer_positive =
-      {0.0, 0.0}
-      |> Stream.iterate(fn {val, theta} -> {val + delta_value, theta + delta_theta} end)
-      |> Enum.take_while(fn {val, _theta} -> val <= max_value end)
+      {D.new(0), D.new(0)}
+      |> Stream.iterate(fn {val, theta} ->
+        {D.add(val, delta_value), D.add(theta, delta_theta)}
+      end)
+      |> Enum.take_while(fn {val, _theta} -> D.lt?(val, max_value) end)
 
     outer_negative =
       outer_positive
       # remove first + last elements because that would overlap with the positive rule
       |> List.delete_at(0)
       |> List.delete_at(-1)
-      |> Enum.map(fn {val, theta} -> {-val, -theta} end)
+      |> Enum.map(fn {val, theta} -> {D.mult(val, -1), D.mult(theta, -1)} end)
 
     outer_rule = Enum.reverse(outer_negative) ++ outer_positive
 
     inner_rule =
       outer_rule
-      |> Enum.map(fn
-        {val, theta} when val < 0 -> {0.0, theta}
-        {val, theta} -> {val, theta}
+      |> Enum.map(fn {val, theta} ->
+        if D.lt?(val, 0) do
+          {D.new(0), theta}
+        else
+          {val, theta}
+        end
+      end)
+      |> Enum.map(fn {val, theta} ->
+        cond do
+          D.integer?(val) -> {val, theta}
+          true -> {nil, theta}
+        end
       end)
 
     # reversal not strictly necessary, but nice to keep it ordered
     {outer_rule, inner_rule}
   end
 
+  # this is a bit different this time - the (potentially) non-linear nature of the ticks/values means that
+  # we rely on the rule to tell us when to have a label + major/minor tick, so this fun is pretty simple
   defp ticks_and_labels(val) do
-    cond do
-      Integer.mod(val, 5) == 0 ->
-        %{label: Integer.to_string(val), tick_length: 10, stroke_width: "1.0"}
-
-      true ->
+    case val do
+      nil ->
         %{label: nil, tick_length: 10, stroke_width: "0.5"}
+
+      _ ->
+        %{label: val |> D.normalize() |> D.to_string(), tick_length: 10, stroke_width: "1.0"}
     end
   end
 end
@@ -114,8 +142,8 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.SlideRule
   end
 
   def render(ring) do
-    %{outer_range: outer_range, inner_range: inner_range, context: {radius, _layer_index}} = ring
+    %{rule: rule, context: {radius, _layer_index}} = ring
 
-    SlideRule.render(radius, outer_range, inner_range)
+    SlideRule.render(radius, rule)
   end
 end
