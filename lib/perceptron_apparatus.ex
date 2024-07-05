@@ -79,6 +79,7 @@ defmodule PerceptronApparatus do
         font-family: Garamond;
       }
       .debug {
+        display: none;
         stroke: red;
         fill: transparent;
       }
