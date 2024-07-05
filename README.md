@@ -20,8 +20,6 @@ the (MLP) neural network.
 ## TODO
 
 - add layer/param index labels to each slider
-- change the way the radius is handled so that the "size" parameter is a bit
-  more meaningful
 - add `Utils.write_files` which writes out all the necessary svgs (baseboard + topboard, plus individual files for each cut type)
 - design a 400x400 prototype (same radius, inc markings, arc + couple of sliders)
 - check no quirks in the final svg output which will trip up the CNC machine (e.g. empty text nodes)

@@ -60,7 +60,7 @@ defmodule PerceptronApparatus do
         #{output}
         <circle class="debug" cx="0" cy="0" r="#{r}" stroke-width="1"/>
         #{Renderable.render(%{ring | context: {r, idx}})}
-        <circle class="debug" cx="0" cy="0" r="#{r - ring.width}" stroke-width="2"/>
+        <circle class="debug" cx="0" cy="0" r="#{r - ring.width}" stroke-width="1"/>
         """
       }
     end)

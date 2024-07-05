@@ -17,7 +17,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         }
 
   def new(rule) do
-    %__MODULE__{width: 30.0, rule: rule}
+    %__MODULE__{width: 50.0, rule: rule}
   end
 
   # each rule should be a list of tuples {theta, label}, where label can be nil (for a minor tick with no label)
@@ -44,7 +44,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
 
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
-            <text class="top etch" x="0" y="#{radius - 2 * tick_length}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
+            <text class="top etch" x="0" y="#{radius - 1.5 * tick_length}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
             <line class="top etch" x1="0" y1="#{radius}" x2="0" y2="#{radius - tick_length}" stroke_width="#{stroke_width}" />
           </g>
         """
@@ -166,6 +166,6 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.SlideRule
   def render(ring) do
     %{rule: rule, context: {radius, _layer_index}} = ring
 
-    SlideRule.render(radius - 15, rule)
+    SlideRule.render(radius - 25, rule)
   end
 end

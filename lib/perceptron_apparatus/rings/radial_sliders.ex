@@ -121,7 +121,7 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSli
 
     PerceptronApparatus.Rings.RadialSliders.render(
       radius - 5,
-      width - 5,
+      width - 20,
       groups,
       sliders_per_group,
       range
