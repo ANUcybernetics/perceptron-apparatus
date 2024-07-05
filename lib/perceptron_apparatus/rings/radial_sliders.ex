@@ -25,7 +25,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   end
 
   def render_slider(radius, width, theta) do
-    slider_hwidth = 5
+    slider_hwidth = 3
 
     """
     <g class="top full" transform="rotate(#{-theta}) translate(0 #{radius})" transform-origin="0 0">

@@ -24,7 +24,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
   end
 
   def render_slider(radius, theta_sweep, theta_offset, range) do
-    slider_hwidth = 5
+    slider_hwidth = 3
 
     labels =
       range
