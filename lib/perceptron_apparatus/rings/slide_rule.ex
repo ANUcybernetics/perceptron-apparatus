@@ -52,16 +52,17 @@ defmodule PerceptronApparatus.Rings.SlideRule do
     ])
   end
 
+  # no params for log_rule, since it only really makes sense for rules which range from 1.0 - 9.9
   def log_rule do
     10..99
     |> Enum.map(fn x ->
-      pos = (Math.log(x / 10.0) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
+      theta = (Math.log(x / 10.0) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
 
       cond do
-        x <= 20 -> {pos, Float.to_string(x / 10.0)}
-        Integer.mod(x, 2) == 0 && x <= 50 -> {pos, Float.to_string(x / 10.0)}
-        Integer.mod(x, 5) == 0 && x > 50 -> {pos, Float.to_string(x / 10.0)}
-        true -> {pos, ""}
+        x <= 20 -> {x / 10.0, theta}
+        Integer.mod(x, 2) == 0 && x <= 50 -> {x / 10.0, theta}
+        Integer.mod(x, 5) == 0 && x > 50 -> {x / 10.0, theta}
+        true -> {nil, theta}
       end
     end)
   end
