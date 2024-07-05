@@ -4,25 +4,34 @@
 Mix.install([
   {:perceptron_apparatus, path: "~/Documents/edex/human-scale-ai/perceptron_apparatus"}
 ])
+
+alias PerceptronApparatus, as: PA
+alias PerceptronApparatus.Rings
 ```
 
 ## Setup
 
 ```elixir
-input_ring = PerceptronApparatus.Rings.AzimuthalSliders.new({25})
-w1_ring = PerceptronApparatus.Rings.RadialSliders.new({5, 25})
-h1_ring = PerceptronApparatus.Rings.AzimuthalSliders.new({5})
-w2_ring = PerceptronApparatus.Rings.RadialSliders.new({10, 5})
-# output_ring = PerceptronApparatus.Rings.AzimuthalSliders.new({10})
-output_ring = PerceptronApparatus.Rings.RadialSliders.new({10, 1})
+log_ring = Rings.SlideRule.log_rule() |> Rings.SlideRule.new()
+relu_ring = Rings.SlideRule.relu_rule(10, 0.25) |> Rings.SlideRule.new()
 
-PerceptronApparatus.new(1200)
-|> PerceptronApparatus.add_ring(input_ring)
-|> PerceptronApparatus.add_ring(w1_ring)
-|> PerceptronApparatus.add_ring(h1_ring)
-|> PerceptronApparatus.add_ring(w2_ring)
-|> PerceptronApparatus.add_ring(output_ring)
-|> PerceptronApparatus.render()
+input_ring = Rings.AzimuthalSliders.new({25})
+w1_ring = Rings.RadialSliders.new({5, 25})
+h1_ring = Rings.AzimuthalSliders.new({5})
+w2_ring = Rings.RadialSliders.new({10, 5}, width: 60)
+# output_ring = Rings.AzimuthalSliders.new({10})
+output_ring = Rings.RadialSliders.new({10, 1}, width: 50)
+
+PA.new(1200)
+|> PA.add_ring(log_ring)
+|> PA.add_ring(relu_ring)
+|> PA.add_ring(input_ring)
+|> PA.add_ring(w1_ring)
+|> PA.add_ring(h1_ring)
+|> PA.add_ring(w2_ring)
+|> PA.add_ring(output_ring)
+|> PA.render()
+|> tap(fn data -> File.write!("/tmp/apparatus-v2.svg", data) end)
 |> Kino.HTML.new()
 
 # # PerceptronApparatus.Rings.RadialSliders.render_group(600, 200, 9, 30, 10)
