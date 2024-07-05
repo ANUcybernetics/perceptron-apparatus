@@ -31,7 +31,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
             <text class="top etch" x="0" y="#{radius + 2.5 * tick_length}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
-            <line class="top etch" x1="0" y1="#{radius}" x2="0" y2="#{radius + tick_length}" stroke_width="#{stroke_width}" />
+            <line class="top etch" x1="0" y1="#{radius}" x2="0" y2="#{radius + tick_length}" stroke-width="#{stroke_width}" />
           </g>
         """
       end)
@@ -45,7 +45,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
             <text class="top etch" x="0" y="#{radius - 1.5 * tick_length}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
-            <line class="top etch" x1="0" y1="#{radius}" x2="0" y2="#{radius - tick_length}" stroke_width="#{stroke_width}" />
+            <line class="top etch" x1="0" y1="#{radius}" x2="0" y2="#{radius - tick_length}" stroke-width="#{stroke_width}" />
           </g>
         """
       end)
