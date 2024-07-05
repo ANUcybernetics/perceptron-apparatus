@@ -20,7 +20,7 @@ w1_ring = Rings.RadialSliders.new({5, 25})
 h1_ring = Rings.AzimuthalSliders.new({5})
 w2_ring = Rings.RadialSliders.new({10, 5}, width: 60)
 # output_ring = Rings.AzimuthalSliders.new({10})
-output_ring = Rings.RadialSliders.new({10, 1}, width: 50)
+output_ring = Rings.RadialSliders.new({10, 1}, width: 80)
 
 PA.new(1200)
 |> PA.add_ring(log_ring)
