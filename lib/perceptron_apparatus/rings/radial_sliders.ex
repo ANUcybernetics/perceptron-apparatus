@@ -56,48 +56,50 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   end
 
   def render_guides(radius, width, groups, range) do
-    range
-    |> Enum.map(fn val ->
-      range_min = Enum.min(range)
-      dynamic_range = Enum.max(range) - range_min
-      r = radius - width * (val - range_min) / dynamic_range
-      %{label: label, stroke_width: stroke_width} = ticks_and_labels(val)
+    radii =
+      range
+      |> Enum.map(fn val ->
+        {radius - width * (val - Enum.min(range)) / (Enum.max(range) - Enum.min(range)), val}
+      end)
 
-      circle =
+    circles =
+      Enum.map(radii, fn {r, val} ->
+        %{stroke_width: stroke_width} = ticks_and_labels(val)
         ~s|<circle class="top etch" cx="0" cy="0" r="#{r}" stroke-width="#{stroke_width}" />|
+      end)
+      |> Enum.join()
 
-      labels =
-        0..(groups - 1)
-        |> Enum.map(fn i ->
-          theta = 360 * i / groups
+    labels =
+      0..(groups - 1)
+      |> Enum.map(fn i ->
+        theta = 360 * i / groups
 
-          label_backing_rect =
-            if val == range_min do
-              ~s|<rect class="top visual-hack" fill="pink" stroke="transparent" x="-10" y="#{radius - width - 10}" width="20" height="#{width + 20}" />|
-            else
-              ""
-            end
+        # now, we need to write the labels on the appropriate circle
+        radii
+        |> Enum.filter(fn {_r, val} -> ticks_and_labels(val).label end)
+        |> Enum.map(fn {r, val} ->
+          %{label: label, stroke_width: stroke_width} = ticks_and_labels(val)
 
-          # this is gross, but it'll do
-          if label do
-            """
-            <g class="top etch" transform="rotate(#{-theta})" transform-origin="0 0">
-             #{label_backing_rect}
-             <text class="top etch" x="0" y="#{r + 1}"
-                   style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{stroke_width}"
-                   text-anchor="middle" dominant-baseline="middle"
-                   >#{label}</text>
-            </g>
-            """
-          else
-            ""
-          end
+          """
+           <text class="top etch" x="0" y="#{r + 1}"
+                 style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{stroke_width}"
+                 text-anchor="middle" dominant-baseline="middle"
+                 >#{label}</text>
+          """
         end)
         |> Enum.join()
+        |> then(fn text ->
+          """
+          <g class="top etch" transform="rotate(#{-theta})" transform-origin="0 0">
+          <rect class="top visual-hack" fill="white" stroke="transparent" x="-10" y="#{radius - width - 10}" width="20" height="#{width + 20}" />
+          #{text}
+          </g>
+          """
+        end)
+      end)
+      |> Enum.join()
 
-      circle <> labels
-    end)
-    |> Enum.join()
+    circles <> labels
   end
 
   def render(radius, width, groups, sliders_per_group, range) do
