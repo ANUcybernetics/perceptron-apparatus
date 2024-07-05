@@ -44,7 +44,7 @@ defmodule PerceptronApparatus do
       raise "Total ring width exceeds apparatus radius"
     end
 
-    radial_padding = 40
+    radial_padding = 20
 
     svg_padding = 10
 
