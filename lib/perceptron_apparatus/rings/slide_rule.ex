@@ -17,20 +17,20 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         }
 
   def new(rule) do
-    %__MODULE__{width: 20.0, rule: rule}
+    %__MODULE__{width: 50.0, rule: rule}
   end
 
   # each rule should be a list of tuples {theta, label}, where label can be nil (for a minor tick with no label)
   def render(radius, {outer_rule, inner_rule}) do
     outer_ticks =
       outer_rule
-      |> Enum.map(fn {theta, val} ->
+      |> Enum.map(fn {val, theta} ->
         %{label: label, tick_length: tick_length, stroke_width: stroke_width} =
           ticks_and_labels(val)
 
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
-            <text class="top etch" x="0" y="#{radius + 2 * tick_length}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
+            <text class="top etch" x="0" y="#{radius + 2.5 * tick_length}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
             <line class="top etch" x1="0" y1="#{radius}" x2="0" y2="#{radius + tick_length}" stroke_width="#{stroke_width}" />
           </g>
         """
@@ -38,11 +38,14 @@ defmodule PerceptronApparatus.Rings.SlideRule do
 
     inner_ticks =
       inner_rule
-      |> Enum.map(fn {theta, label} ->
+      |> Enum.map(fn {val, theta} ->
+        %{label: label, tick_length: tick_length, stroke_width: stroke_width} =
+          ticks_and_labels(val)
+
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
-            <text x="0" y="#{radius - 20}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="hanging">#{label}</text>
-            <line x1="0" y1="#{if label != "", do: radius - 8, else: radius - 4}" x2="0" y2="#{radius}" />
+            <text class="top etch" x="0" y="#{radius - 2 * tick_length}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
+            <line class="top etch" x1="0" y1="#{radius}" x2="0" y2="#{radius - tick_length}" stroke_width="#{stroke_width}" />
           </g>
         """
       end)
@@ -56,39 +59,42 @@ defmodule PerceptronApparatus.Rings.SlideRule do
 
   # no params for log_rule, since it only really makes sense for rules which range from 1.0 - 9.9
   def log_rule do
-    10..99
-    |> Enum.map(fn x -> D.new(1, x, -1) end)
-    |> Enum.map(fn val ->
-      theta =
-        (Math.log(D.to_float(val)) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
+    rule =
+      10..99
+      |> Enum.map(fn x -> D.new(1, x, -1) end)
+      |> Enum.map(fn val ->
+        theta =
+          (Math.log(D.to_float(val)) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
 
-      cond do
-        # this is all much more verbose than before, because Decimal
-        D.lt?(val, 2) ->
-          {val, theta}
+        cond do
+          # this is all much more verbose than before, because Decimal
+          D.lt?(val, 2) ->
+            {val, theta}
 
-        val |> D.rem(D.new(1, 2, -1)) |> D.equal?(0) && !D.gt?(val, 5) ->
-          {val, theta}
+          val |> D.rem(D.new(1, 2, -1)) |> D.equal?(0) && !D.gt?(val, 5) ->
+            {val, theta}
 
-        val |> D.rem(D.new(1, 5, -1)) |> D.equal?(0) && D.gt?(val, 5) ->
-          {val, theta}
+          val |> D.rem(D.new(1, 5, -1)) |> D.equal?(0) && D.gt?(val, 5) ->
+            {val, theta}
 
-        true ->
-          {nil, theta}
-      end
-    end)
+          true ->
+            {nil, theta}
+        end
+      end)
+
+    {rule, rule}
   end
 
   def relu_rule(max_value, delta_value) do
     # convert args to Decimal
     {:ok, max_value} = D.cast(max_value)
     {:ok, delta_value} = D.cast(delta_value)
-    delta_theta = D.div(delta_value, max_value) |> D.mult(180)
+    delta_theta = D.div(delta_value, max_value) |> D.mult(180) |> D.to_float()
 
     outer_positive =
-      {D.new(0), D.new(0)}
+      {D.new(0), 0.0}
       |> Stream.iterate(fn {val, theta} ->
-        {D.add(val, delta_value), D.add(theta, delta_theta)}
+        {D.add(val, delta_value), theta + delta_theta}
       end)
       |> Enum.take_while(fn {val, _theta} -> D.lt?(val, max_value) end)
 
@@ -97,9 +103,12 @@ defmodule PerceptronApparatus.Rings.SlideRule do
       # remove first + last elements because that would overlap with the positive rule
       |> List.delete_at(0)
       |> List.delete_at(-1)
-      |> Enum.map(fn {val, theta} -> {D.mult(val, -1), D.mult(theta, -1)} end)
+      |> Enum.map(fn {val, theta} -> {D.mult(val, -1), -theta} end)
 
-    outer_rule = Enum.reverse(outer_negative) ++ outer_positive
+    outer_rule =
+      outer_negative
+      |> Enum.reverse()
+      |> Enum.concat(outer_positive)
 
     inner_rule =
       outer_rule
@@ -110,6 +119,15 @@ defmodule PerceptronApparatus.Rings.SlideRule do
           {val, theta}
         end
       end)
+      |> Enum.map(fn {val, theta} ->
+        cond do
+          D.integer?(val) -> {val, theta}
+          true -> {nil, theta}
+        end
+      end)
+
+    outer_rule =
+      outer_rule
       |> Enum.map(fn {val, theta} ->
         cond do
           D.integer?(val) -> {val, theta}
@@ -144,6 +162,6 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.SlideRule
   def render(ring) do
     %{rule: rule, context: {radius, _layer_index}} = ring
 
-    SlideRule.render(radius, rule)
+    SlideRule.render(radius - 20, rule)
   end
 end
