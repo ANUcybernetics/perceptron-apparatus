@@ -3,6 +3,7 @@ defmodule PerceptronApparatus do
   Documentation for `PerceptronApparatus`.
   """
   alias PerceptronApparatus.Rings
+  alias PerceptronApparatus.Renderable
 
   defstruct [:size, :rings]
 
@@ -55,7 +56,12 @@ defmodule PerceptronApparatus do
       {
         r - ring.width - radial_padding,
         idx + 1,
-        output <> PerceptronApparatus.Renderable.render(%{ring | context: {r, idx}})
+        """
+        #{output}
+        <circle class="debug" cx="0" cy="0" r="#{r}" stroke-width="1"/>
+        #{Renderable.render(%{ring | context: {r, idx}})}
+        <circle class="debug" cx="0" cy="0" r="#{r - ring.width}" stroke-width="2"/>
+        """
       }
     end)
     # add the "board edge" circle
@@ -71,6 +77,10 @@ defmodule PerceptronApparatus do
       <style>
       svg {
         font-family: Garamond;
+      }
+      .debug {
+        stroke: red;
+        fill: transparent;
       }
       </style>
       #{body}
