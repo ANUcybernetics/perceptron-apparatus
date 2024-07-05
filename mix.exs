@@ -22,7 +22,8 @@ defmodule PerceptronApparatus.MixProject do
   defp deps do
     [
       {:kino, "~> 0.13.0"},
-      {:math, "~> 0.7"}
+      {:math, "~> 0.7"},
+      {:decimal, "~> 2.0"}
     ]
   end
 end
