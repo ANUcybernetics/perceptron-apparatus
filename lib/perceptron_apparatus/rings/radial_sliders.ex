@@ -2,11 +2,13 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   @moduledoc """
   Documentation for `RadialSliders`.
   """
+  alias Decimal, as: D
+
   defstruct [:width, :shape, :range, :context]
 
   @type t :: %__MODULE__{
           # min, max
-          range: Range.t(),
+          range: [Decimal.t()],
           # this is not the geometric shape, rather the shape of the corresponding matrix
           # {n_groups, n_sliders_per_group}
           shape: {integer(), integer},
@@ -18,7 +20,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 
   def new(shape, opts \\ []) do
     # use default values when it makes sense
-    range = Keyword.get(opts, :range, 0..10)
+    range = Keyword.get(opts, :range, PerceptronApparatus.Utils.drange(0, 10, 1))
     width = Keyword.get(opts, :width, 100.0)
 
     %__MODULE__{width: width, range: range, shape: shape}
@@ -56,10 +58,14 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   end
 
   def render_guides(radius, width, groups, range) do
+    range_min = List.first(range) |> D.to_float()
+    range_max = List.last(range) |> D.to_float()
+    dynamic_range = range_max - range_min
+
     radii =
       range
       |> Enum.map(fn val ->
-        {radius - width * (val - Enum.min(range)) / (Enum.max(range) - Enum.min(range)), val}
+        {radius - width * (D.to_float(val) - range_min) / dynamic_range, val}
       end)
 
     circles =
@@ -115,8 +121,14 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 
   defp ticks_and_labels(val) do
     cond do
-      Integer.mod(val, 5) == 0 -> %{label: Integer.to_string(val), stroke_width: "1.0"}
-      true -> %{label: nil, stroke_width: "0.5"}
+      val |> D.rem(D.new(1, 5, 0)) |> D.equal?(0) ->
+        %{
+          label: val |> D.normalize() |> D.to_string(:normal),
+          stroke_width: "1.0"
+        }
+
+      true ->
+        %{label: nil, stroke_width: "0.5"}
     end
   end
 end
