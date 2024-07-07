@@ -2,11 +2,13 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
   @moduledoc """
   Documentation for `AzimuthalSliders`.
   """
+  alias Decimal, as: D
+
   defstruct [:width, :shape, :range, :context]
 
   @type t :: %__MODULE__{
           # min, max
-          range: Range.t(),
+          range: [Decimal.t()],
           # no groups for azimuthal sliders, just the number of sliders
           # this is not the geometric shape, rather the shape of the corresponding matrix
           shape: {integer()},
@@ -18,20 +20,23 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 
   def new(shape, opts \\ []) do
     # use default values when it makes sense
-    range = Keyword.get(opts, :range, 0..10)
+    range = Keyword.get(opts, :range, PerceptronApparatus.Utils.drange(0, 1, 0.1))
 
     %__MODULE__{width: 26.0, range: range, shape: shape}
   end
 
+  # range is a list of Decimals, but for calculation purposes we convert them to floats early
+  # on and just live with the rounding error from there
   def render_slider(radius, theta_sweep, theta_offset, range) do
     slider_hwidth = 3
+    range_min = List.first(range) |> D.to_float()
+    range_max = List.last(range) |> D.to_float()
+    dynamic_range = range_max - range_min
 
     labels =
       range
       |> Enum.map(fn val ->
-        range_min = Enum.min(range)
-        dynamic_range = Enum.max(range) - range_min
-        theta = theta_sweep * (val - range_min) / dynamic_range
+        theta = theta_sweep * (D.to_float(val) - range_min) / dynamic_range
         %{label: label, stroke_width: stroke_width} = ticks_and_labels(val)
 
         """
@@ -85,8 +90,14 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 
   defp ticks_and_labels(val) do
     cond do
-      Integer.mod(val, 5) == 0 -> %{label: Integer.to_string(val), stroke_width: "1.0"}
-      true -> %{label: nil, stroke_width: "0.5"}
+      D.integer?(val) ->
+        %{
+          label: val |> D.normalize() |> D.to_string(:normal),
+          stroke_width: "1.0"
+        }
+
+      true ->
+        %{label: nil, stroke_width: "0.5"}
     end
   end
 end

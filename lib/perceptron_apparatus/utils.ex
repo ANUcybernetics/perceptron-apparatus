@@ -27,4 +27,18 @@ defmodule PerceptronApparatus.Utils do
     </svg>
     """
   end
+
+  alias Decimal, as: D
+  @doc "Range.t(), but with Decimals"
+  def drange(start, stop, step \\ 1) do
+    {:ok, start} = D.cast(start)
+    {:ok, stop} = D.cast(stop)
+    {:ok, step} = D.cast(step)
+
+    start
+    |> Stream.iterate(fn val ->
+      D.add(val, step)
+    end)
+    |> Enum.take_while(fn val -> !D.gt?(val, stop) end)
+  end
 end
