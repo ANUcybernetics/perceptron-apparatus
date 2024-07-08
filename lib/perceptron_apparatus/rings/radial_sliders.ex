@@ -21,7 +21,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   def new(shape, opts \\ []) do
     # use default values when it makes sense
     range = Keyword.get(opts, :range, PerceptronApparatus.Utils.drange(0, 10, 1))
-    width = Keyword.get(opts, :width, 100.0)
+    width = Keyword.get(opts, :width, 80.0)
 
     %__MODULE__{width: width, range: range, shape: shape}
   end
