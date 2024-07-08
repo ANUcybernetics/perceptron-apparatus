@@ -26,14 +26,16 @@ the (MLP) neural network.
 - replace the "interp and concat strings" approach with proper HEEX templates
 - in the SVG, add classes for the different fabrication layers and cut types
   (top board, bottom board, v-cut, etc.)
-- for the `range`s, it doesn't actually have to be a `Range.t`---it could be any
-  enumerable (not sure if this needs to be changed; at least to keep the
-  dialyzer happy?)
 - add drill holes, etc
 - add Axon support
+  - see what the param ranges are (inc. negative?)
   - training model based on inputs
   - auto-generating the SVG based on the model (i.e. `%Axon{}` -> `%PerceptronApparatus{}`)
   - examples (5x5 MNIST digits, maybe something with language?)
+
+  ## fabrication questions
+
+  - should the slider cuts be closed paths (edge of cut) or fat lines (with round linecaps)?
 
 ## Author
 
