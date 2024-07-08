@@ -35,7 +35,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 
     # for creating "gaps" at the beginning and end of the [theta_offset, theta_offset + theta_sweep]
     # range (where the labels will go)
-    az_padding = 1500 / radius
+    az_padding = 1600 / radius
 
     labels =
       range
