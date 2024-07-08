@@ -61,6 +61,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     range_min = List.first(range) |> D.to_float()
     range_max = List.last(range) |> D.to_float()
     dynamic_range = range_max - range_min
+    theta_sweep = 360 / groups
 
     radii =
       range
@@ -71,7 +72,26 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     circles =
       Enum.map(radii, fn {r, val} ->
         %{stroke_width: stroke_width} = ticks_and_labels(val)
-        ~s|<circle class="top etch" cx="0" cy="0" r="#{r}" stroke-width="#{stroke_width}" />|
+        az_padding = 1000 / r
+
+        0..(groups - 1)
+        |> Enum.map(fn i ->
+          x1 = r * Math.sin(Math.deg2rad(i * theta_sweep + az_padding))
+          y1 = r * Math.cos(Math.deg2rad(i * theta_sweep + az_padding))
+          x2 = r * Math.sin(Math.deg2rad((i + 1) * theta_sweep - az_padding))
+          y2 = r * Math.cos(Math.deg2rad((i + 1) * theta_sweep - az_padding))
+
+          """
+          M #{x1} #{y1}
+          A #{r} #{r} 0 0 0 #{x2} #{y2}
+          """
+        end)
+        |> then(fn arc_components ->
+          """
+          <path class="top etch" stroke-width="#{stroke_width}"
+                d="#{arc_components}" />
+          """
+        end)
       end)
       |> Enum.join()
 
@@ -97,7 +117,6 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
         |> then(fn text ->
           """
           <g class="top etch" transform="rotate(#{-theta})" transform-origin="0 0">
-          <rect class="top visual-hack" fill="white" stroke="transparent" x="-10" y="#{radius - width - 10}" width="20" height="#{width + 20}" />
           #{text}
           </g>
           """
