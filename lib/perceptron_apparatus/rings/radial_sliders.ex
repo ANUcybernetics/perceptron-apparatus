@@ -49,7 +49,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
       -1,
       """
       <g transform="rotate(#{-(theta_offset + 0.5 * theta_sweep)})"  transform-origin="0 0">
-        <text class="top etch indices" x="0" y="#{radius - width - 8}"
+        <text class="top etch indices" x="0" y="#{radius - width - 10}"
               text-anchor="middle" dominant-baseline="middle"
               >#{Roman.encode!(layer_index)}-#{group_index + 1}</text>
 
@@ -73,7 +73,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 
     circles =
       Enum.map(radii, fn {label, r} ->
-        az_padding = 1000 / r
+        az_padding = 700 / r
 
         0..(groups - 1)
         |> Enum.map(fn i ->

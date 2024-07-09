@@ -40,11 +40,12 @@ defmodule PerceptronApparatus do
     radius = size / 2
     total_ring_width = rings |> Enum.map(& &1.width) |> Enum.sum()
 
+    # TODO this check doesn't account for the radial padding, and so doesn't really work
     if total_ring_width > radius do
       raise "Total ring width exceeds apparatus radius"
     end
 
-    radial_padding = 20
+    radial_padding = 30
 
     svg_padding = 10
 
@@ -52,14 +53,16 @@ defmodule PerceptronApparatus do
       "-#{size / 2 + svg_padding} -#{size / 2 + svg_padding} #{size + 2 * svg_padding} #{size + 2 * svg_padding}"
 
     rings
-    |> Enum.reduce({radius - radial_padding / 2, 1, ""}, fn ring, {r, idx, output} ->
+    |> Enum.chunk_every(2, 1)
+    |> Enum.map(fn
+      [%Rings.SlideRule{} = ring, %Rings.SlideRule{}] -> {ring, 15}
+      [ring | _] -> {ring, 25}
+    end)
+    |> Enum.reduce({radius - radial_padding / 2, 1, ""}, fn {ring, radial_padding},
+                                                            {r, idx, output} ->
       {
         r - ring.width - radial_padding,
-        case ring do
-          # slide rules don't count towards the layer_index
-          %Rings.SlideRule{} -> idx
-          _ -> idx + 1
-        end,
+        next_layer_index(ring, idx),
         """
         idx + 1,
         #{output}
@@ -113,4 +116,7 @@ defmodule PerceptronApparatus do
     </svg>
     """
   end
+
+  defp next_layer_index(%Rings.SlideRule{}, idx), do: idx
+  defp next_layer_index(_ring, idx), do: idx + 1
 end

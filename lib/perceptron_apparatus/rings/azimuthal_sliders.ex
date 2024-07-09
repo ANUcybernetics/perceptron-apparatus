@@ -22,7 +22,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
   end
 
   def render_slider(radius, theta_sweep, rule, {layer_index, number}) do
-    slider_hwidth = 3
+    tick_length = 14
     range_min = List.first(rule) |> elem(1) |> D.to_float()
     range_max = List.last(rule) |> elem(1) |> D.to_float()
     dynamic_range = range_max - range_min
@@ -30,7 +30,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 
     # for creating "gaps" at the beginning and end of the [theta_offset, theta_offset + theta_sweep]
     # range (where the labels will go)
-    az_padding = 2000 / radius
+    az_padding = 1500 / radius
 
     labels =
       rule
@@ -41,7 +41,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 
         """
         <g transform="rotate(#{-theta})"  transform-origin="0 0">
-          <line class="top etch #{label && "heavy"}" x1="0" x2="0" y1="#{radius - slider_hwidth * 3}" y2="#{radius + slider_hwidth * 3}" />
+          <line class="top etch #{label && "heavy"}" x1="0" x2="0" y1="#{radius - tick_length / 2}" y2="#{radius + tick_length / 2}" />
         </g>
         """
       end)
@@ -69,7 +69,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
         -1,
         """
         <g transform="rotate(#{-0.5 * theta_sweep})"  transform-origin="0 0">
-          <text class="top etch indices" x="0" y="#{radius - slider_hwidth * 5}"
+          <text class="top etch indices" x="0" y="#{radius - tick_length}"
                 text-anchor="middle" dominant-baseline="middle"
                 >#{Roman.encode!(layer_index)}-#{number + 1}</text>
         </g>
