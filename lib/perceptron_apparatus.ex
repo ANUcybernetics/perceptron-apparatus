@@ -109,6 +109,7 @@ defmodule PerceptronApparatus do
       }
       text.indices{
         font-size: 8px;
+        text-decoration: solid overline;
       }
       .debug {
         display: none;
