@@ -51,7 +51,8 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
       <g transform="rotate(#{-(theta_offset + 0.5 * theta_sweep)})"  transform-origin="0 0">
         <text class="top etch indices" x="0" y="#{radius - width - 8}"
               text-anchor="middle" dominant-baseline="middle"
-              >#{layer_index}-#{group_index + 1}</text>
+              >#{Roman.encode!(layer_index)}-#{group_index + 1}</text>
+
       </g>
       """
     )

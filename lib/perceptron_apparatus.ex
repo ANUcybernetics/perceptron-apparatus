@@ -55,8 +55,13 @@ defmodule PerceptronApparatus do
     |> Enum.reduce({radius - radial_padding / 2, 1, ""}, fn ring, {r, idx, output} ->
       {
         r - ring.width - radial_padding,
-        idx + 1,
+        case ring do
+          # slide rules don't count towards the layer_index
+          %Rings.SlideRule{} -> idx
+          _ -> idx + 1
+        end,
         """
+        idx + 1,
         #{output}
         <circle class="debug" cx="0" cy="0" r="#{r}" stroke-width="1"/>
         #{Renderable.render(%{ring | context: {r, idx}})}

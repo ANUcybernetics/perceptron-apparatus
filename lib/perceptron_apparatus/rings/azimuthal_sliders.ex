@@ -71,7 +71,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
         <g transform="rotate(#{-0.5 * theta_sweep})"  transform-origin="0 0">
           <text class="top etch indices" x="0" y="#{radius - slider_hwidth * 5}"
                 text-anchor="middle" dominant-baseline="middle"
-                >#{layer_index}-#{number + 1}</text>
+                >#{Roman.encode!(layer_index)}-#{number + 1}</text>
         </g>
         """
       )
