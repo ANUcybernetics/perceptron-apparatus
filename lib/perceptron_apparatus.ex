@@ -88,6 +88,10 @@ defmodule PerceptronApparatus do
         font-size: 12px;
       }
       .full {
+        stroke-width: 3;
+        stroke: #6ab04c;
+      }
+      .slider {
         stroke-width: 6;
         stroke: #f0932b;
       }

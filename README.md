@@ -21,7 +21,8 @@ SVG classes represent different cut types:
 
 top plate
 
-- `full` full-depth routed channels (sliders, ring boundaries)
+- `full` full-depth cuts
+- `slider` full-depth routed channels for sliders
 - `etch` light v-cut etches
 - `etch.heavy` heavier v-cut etches
 - `hole` full-depth holes (for screws)

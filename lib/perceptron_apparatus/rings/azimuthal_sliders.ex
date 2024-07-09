@@ -86,7 +86,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
     <g transform="rotate(#{-theta_offset})"  transform-origin="0 0">
     #{labels}
      <path
-      class="top full"
+      class="top slider"
       stroke-linecap="round"
       d="M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}" />
       </g>
