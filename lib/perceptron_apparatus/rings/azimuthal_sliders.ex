@@ -35,7 +35,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 
     # for creating "gaps" at the beginning and end of the [theta_offset, theta_offset + theta_sweep]
     # range (where the labels will go)
-    az_padding = 1600 / radius
+    az_padding = 2000 / radius
 
     labels =
       range
@@ -55,7 +55,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
       |> List.insert_at(
         0,
         """
-        <g transform="rotate(#{-(theta_offset + 2 / 3 * az_padding)})"  transform-origin="0 0">
+        <g transform="rotate(#{-(theta_offset + 0.6 * az_padding)})"  transform-origin="0 0">
           <text class="top etch" x="0" y="#{radius}"
                 style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{range |> List.first() |> ticks_and_labels() |> Map.get(:stroke_width)}"
                 text-anchor="middle" dominant-baseline="middle"
@@ -66,7 +66,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
       |> List.insert_at(
         -1,
         """
-        <g transform="rotate(#{-(theta_offset + theta_sweep - 2 / 3 * az_padding)})"  transform-origin="0 0">
+        <g transform="rotate(#{-(theta_offset + theta_sweep - 0.6 * az_padding)})"  transform-origin="0 0">
           <text class="top etch" x="0" y="#{radius}"
                 style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{range |> List.last() |> ticks_and_labels() |> Map.get(:stroke_width)}"
                 text-anchor="middle" dominant-baseline="middle"
