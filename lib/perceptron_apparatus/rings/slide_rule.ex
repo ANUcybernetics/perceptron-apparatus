@@ -119,9 +119,10 @@ defmodule PerceptronApparatus.Rings.SlideRule do
           {val, theta}
         end
       end)
-      |> Enum.map(fn {val, theta} ->
+      |> Enum.with_index(fn {val, theta}, idx ->
         cond do
-          D.integer?(val) -> {val, theta}
+          D.integer?(val) && theta >= 0 -> {val, theta}
+          D.integer?(val) && Integer.mod(idx, 4) == 3 -> {val, theta}
           true -> {nil, theta}
         end
       end)
