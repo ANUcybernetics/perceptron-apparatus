@@ -95,6 +95,9 @@ defmodule PerceptronApparatus do
         stroke-width: 1;
         stroke: #130f40;
       }
+      text.indices{
+        font-size: 8px;
+      }
       .debug {
         display: none;
         stroke: red;
