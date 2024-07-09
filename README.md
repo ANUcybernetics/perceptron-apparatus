@@ -17,6 +17,20 @@ a [`:path`](https://hexdocs.pm/mix/Mix.Tasks.Deps.html).
 A **board** contains a number of **rings**, each of which represents a layer in
 the (MLP) neural network.
 
+SVG classes represent different cut types:
+
+top plate
+
+- `full` full-depth routed channels (sliders, ring boundaries)
+- `etch` light v-cut etches
+- `etch.heavy` heavier v-cut etches
+- `hole` full-depth holes (for screws)
+
+bottom plate
+
+- `partial` partial-depth routed channels (for captive slider/ring bottoms)
+- `hole` full-depth holes (for screws)
+
 ## TODO
 
 - add layer/param index labels to each slider
@@ -24,8 +38,6 @@ the (MLP) neural network.
 - design a 400x400 prototype (same radius, inc markings, arc + couple of sliders)
 - check no quirks in the final svg output which will trip up the CNC machine (e.g. empty text nodes)
 - replace the "interp and concat strings" approach with proper HEEX templates
-- in the SVG, add classes for the different fabrication layers and cut types
-  (top board, bottom board, v-cut, etc.)
 - add drill holes, etc
 - add Axon support
   - see what the param ranges are (inc. negative?)
@@ -35,7 +47,7 @@ the (MLP) neural network.
 
   ## fabrication questions
 
-  - should the slider cuts be closed paths (edge of cut) or fat lines (with round linecaps)?
+  - what's the minimum width for the sliders?
 
 ## Author
 
