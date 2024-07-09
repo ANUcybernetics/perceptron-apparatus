@@ -105,7 +105,7 @@ defmodule PerceptronApparatus do
       }
       .etch.heavy {
         stroke-width: 1;
-        stroke: #130f40;
+        stroke: #eb4d4b;
       }
       text.indices{
         font-size: 8px;
