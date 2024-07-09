@@ -48,9 +48,9 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
       |> List.insert_at(
         0,
         """
-        <g transform="rotate(#{-(0.6 * az_padding)})"  transform-origin="0 0">
+        <g transform="rotate(#{-(0.7 * az_padding)})"  transform-origin="0 0">
           <text class="top etch heavy" x="0" y="#{radius}"
-                text-anchor="middle" dominant-baseline="middle"
+                text-anchor="end" dominant-baseline="middle"
                 >#{rule |> List.first() |> elem(0)}</text>
         </g>
         """
@@ -58,9 +58,9 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
       |> List.insert_at(
         -1,
         """
-        <g transform="rotate(#{-(theta_sweep - 0.6 * az_padding)})"  transform-origin="0 0">
+        <g transform="rotate(#{-(theta_sweep - 0.7 * az_padding)})"  transform-origin="0 0">
           <text class="top etch heavy" x="0" y="#{radius}"
-                text-anchor="middle" dominant-baseline="middle"
+                text-anchor="start" dominant-baseline="middle"
                 >#{rule |> List.last() |> elem(0)}</text>
         </g>
         """
