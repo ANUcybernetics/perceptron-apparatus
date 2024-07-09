@@ -37,12 +37,24 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   - `theta_sweep` is the sweep angle of the slider group in degrees
   - `theta_offset` is the angle offset of the slider group in degrees
   """
-  def render_group(radius, width, sliders_per_group, theta_sweep, theta_offset) do
+  def render_group(radius, width, sliders_per_group, theta_sweep, group_index, layer_index) do
     # the extra 1s are to two "gaps" at the beginning and end of the [theta_sweep, theta_sweep + theta_offset] range (where the labels will go)
+    theta_offset = theta_sweep * group_index
+
     1..sliders_per_group
     |> Enum.map(fn i ->
       render_slider(radius, width, theta_offset + i * (theta_sweep / (sliders_per_group + 1)))
     end)
+    |> List.insert_at(
+      -1,
+      """
+      <g transform="rotate(#{-(theta_offset + 0.5 * theta_sweep)})"  transform-origin="0 0">
+        <text class="top etch indices" x="0" y="#{radius - width - 6}"
+              text-anchor="middle" dominant-baseline="middle"
+              >#{layer_index}-#{group_index + 1}</text>
+      </g>
+      """
+    )
     |> Enum.join()
   end
 
@@ -112,12 +124,12 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     circles <> labels
   end
 
-  def render(radius, width, groups, sliders_per_group, rule) do
+  def render(radius, width, groups, sliders_per_group, rule, layer_index) do
     theta_sweep = 360 / groups
 
     0..(groups - 1)
     |> Enum.map(fn i ->
-      render_group(radius, width, sliders_per_group, theta_sweep, theta_sweep * i)
+      render_group(radius, width, sliders_per_group, theta_sweep, i, layer_index)
     end)
     |> List.insert_at(0, render_guides(radius, width, groups, rule))
     |> Enum.join()
@@ -134,7 +146,7 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSli
       width: width,
       rule: rule,
       shape: {groups, sliders_per_group},
-      context: {radius, _layer_index}
+      context: {radius, layer_index}
     } = ring
 
     PerceptronApparatus.Rings.RadialSliders.render(
@@ -142,7 +154,8 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSli
       width - 10,
       groups,
       sliders_per_group,
-      rule
+      rule,
+      layer_index
     )
   end
 end
