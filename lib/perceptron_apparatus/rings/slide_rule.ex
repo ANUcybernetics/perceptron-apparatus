@@ -7,9 +7,8 @@ defmodule PerceptronApparatus.Rings.SlideRule do
   defstruct [:width, :rule, :context]
 
   @type t :: %__MODULE__{
-          # rule consists of {outer_rule, inner_rule}
-          # each rule is a list of {value, theta} tuples
-          rule: {[{Decimal.t() | nil, float()}], [{Decimal.t() | nil, float()}]},
+          # rule is a list of {outer_label, theta, inner_label} tuples
+          rule: {[{Decimal.t() | nil, float(), Decimal.t() | nil}]},
           # ring width (fixed for slide rules)
           width: float(),
           # drawing context: {outer_radius, layer_index}
@@ -21,66 +20,50 @@ defmodule PerceptronApparatus.Rings.SlideRule do
   end
 
   # each rule should be a list of tuples {theta, label}, where label can be nil (for a minor tick with no label)
-  def render(radius, {outer_rule, inner_rule}) do
+  def render(radius, rule) do
     tick_length = 10
 
-    outer_ticks =
-      outer_rule
-      |> Enum.map(fn {label, theta} ->
+    labels =
+      rule
+      |> Enum.map(fn {outer_label, theta, inner_label} ->
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
-            <text class="top etch" x="0" y="#{radius + 2.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{label}</text>
-            <line class="top etch #{label && "heavy"}" x1="0" y1="#{radius}" x2="0" y2="#{radius + tick_length}" />
+            <line class="top etch #{outer_label && "heavy"}" x1="0" y1="#{radius - tick_length}" x2="0" y2="#{radius + tick_length}" />
+            <text class="top etch" x="0" y="#{radius + 2.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{outer_label}</text>
+            <text class="top etch" x="0" y="#{radius - 1.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{inner_label}</text>
           </g>
         """
       end)
+      |> Enum.join()
 
-    inner_ticks =
-      inner_rule
-      |> Enum.map(fn {label, theta} ->
-        """
-          <g transform="rotate(#{-theta})" transform-origin="0 0">
-            <text class="top etch" x="0" y="#{radius - 1.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{label}</text>
-            <line class="top etch #{label && "heavy"}" x1="0" y1="#{radius}" x2="0" y2="#{radius - tick_length}" />
-          </g>
-        """
-      end)
-
-    Enum.join([
-      outer_ticks,
-      ~s|<circle class="top full" cx="0" cy="0" r="#{radius}" />|,
-      inner_ticks
-    ])
+    labels <> ~s|<circle class="top full" cx="0" cy="0" r="#{radius}" />|
   end
 
   # no params for log_rule, since it only really makes sense for rules which range from 1.0 - 9.9
   def log_rule do
-    rule =
-      10..99
-      |> Enum.map(fn x -> D.new(1, x, -1) end)
-      |> Enum.map(fn val ->
-        theta =
-          (Math.log(D.to_float(val)) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
+    10..99
+    |> Enum.map(fn x -> D.new(1, x, -1) end)
+    |> Enum.map(fn val ->
+      theta =
+        (Math.log(D.to_float(val)) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
 
-        label = val |> D.normalize() |> D.to_string(:normal)
+      label = val |> D.normalize() |> D.to_string(:normal)
 
-        cond do
-          # this is all much more verbose than before, because Decimal
-          D.lt?(val, 2) ->
-            {label, theta}
+      cond do
+        # this is all much more verbose than before, because Decimal
+        D.lt?(val, 2) ->
+          {label, theta, label}
 
-          val |> D.rem(D.new(1, 2, -1)) |> D.equal?(0) && !D.gt?(val, 5) ->
-            {label, theta}
+        val |> D.rem(D.new(1, 2, -1)) |> D.equal?(0) && !D.gt?(val, 5) ->
+          {label, theta, label}
 
-          val |> D.rem(D.new(1, 5, -1)) |> D.equal?(0) && D.gt?(val, 5) ->
-            {label, theta}
+        val |> D.rem(D.new(1, 5, -1)) |> D.equal?(0) && D.gt?(val, 5) ->
+          {label, theta, label}
 
-          true ->
-            {nil, theta}
-        end
-      end)
-
-    {rule, rule}
+        true ->
+          {nil, theta, nil}
+      end
+    end)
   end
 
   def relu_rule(max_value, delta_value) do
@@ -103,43 +86,23 @@ defmodule PerceptronApparatus.Rings.SlideRule do
       |> List.delete_at(-1)
       |> Enum.map(fn {val, theta} -> {D.mult(val, -1), -theta} end)
 
-    outer_rule =
+    outer_values =
       outer_negative
       |> Enum.reverse()
       |> Enum.concat(outer_positive)
 
-    inner_rule =
-      outer_rule
-      |> Enum.map(fn {val, theta} ->
-        if D.lt?(val, 0) do
-          {D.new(0), theta}
-        else
-          {val, theta}
-        end
-      end)
-      |> Enum.with_index(fn {val, theta}, idx ->
-        label = val |> D.normalize() |> D.to_string(:normal)
+    outer_values
+    |> Enum.map(fn {val, theta} ->
+      outer_label = val |> D.normalize() |> D.to_string(:normal)
 
-        cond do
-          D.integer?(val) && theta >= 0 -> {label, theta}
-          D.integer?(val) && Integer.mod(idx, 4) == 3 -> {label, theta}
-          true -> {nil, theta}
-        end
-      end)
+      cond do
+        D.integer?(val) ->
+          {outer_label, theta, val |> D.max(0) |> D.normalize() |> D.to_string(:normal)}
 
-    outer_rule =
-      outer_rule
-      |> Enum.map(fn {val, theta} ->
-        label = val |> D.normalize() |> D.to_string(:normal)
-
-        cond do
-          D.integer?(val) -> {label, theta}
-          true -> {nil, theta}
-        end
-      end)
-
-    # reversal not strictly necessary, but nice to keep it ordered
-    {outer_rule, inner_rule}
+        true ->
+          {nil, theta, nil}
+      end
+    end)
   end
 end
 
