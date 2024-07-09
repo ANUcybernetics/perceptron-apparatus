@@ -26,8 +26,8 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 
   def render_slider(radius, width, theta) do
     """
-     <path class="top slider" transform="rotate(#{-theta}) translate(0 #{radius})" stroke-linecap="round" d="M 0 0 v #{-width}" />
-
+    <path class="bottom slider" transform="rotate(#{-theta}) translate(0 #{radius})" stroke-linecap="round" d="M 0 0 v #{-width}" />
+    <path class="top slider" transform="rotate(#{-theta}) translate(0 #{radius})" stroke-linecap="round" d="M 0 0 v #{-width}" />
     """
   end
 
@@ -85,8 +85,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
         end)
         |> then(fn arc_components ->
           """
-          <path class="top etch #{label && "heavy"}"
-                d="#{arc_components}" />
+          <path class="top etch #{label && "heavy"}" d="#{arc_components}" />
           """
         end)
       end)

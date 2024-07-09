@@ -92,8 +92,14 @@ defmodule PerceptronApparatus do
         stroke: #6ab04c;
       }
       .slider {
-        stroke-width: 6;
         stroke: #f0932b;
+      }
+      .top.slider {
+        stroke-width: 6;
+      }
+      .bottom.slider {
+        stroke-width: 12;
+        opacity: 0.3;
       }
       .etch {
         stroke-width: 0.5;

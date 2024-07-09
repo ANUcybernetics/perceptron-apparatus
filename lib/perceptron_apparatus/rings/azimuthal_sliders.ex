@@ -79,12 +79,10 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
 
     """
     <g transform="rotate(#{-theta_offset})"  >
-    #{labels}
-     <path
-      class="top slider"
-      stroke-linecap="round"
-      d="M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}" />
-      </g>
+      #{labels}
+      <path class="bottom slider" stroke-linecap="round" d="M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}" />
+      <path class="top slider" stroke-linecap="round" d="M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}" />
+    </g>
     """
   end
 
