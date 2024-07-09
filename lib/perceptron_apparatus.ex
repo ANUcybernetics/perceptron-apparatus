@@ -75,8 +75,17 @@ defmodule PerceptronApparatus do
     """
     <svg viewBox="#{view_box}" stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">
       <style>
-      svg {
-        font-family: Helvetica;
+      text {
+        font-family: "Relief SingleLine";
+        font-size: 12px;
+      }
+      .etch {
+        stroke: black;
+        fill: transparent;
+        stroke-width: 0.5;
+      }
+      .etch.heavy {
+        stroke-width: 1;
       }
       .debug {
         display: none;
