@@ -26,9 +26,8 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 
   def render_slider(radius, width, theta) do
     """
-    <g class="top slider" transform="rotate(#{-theta}) translate(0 #{radius})" transform-origin="0 0">
-     <path stroke-linecap="round" d="M 0 0 v #{-width}" />
-    </g>
+     <path class="top slider" transform="rotate(#{-theta}) translate(0 #{radius})" stroke-linecap="round" d="M 0 0 v #{-width}" />
+
     """
   end
 
@@ -48,12 +47,9 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     |> List.insert_at(
       -1,
       """
-      <g transform="rotate(#{-(theta_offset + 0.5 * theta_sweep)})"  transform-origin="0 0">
-        <text class="top etch indices" x="0" y="#{radius - width - 10}"
+        <text transform="rotate(#{-(theta_offset + 0.5 * theta_sweep)})" class="top etch indices" x="0" y="#{radius - width - 10}"
               text-anchor="middle" dominant-baseline="middle"
               >#{Roman.encode!(layer_index)}-#{group_index + 1}</text>
-
-      </g>
       """
     )
     |> Enum.join()
@@ -114,7 +110,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
         |> Enum.join()
         |> then(fn text ->
           """
-          <g class="top etch" transform="rotate(#{-theta})" transform-origin="0 0">
+          <g class="top etch" transform="rotate(#{-theta})" >
           #{text}
           </g>
           """

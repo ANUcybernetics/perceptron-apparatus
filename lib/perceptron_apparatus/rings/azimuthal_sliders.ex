@@ -40,39 +40,34 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
             (theta_sweep - 2 * az_padding) * (D.to_float(val) - range_min) / dynamic_range
 
         """
-        <g transform="rotate(#{-theta})"  transform-origin="0 0">
-          <line class="top etch #{label && "heavy"}" x1="0" x2="0" y1="#{radius - tick_length / 2}" y2="#{radius + tick_length / 2}" />
-        </g>
+          <line transform="rotate(#{-theta})" class="top etch #{label && "heavy"}" x1="0" x2="0" y1="#{radius - tick_length / 2}" y2="#{radius + tick_length / 2}" />
         """
       end)
       |> List.insert_at(
         0,
         """
-        <g transform="rotate(#{-(0.7 * az_padding)})"  transform-origin="0 0">
-          <text class="top etch heavy" x="0" y="#{radius}"
+          <text transform="rotate(#{-(0.7 * az_padding)})"
+                class="top etch heavy" x="0" y="#{radius}"
                 text-anchor="end" dominant-baseline="middle"
                 >#{rule |> List.first() |> elem(0)}</text>
-        </g>
         """
       )
       |> List.insert_at(
         -1,
         """
-        <g transform="rotate(#{-(theta_sweep - 0.7 * az_padding)})"  transform-origin="0 0">
-          <text class="top etch heavy" x="0" y="#{radius}"
+          <text transform="rotate(#{-(theta_sweep - 0.7 * az_padding)})"
+                class="top etch heavy" x="0" y="#{radius}"
                 text-anchor="start" dominant-baseline="middle"
                 >#{rule |> List.last() |> elem(0)}</text>
-        </g>
         """
       )
       |> List.insert_at(
         -1,
         """
-        <g transform="rotate(#{-0.5 * theta_sweep})"  transform-origin="0 0">
-          <text class="top etch indices" x="0" y="#{radius - tick_length}"
+          <text transform="rotate(#{-0.5 * theta_sweep})"
+                class="top etch indices" x="0" y="#{radius - tick_length}"
                 text-anchor="middle" dominant-baseline="middle"
                 >#{Roman.encode!(layer_index)}-#{number + 1}</text>
-        </g>
         """
       )
       |> Enum.join()
@@ -83,7 +78,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
     y2 = radius * Math.cos(Math.deg2rad(theta_sweep - az_padding))
 
     """
-    <g transform="rotate(#{-theta_offset})"  transform-origin="0 0">
+    <g transform="rotate(#{-theta_offset})"  >
     #{labels}
      <path
       class="top slider"

@@ -27,7 +27,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
       rule
       |> Enum.map(fn {outer_label, theta, inner_label} ->
         """
-          <g transform="rotate(#{-theta})" transform-origin="0 0">
+          <g transform="rotate(#{-theta})" >
             <line class="top etch #{outer_label && "heavy"}" x1="0" y1="#{radius - tick_length}" x2="0" y2="#{radius + tick_length}" />
             <text class="top etch heavy" x="0" y="#{radius + 2.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{outer_label}</text>
             <text class="top etch heavy" x="0" y="#{radius - 1.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{inner_label}</text>
