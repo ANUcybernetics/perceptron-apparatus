@@ -4,11 +4,10 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
   """
   alias Decimal, as: D
 
-  defstruct [:width, :shape, :range, :context]
+  defstruct [:width, :shape, :rule, :context]
 
   @type t :: %__MODULE__{
-          # min, max
-          range: [Decimal.t()],
+          rule: [{Decimal.t() | nil, float()}],
           # no groups for azimuthal sliders, just the number of sliders
           # this is not the geometric shape, rather the shape of the corresponding matrix
           shape: {integer()},
@@ -18,19 +17,14 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
           context: {float(), integer()}
         }
 
-  def new(shape, opts \\ []) do
-    # use default values when it makes sense
-    range = Keyword.get(opts, :range, PerceptronApparatus.Utils.drange(0, 1, 0.1))
-
-    %__MODULE__{width: 20.0, range: range, shape: shape}
+  def new(shape, rule) do
+    %__MODULE__{width: 20.0, rule: rule, shape: shape}
   end
 
-  # range is a list of Decimals, but for calculation purposes we convert them to floats early
-  # on and just live with the rounding error from there
-  def render_slider(radius, theta_sweep, theta_offset, range) do
+  def render_slider(radius, theta_sweep, theta_offset, rule) do
     slider_hwidth = 3
-    range_min = List.first(range) |> D.to_float()
-    range_max = List.last(range) |> D.to_float()
+    range_min = List.first(rule) |> elem(1) |> D.to_float()
+    range_max = List.last(rule) |> elem(1) |> D.to_float()
     dynamic_range = range_max - range_min
 
     # for creating "gaps" at the beginning and end of the [theta_offset, theta_offset + theta_sweep]
@@ -38,17 +32,15 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
     az_padding = 2000 / radius
 
     labels =
-      range
-      |> Enum.map(fn val ->
+      rule
+      |> Enum.map(fn {label, val} ->
         theta =
           az_padding +
             (theta_sweep - 2 * az_padding) * (D.to_float(val) - range_min) / dynamic_range
 
-        %{stroke_width: stroke_width} = ticks_and_labels(val)
-
         """
         <g transform="rotate(#{-theta})"  transform-origin="0 0">
-          <line class="top etch" x1="0" x2="0" y1="#{radius - slider_hwidth * 3}" y2="#{radius + slider_hwidth * 3}" stroke-width="#{stroke_width}" />
+          <line class="top etch #{label && "heavy"}" x1="0" x2="0" y1="#{radius - slider_hwidth * 3}" y2="#{radius + slider_hwidth * 3}" />
         </g>
         """
       end)
@@ -58,7 +50,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
         <g transform="rotate(#{-(theta_offset + 0.6 * az_padding)})"  transform-origin="0 0">
           <text class="top etch" x="0" y="#{radius}"
                 text-anchor="middle" dominant-baseline="middle"
-                >#{range |> List.first() |> ticks_and_labels() |> Map.get(:label)}</text>
+                >#{rule |> List.first() |> elem(0)}</text>
         </g>
         """
       )
@@ -68,7 +60,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
         <g transform="rotate(#{-(theta_offset + theta_sweep - 0.6 * az_padding)})"  transform-origin="0 0">
           <text class="top etch" x="0" y="#{radius}"
                 text-anchor="middle" dominant-baseline="middle"
-                >#{range |> List.last() |> ticks_and_labels() |> Map.get(:label)}</text>
+                >#{rule |> List.last() |> elem(0)}</text>
         </g>
         """
       )
@@ -99,7 +91,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
     """
   end
 
-  def render(radius, sliders, range) do
+  def render(radius, sliders, rule) do
     theta_sweep = 360 / sliders
 
     0..(sliders - 1)
@@ -108,23 +100,10 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
         radius,
         theta_sweep,
         theta_sweep * i,
-        range
+        rule
       )
     end)
     |> Enum.join()
-  end
-
-  defp ticks_and_labels(val) do
-    cond do
-      D.integer?(val) ->
-        %{
-          label: val |> D.normalize() |> D.to_string(:normal),
-          stroke_width: "1.0"
-        }
-
-      true ->
-        %{label: nil, stroke_width: "0.5"}
-    end
   end
 end
 
@@ -136,8 +115,8 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.Azimuthal
   end
 
   def render(ring) do
-    %{range: range, shape: {sliders}, context: {radius, _layer_index}} = ring
+    %{rule: rule, shape: {sliders}, context: {radius, _layer_index}} = ring
 
-    AzimuthalSliders.render(radius - 10, sliders, range)
+    AzimuthalSliders.render(radius - 10, sliders, rule)
   end
 end

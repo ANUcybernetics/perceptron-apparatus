@@ -15,12 +15,12 @@ alias PerceptronApparatus.Rings
 log_ring = Rings.SlideRule.log_rule() |> Rings.SlideRule.new()
 relu_ring = Rings.SlideRule.relu_rule(10, 0.25) |> Rings.SlideRule.new()
 
-input_ring = Rings.AzimuthalSliders.new({25})
-w1_ring = Rings.RadialSliders.new({5, 25})
-h1_ring = Rings.AzimuthalSliders.new({5})
-w2_ring = Rings.RadialSliders.new({10, 5})
+input_ring = Rings.AzimuthalSliders.new({25}, PA.Utils.new_rule(0, 1, 0.1, 0.5))
+w1_ring = Rings.RadialSliders.new({5, 25}, PA.Utils.new_rule(-10, 10, 2, 10))
+h1_ring = Rings.AzimuthalSliders.new({5},  PA.Utils.new_rule(0, 10, 1, 5))
+w2_ring = Rings.RadialSliders.new({10, 5}, PA.Utils.new_rule(-10, 10, 2, 10))
 # output_ring = Rings.AzimuthalSliders.new({10})
-output_ring = Rings.RadialSliders.new({10, 1})
+output_ring = Rings.RadialSliders.new({10, 1}, PA.Utils.new_rule(0, 1, 0.1, 0.5))
 
 PA.new(1200)
 |> PA.add_ring(log_ring)

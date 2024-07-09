@@ -4,11 +4,10 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   """
   alias Decimal, as: D
 
-  defstruct [:width, :shape, :range, :context]
+  defstruct [:width, :shape, :rule, :context]
 
   @type t :: %__MODULE__{
-          # min, max
-          range: [Decimal.t()],
+          rule: [{Decimal.t() | nil, float()}],
           # this is not the geometric shape, rather the shape of the corresponding matrix
           # {n_groups, n_sliders_per_group}
           shape: {integer(), integer},
@@ -18,12 +17,11 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
           context: {float(), integer()}
         }
 
-  def new(shape, opts \\ []) do
+  def new(shape, rule, opts \\ []) do
     # use default values when it makes sense
-    range = Keyword.get(opts, :range, PerceptronApparatus.Utils.drange(0, 10, 1))
     width = Keyword.get(opts, :width, 80.0)
 
-    %__MODULE__{width: width, range: range, shape: shape}
+    %__MODULE__{width: width, rule: rule, shape: shape}
   end
 
   def render_slider(radius, width, theta) do
@@ -57,21 +55,20 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     |> Enum.join()
   end
 
-  def render_guides(radius, width, groups, range) do
-    range_min = List.first(range) |> D.to_float()
-    range_max = List.last(range) |> D.to_float()
+  def render_guides(radius, width, groups, rule) do
+    range_min = List.first(rule) |> elem(1) |> D.to_float()
+    range_max = List.last(rule) |> elem(1) |> D.to_float()
     dynamic_range = range_max - range_min
     theta_sweep = 360 / groups
 
     radii =
-      range
-      |> Enum.map(fn val ->
-        {radius - width * (D.to_float(val) - range_min) / dynamic_range, val}
+      rule
+      |> Enum.map(fn {label, val} ->
+        {label, radius - width * (D.to_float(val) - range_min) / dynamic_range}
       end)
 
     circles =
-      Enum.map(radii, fn {r, val} ->
-        %{stroke_width: stroke_width} = ticks_and_labels(val)
+      Enum.map(radii, fn {label, r} ->
         az_padding = 1000 / r
 
         0..(groups - 1)
@@ -88,7 +85,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
         end)
         |> then(fn arc_components ->
           """
-          <path class="top etch" stroke-width="#{stroke_width}"
+          <path class="top etch #{label && "heavy"}"
                 d="#{arc_components}" />
           """
         end)
@@ -102,10 +99,8 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 
         # now, we need to write the labels on the appropriate circle
         radii
-        |> Enum.filter(fn {_r, val} -> ticks_and_labels(val).label end)
-        |> Enum.map(fn {r, val} ->
-          %{label: label} = ticks_and_labels(val)
-
+        |> Enum.filter(fn {label, _r} -> label end)
+        |> Enum.map(fn {label, r} ->
           """
            <text class="top etch" x="0" y="#{r + 1}"
                  text-anchor="middle" dominant-baseline="middle"
@@ -126,28 +121,15 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
     circles <> labels
   end
 
-  def render(radius, width, groups, sliders_per_group, range) do
+  def render(radius, width, groups, sliders_per_group, rule) do
     theta_sweep = 360 / groups
 
     0..(groups - 1)
     |> Enum.map(fn i ->
       render_group(radius, width, sliders_per_group, theta_sweep, theta_sweep * i)
     end)
-    |> List.insert_at(0, render_guides(radius, width, groups, range))
+    |> List.insert_at(0, render_guides(radius, width, groups, rule))
     |> Enum.join()
-  end
-
-  defp ticks_and_labels(val) do
-    cond do
-      val |> D.rem(D.new(1, 5, 0)) |> D.equal?(0) ->
-        %{
-          label: val |> D.normalize() |> D.to_string(:normal),
-          stroke_width: "1.0"
-        }
-
-      true ->
-        %{label: nil, stroke_width: "0.5"}
-    end
   end
 end
 
@@ -159,7 +141,7 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSli
   def render(ring) do
     %{
       width: width,
-      range: range,
+      rule: rule,
       shape: {groups, sliders_per_group},
       context: {radius, _layer_index}
     } = ring
@@ -169,7 +151,7 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSli
       width - 10,
       groups,
       sliders_per_group,
-      range
+      rule
     )
   end
 end

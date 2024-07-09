@@ -41,4 +41,19 @@ defmodule PerceptronApparatus.Utils do
     end)
     |> Enum.take_while(fn val -> !D.gt?(val, stop) end)
   end
+
+  def new_rule(start, stop, step, major_step) do
+    {:ok, major_step} = D.cast(major_step)
+
+    drange(start, stop, step)
+    |> Enum.map(fn val ->
+      cond do
+        val |> D.rem(major_step) |> D.equal?(0) ->
+          {val |> D.normalize() |> D.to_string(:normal), val}
+
+        true ->
+          {nil, val}
+      end
+    end)
+  end
 end
