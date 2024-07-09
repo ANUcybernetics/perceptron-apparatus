@@ -81,17 +81,19 @@ defmodule PerceptronApparatus do
       }
       .full {
         stroke-width: 6;
-        stroke: green;
+        stroke: #f0932b;
       }
       .etch {
         stroke-width: 0.5;
+        stroke: #4834d4;
       }
       text.etch{
         stroke: none;
-        fill: black;
+        fill: #4834d4;
       }
       .etch.heavy {
         stroke-width: 1;
+        stroke: #130f40;
       }
       .debug {
         display: none;
