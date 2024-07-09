@@ -22,30 +22,26 @@ defmodule PerceptronApparatus.Rings.SlideRule do
 
   # each rule should be a list of tuples {theta, label}, where label can be nil (for a minor tick with no label)
   def render(radius, {outer_rule, inner_rule}) do
+    tick_length = 10
+
     outer_ticks =
       outer_rule
-      |> Enum.map(fn {val, theta} ->
-        %{label: label, tick_length: tick_length, stroke_class: stroke_class} =
-          ticks_and_labels(val)
-
+      |> Enum.map(fn {label, theta} ->
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
             <text class="top etch" x="0" y="#{radius + 2.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{label}</text>
-            <line class="top etch #{stroke_class}" x1="0" y1="#{radius}" x2="0" y2="#{radius + tick_length}" />
+            <line class="top etch #{label && "heavy"}" x1="0" y1="#{radius}" x2="0" y2="#{radius + tick_length}" />
           </g>
         """
       end)
 
     inner_ticks =
       inner_rule
-      |> Enum.map(fn {val, theta} ->
-        %{label: label, tick_length: tick_length, stroke_class: stroke_class} =
-          ticks_and_labels(val)
-
+      |> Enum.map(fn {label, theta} ->
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
             <text class="top etch" x="0" y="#{radius - 1.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{label}</text>
-            <line class="top etch #{stroke_class}" x1="0" y1="#{radius}" x2="0" y2="#{radius - tick_length}" />
+            <line class="top etch #{label && "heavy"}" x1="0" y1="#{radius}" x2="0" y2="#{radius - tick_length}" />
           </g>
         """
       end)
@@ -66,16 +62,18 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         theta =
           (Math.log(D.to_float(val)) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
 
+        label = val |> D.normalize() |> D.to_string(:normal)
+
         cond do
           # this is all much more verbose than before, because Decimal
           D.lt?(val, 2) ->
-            {val, theta}
+            {label, theta}
 
           val |> D.rem(D.new(1, 2, -1)) |> D.equal?(0) && !D.gt?(val, 5) ->
-            {val, theta}
+            {label, theta}
 
           val |> D.rem(D.new(1, 5, -1)) |> D.equal?(0) && D.gt?(val, 5) ->
-            {val, theta}
+            {label, theta}
 
           true ->
             {nil, theta}
@@ -120,9 +118,11 @@ defmodule PerceptronApparatus.Rings.SlideRule do
         end
       end)
       |> Enum.with_index(fn {val, theta}, idx ->
+        label = val |> D.normalize() |> D.to_string(:normal)
+
         cond do
-          D.integer?(val) && theta >= 0 -> {val, theta}
-          D.integer?(val) && Integer.mod(idx, 4) == 3 -> {val, theta}
+          D.integer?(val) && theta >= 0 -> {label, theta}
+          D.integer?(val) && Integer.mod(idx, 4) == 3 -> {label, theta}
           true -> {nil, theta}
         end
       end)
@@ -130,30 +130,16 @@ defmodule PerceptronApparatus.Rings.SlideRule do
     outer_rule =
       outer_rule
       |> Enum.map(fn {val, theta} ->
+        label = val |> D.normalize() |> D.to_string(:normal)
+
         cond do
-          D.integer?(val) -> {val, theta}
+          D.integer?(val) -> {label, theta}
           true -> {nil, theta}
         end
       end)
 
     # reversal not strictly necessary, but nice to keep it ordered
     {outer_rule, inner_rule}
-  end
-
-  # this is a bit different this time - the (potentially) non-linear nature of the ticks/values means that
-  # we rely on the rule to tell us when to have a label + major/minor tick, so this fun is pretty simple
-  defp ticks_and_labels(val) do
-    case val do
-      nil ->
-        %{label: nil, tick_length: 10, stroke_class: "heavy"}
-
-      _ ->
-        %{
-          label: val |> D.normalize() |> D.to_string(:normal),
-          tick_length: 10,
-          stroke_class: "light"
-        }
-    end
   end
 end
 

@@ -79,6 +79,10 @@ defmodule PerceptronApparatus do
         font-family: "Relief SingleLine";
         font-size: 12px;
       }
+      .full {
+        stroke-width: 6;
+        stroke: green;
+      }
       .etch {
         stroke-width: 0.5;
       }

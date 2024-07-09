@@ -66,27 +66,18 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
       )
       |> Enum.join()
 
-    x1 = (radius + slider_hwidth) * Math.sin(Math.deg2rad(az_padding))
-    y1 = (radius - slider_hwidth) * Math.cos(Math.deg2rad(az_padding))
-    x2 = (radius - slider_hwidth) * Math.sin(Math.deg2rad(az_padding))
-    y2 = (radius + slider_hwidth) * Math.cos(Math.deg2rad(az_padding))
-    x3 = (radius + slider_hwidth) * Math.sin(Math.deg2rad(theta_sweep - az_padding))
-    y3 = (radius + slider_hwidth) * Math.cos(Math.deg2rad(theta_sweep - az_padding))
-    x4 = (radius - slider_hwidth) * Math.sin(Math.deg2rad(theta_sweep - az_padding))
-    y4 = (radius - slider_hwidth) * Math.cos(Math.deg2rad(theta_sweep - az_padding))
+    x1 = radius * Math.sin(Math.deg2rad(az_padding))
+    y1 = radius * Math.cos(Math.deg2rad(az_padding))
+    x2 = radius * Math.sin(Math.deg2rad(theta_sweep - az_padding))
+    y2 = radius * Math.cos(Math.deg2rad(theta_sweep - az_padding))
 
     """
     <g transform="rotate(#{-theta_offset})"  transform-origin="0 0">
     #{labels}
      <path
       class="top full"
-      style="fill: white;"
-      d="M #{x1} #{y1}
-        A #{slider_hwidth} #{slider_hwidth} 0 0 0 #{x2} #{y2}
-        A #{radius + slider_hwidth} #{radius + slider_hwidth} 0 0 0 #{x3} #{y3}
-        A #{slider_hwidth} #{slider_hwidth} 0 0 0 #{x4} #{y4}
-        A #{radius - slider_hwidth} #{radius - slider_hwidth} 0 0 1 #{x1} #{y1}"
-      />
+      stroke-linecap="round"
+      d="M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}" />
       </g>
     """
   end
