@@ -19,12 +19,12 @@ defmodule PerceptronApparatus do
     }
   end
 
-  def add_ring(%__MODULE__{} = board, ring) do
-    %{board | rings: board.rings ++ [ring]}
+  def add_ring(%__MODULE__{} = apparatus, ring) do
+    %{apparatus | rings: apparatus.rings ++ [ring]}
   end
 
-  def validate!(%__MODULE__{} = board) do
-    Enum.each(board.rings, fn ring ->
+  def validate!(%__MODULE__{} = apparatus) do
+    Enum.each(apparatus.rings, fn ring ->
       case ring do
         %Rings.AzimuthalSliders{} -> :ok
         %Rings.RadialSliders{} -> :ok
