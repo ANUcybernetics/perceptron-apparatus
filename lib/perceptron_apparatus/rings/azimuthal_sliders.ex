@@ -57,7 +57,6 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
         """
         <g transform="rotate(#{-(theta_offset + 0.6 * az_padding)})"  transform-origin="0 0">
           <text class="top etch" x="0" y="#{radius}"
-                style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{range |> List.first() |> ticks_and_labels() |> Map.get(:stroke_width)}"
                 text-anchor="middle" dominant-baseline="middle"
                 >#{range |> List.first() |> ticks_and_labels() |> Map.get(:label)}</text>
         </g>
@@ -68,7 +67,6 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
         """
         <g transform="rotate(#{-(theta_offset + theta_sweep - 0.6 * az_padding)})"  transform-origin="0 0">
           <text class="top etch" x="0" y="#{radius}"
-                style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{range |> List.last() |> ticks_and_labels() |> Map.get(:stroke_width)}"
                 text-anchor="middle" dominant-baseline="middle"
                 >#{range |> List.last() |> ticks_and_labels() |> Map.get(:label)}</text>
         </g>

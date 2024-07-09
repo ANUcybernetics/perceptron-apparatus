@@ -80,9 +80,11 @@ defmodule PerceptronApparatus do
         font-size: 12px;
       }
       .etch {
-        stroke: black;
-        fill: transparent;
         stroke-width: 0.5;
+      }
+      text.etch{
+        stroke: none;
+        fill: black;
       }
       .etch.heavy {
         stroke-width: 1;

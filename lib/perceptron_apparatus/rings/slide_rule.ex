@@ -25,13 +25,13 @@ defmodule PerceptronApparatus.Rings.SlideRule do
     outer_ticks =
       outer_rule
       |> Enum.map(fn {val, theta} ->
-        %{label: label, tick_length: tick_length, stroke_width: stroke_width} =
+        %{label: label, tick_length: tick_length, stroke_class: stroke_class} =
           ticks_and_labels(val)
 
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
-            <text class="top etch" x="0" y="#{radius + 2.5 * tick_length}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
-            <line class="top etch" x1="0" y1="#{radius}" x2="0" y2="#{radius + tick_length}" stroke-width="#{stroke_width}" />
+            <text class="top etch" x="0" y="#{radius + 2.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{label}</text>
+            <line class="top etch #{stroke_class}" x1="0" y1="#{radius}" x2="0" y2="#{radius + tick_length}" />
           </g>
         """
       end)
@@ -39,13 +39,13 @@ defmodule PerceptronApparatus.Rings.SlideRule do
     inner_ticks =
       inner_rule
       |> Enum.map(fn {val, theta} ->
-        %{label: label, tick_length: tick_length, stroke_width: stroke_width} =
+        %{label: label, tick_length: tick_length, stroke_class: stroke_class} =
           ticks_and_labels(val)
 
         """
           <g transform="rotate(#{-theta})" transform-origin="0 0">
-            <text class="top etch" x="0" y="#{radius - 1.5 * tick_length}" style="font-size: 12px;" fill="black" stroke="none" text-anchor="middle" dominant-baseline="auto">#{label}</text>
-            <line class="top etch" x1="0" y1="#{radius}" x2="0" y2="#{radius - tick_length}" stroke-width="#{stroke_width}" />
+            <text class="top etch" x="0" y="#{radius - 1.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{label}</text>
+            <line class="top etch #{stroke_class}" x1="0" y1="#{radius}" x2="0" y2="#{radius - tick_length}" />
           </g>
         """
       end)
@@ -144,13 +144,13 @@ defmodule PerceptronApparatus.Rings.SlideRule do
   defp ticks_and_labels(val) do
     case val do
       nil ->
-        %{label: nil, tick_length: 10, stroke_width: "0.5"}
+        %{label: nil, tick_length: 10, stroke_class: "heavy"}
 
       _ ->
         %{
           label: val |> D.normalize() |> D.to_string(:normal),
           tick_length: 10,
-          stroke_width: "1.0"
+          stroke_class: "light"
         }
     end
   end

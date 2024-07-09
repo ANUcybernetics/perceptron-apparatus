@@ -104,11 +104,10 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
         radii
         |> Enum.filter(fn {_r, val} -> ticks_and_labels(val).label end)
         |> Enum.map(fn {r, val} ->
-          %{label: label, stroke_width: stroke_width} = ticks_and_labels(val)
+          %{label: label} = ticks_and_labels(val)
 
           """
            <text class="top etch" x="0" y="#{r + 1}"
-                 style="font-size: 12px;" fill="black" stroke="none" stroke-width="#{stroke_width}"
                  text-anchor="middle" dominant-baseline="middle"
                  >#{label}</text>
           """
