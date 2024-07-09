@@ -49,7 +49,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
         0,
         """
         <g transform="rotate(#{-(0.6 * az_padding)})"  transform-origin="0 0">
-          <text class="top etch" x="0" y="#{radius}"
+          <text class="top etch heavy" x="0" y="#{radius}"
                 text-anchor="middle" dominant-baseline="middle"
                 >#{rule |> List.first() |> elem(0)}</text>
         </g>
@@ -59,7 +59,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
         -1,
         """
         <g transform="rotate(#{-(theta_sweep - 0.6 * az_padding)})"  transform-origin="0 0">
-          <text class="top etch" x="0" y="#{radius}"
+          <text class="top etch heavy" x="0" y="#{radius}"
                 text-anchor="middle" dominant-baseline="middle"
                 >#{rule |> List.last() |> elem(0)}</text>
         </g>
