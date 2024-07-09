@@ -34,7 +34,6 @@ bottom plate
 
 ## TODO
 
-- add layer/param index labels to each slider
 - add `Utils.write_files` which writes out all the necessary svgs (baseboard + topboard, plus individual files for each cut type)
 - design a 400x400 prototype (same radius, inc markings, arc + couple of sliders)
 - check no quirks in the final svg output which will trip up the CNC machine (e.g. empty text nodes)
@@ -46,9 +45,15 @@ bottom plate
   - auto-generating the SVG based on the model (i.e. `%Axon{}` -> `%PerceptronApparatus{}`)
   - examples (5x5 MNIST digits, maybe something with language?)
 
-  ## fabrication questions
+  ## questions for Sam
 
-  - what's the minimum width for the sliders?
+  - "relief" cuts, or other visual emphasis tricks
+  - class-based approach for different cut types?
+  - baseboard cuts (and captive slider designs)
+  - can Cole & I come help?
+  - prototype next steps
+  - handles & other holes
+  - any other design optimisations?
 
 ## Author
 
