@@ -34,7 +34,7 @@ defmodule PerceptronApparatus do
     end)
   end
 
-  def render(apparatus) do
+  def render(apparatus, nodisplay_classes \\ []) do
     %{size: size, rings: rings} = apparatus
 
     radius = size / 2
@@ -78,10 +78,10 @@ defmodule PerceptronApparatus do
     |> then(fn {_, _, output} ->
       ~s|<circle cx="0" cy="0" r="#{radius}" stroke-width="2"/>| <> output
     end)
-    |> render_body(view_box)
+    |> render_body(view_box, nodisplay_classes)
   end
 
-  def render_body(body, view_box, nodisplay_classes \\ []) do
+  def render_body(body, view_box, nodisplay_classes) do
     """
     <svg viewBox="#{view_box}" stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">
       <style>
