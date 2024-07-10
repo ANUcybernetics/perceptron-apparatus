@@ -12,6 +12,8 @@ for description.
 This package is not (currently) on hex. You can clone the repo and import it via
 a [`:path`](https://hexdocs.pm/mix/Mix.Tasks.Deps.html).
 
+You'll also need to download and install the [Relief SingleLine](https://github.com/isdat-type/Relief-SingleLine/tree/main/fonts/open_otf-svg) font.
+
 ## Nomenclature
 
 A **board** contains a number of **rings**, each of which represents a layer in
