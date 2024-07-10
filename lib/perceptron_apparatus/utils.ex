@@ -56,4 +56,19 @@ defmodule PerceptronApparatus.Utils do
       end
     end)
   end
+
+  def write_cnc_files!(%PerceptronApparatus{} = apparatus, filename_prefix) do
+    # this is a bit messy because of the nested list, but :shrug:
+    cut_types = [:top, :bottom, :etch, [:etch, :heavy], :full, :slider]
+
+    cut_types
+    |> Enum.each(fn cut_type ->
+      nodisplay_classes = cut_types -- List.wrap(cut_type)
+
+      File.write!(
+        "svg/#{filename_prefix}-#{cut_type}).svg",
+        PerceptronApparatus.render(apparatus, nodisplay_classes)
+      )
+    end)
+  end
 end
