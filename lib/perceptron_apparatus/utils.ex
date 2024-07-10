@@ -57,17 +57,19 @@ defmodule PerceptronApparatus.Utils do
     end)
   end
 
-  def write_cnc_files!(%PerceptronApparatus{} = apparatus, filename_prefix) do
-    # this is a bit messy because of the nested list, but :shrug:
-    cut_types = [:top, :bottom, :etch, [:etch, :heavy], :full, :slider]
+  def write_cnc_files!(%PerceptronApparatus{} = apparatus, dir, filename_prefix) do
+    File.write!("#{dir}/svg/#{filename_prefix}.svg", PerceptronApparatus.render(apparatus))
 
-    cut_types
-    |> Enum.each(fn cut_type ->
-      nodisplay_classes = cut_types -- List.wrap(cut_type)
+    # this is a bit messy because of the nested list, but :shrug:
+    cut_selectors = [".top.slider", ".bottom", ".top.etch", ".top.etch.heavy", ".top.full"]
+
+    cut_selectors
+    |> Enum.each(fn cut ->
+      nodisplay_selectors = cut_selectors -- [cut]
 
       File.write!(
-        "svg/#{filename_prefix}-#{cut_type}).svg",
-        PerceptronApparatus.render(apparatus, nodisplay_classes)
+        "#{dir}/svg/#{filename_prefix}#{String.replace(cut, ".", "-")}.svg",
+        PerceptronApparatus.render(apparatus, nodisplay_selectors)
       )
     end)
   end

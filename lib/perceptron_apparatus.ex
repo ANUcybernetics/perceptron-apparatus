@@ -34,7 +34,7 @@ defmodule PerceptronApparatus do
     end)
   end
 
-  def render(apparatus, nodisplay_classes \\ []) do
+  def render(apparatus, nodisplay_selectors \\ []) do
     %{size: size, rings: rings} = apparatus
 
     radius = size / 2
@@ -78,10 +78,10 @@ defmodule PerceptronApparatus do
     |> then(fn {_, _, output} ->
       ~s|<circle cx="0" cy="0" r="#{radius}" stroke-width="2"/>| <> output
     end)
-    |> render_body(view_box, nodisplay_classes)
+    |> render_body(view_box, nodisplay_selectors)
   end
 
-  def render_body(body, view_box, nodisplay_classes) do
+  def render_body(body, view_box, nodisplay_selectors) do
     """
     <svg viewBox="#{view_box}" stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">
       <style>
@@ -89,7 +89,7 @@ defmodule PerceptronApparatus do
         font-family: "Relief SingleLine";
         font-size: 12px;
       }
-      #{Enum.map(nodisplay_classes, fn c -> ".#{c} { display: none; }" end) |> Enum.join("\n")}
+      #{Enum.map(nodisplay_selectors, fn s -> "#{s} { display: none; }" end) |> Enum.join("\n")}
       .full {
         stroke-width: 3;
         stroke: #6ab04c;
