@@ -21,18 +21,19 @@ the (MLP) neural network.
 
 SVG classes represent different cut types:
 
-top plate (will all have `top` class)
+top plate class selectors
 
-- `full` full-depth cuts
-- `slider` full-depth routed channels for sliders
-- `etch` light v-cut etches
-- `etch.heavy` heavier v-cut etches
-- `hole` full-depth holes (for screws)
+- `top full` full-depth cuts
+- `top slider` full-depth routed channels for sliders
+- `top etch` light v-cut etches
+- `top etch.heavy` heavier v-cut etches
+- `top hole` full-depth holes (for screws)
 
-bottom plate (will all have `bottom` class)
+bottom plate class selectors
 
-- `slider` partial-depth routed channels (for captive slider/ring bottoms)
-- `hole` full-depth holes (for screws)
+- `bottom slider` partial-depth routed channels (for captive slider/ring bottoms)
+- `bottom rotating` partial-depth routed void for bottom rotating ring
+- `bottom hole` full-depth holes (for screws)
 
 ## TODO
 

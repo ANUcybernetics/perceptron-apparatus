@@ -65,7 +65,7 @@ defmodule PerceptronApparatus do
           r - ring.width - radial_padding,
           next_layer_index(ring, idx),
           """
-          #{bottom_channel? && bottom_slider_channel(r - (ring.width + radial_padding / 2), ring.width + radial_padding + 10)}
+          #{bottom_channel? && bottom_rotating_channel(r - (ring.width + radial_padding / 2), ring.width + radial_padding + 10)}
           #{output}
           <circle class="debug" cx="0" cy="0" r="#{r}" stroke-width="1"/>
           #{Renderable.render(%{ring | context: {r, idx}})}
@@ -104,7 +104,7 @@ defmodule PerceptronApparatus do
         stroke-width: 12;
         opacity: 0.3;
       }
-      .bottom.channel {
+      .bottom.rotating {
         stroke: #f0932b;
         opacity: 0.3;
       }
@@ -138,9 +138,9 @@ defmodule PerceptronApparatus do
   defp next_layer_index(%Rings.SlideRule{}, idx), do: idx
   defp next_layer_index(_ring, idx), do: idx + 1
 
-  defp bottom_slider_channel(radius, width) do
+  defp bottom_rotating_channel(radius, width) do
     """
-    <circle class="bottom channel" cx="0" cy="0" r="#{radius}" stroke-width="#{width}"/>
+    <circle class="bottom rotating" cx="0" cy="0" r="#{radius}" stroke-width="#{width}"/>
     """
   end
 end
