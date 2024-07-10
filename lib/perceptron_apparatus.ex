@@ -55,23 +55,25 @@ defmodule PerceptronApparatus do
     rings
     |> Enum.chunk_every(2, 1)
     |> Enum.map(fn
-      [%Rings.SlideRule{} = ring, %Rings.SlideRule{}] -> {ring, 15}
-      [ring | _] -> {ring, 25}
+      [%Rings.SlideRule{} = ring, %Rings.SlideRule{}] -> {ring, 15, true}
+      [ring | _] -> {ring, 25, false}
     end)
-    |> Enum.reduce({radius - radial_padding / 2, 1, ""}, fn {ring, radial_padding},
-                                                            {r, idx, output} ->
-      {
-        r - ring.width - radial_padding,
-        next_layer_index(ring, idx),
-        """
-        idx + 1,
-        #{output}
-        <circle class="debug" cx="0" cy="0" r="#{r}" stroke-width="1"/>
-        #{Renderable.render(%{ring | context: {r, idx}})}
-        <circle class="debug" cx="0" cy="0" r="#{r - ring.width}" stroke-width="1"/>
-        """
-      }
-    end)
+    |> Enum.reduce(
+      {radius - radial_padding / 2, 1, ""},
+      fn {ring, radial_padding, bottom_channel?}, {r, idx, output} ->
+        {
+          r - ring.width - radial_padding,
+          next_layer_index(ring, idx),
+          """
+          #{bottom_channel? && bottom_slider_channel(r - (ring.width + radial_padding / 2), ring.width + radial_padding + 10)}
+          #{output}
+          <circle class="debug" cx="0" cy="0" r="#{r}" stroke-width="1"/>
+          #{Renderable.render(%{ring | context: {r, idx}})}
+          <circle class="debug" cx="0" cy="0" r="#{r - ring.width}" stroke-width="1"/>
+          """
+        }
+      end
+    )
     # add the "board edge" circle
     |> then(fn {_, _, output} ->
       ~s|<circle cx="0" cy="0" r="#{radius}" stroke-width="2"/>| <> output
@@ -79,7 +81,7 @@ defmodule PerceptronApparatus do
     |> render_body(view_box)
   end
 
-  def render_body(body, view_box) do
+  def render_body(body, view_box, nodisplay_classes \\ []) do
     """
     <svg viewBox="#{view_box}" stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">
       <style>
@@ -87,6 +89,7 @@ defmodule PerceptronApparatus do
         font-family: "Relief SingleLine";
         font-size: 12px;
       }
+      #{Enum.map(nodisplay_classes, fn c -> ".#{c} { display: none; }" end) |> Enum.join("\n")}
       .full {
         stroke-width: 3;
         stroke: #6ab04c;
@@ -99,6 +102,10 @@ defmodule PerceptronApparatus do
       }
       .bottom.slider {
         stroke-width: 12;
+        opacity: 0.3;
+      }
+      .bottom.channel {
+        stroke: #f0932b;
         opacity: 0.3;
       }
       .etch {
@@ -130,4 +137,10 @@ defmodule PerceptronApparatus do
 
   defp next_layer_index(%Rings.SlideRule{}, idx), do: idx
   defp next_layer_index(_ring, idx), do: idx + 1
+
+  defp bottom_slider_channel(radius, width) do
+    """
+    <circle class="bottom channel" cx="0" cy="0" r="#{radius}" stroke-width="#{width}"/>
+    """
+  end
 end
