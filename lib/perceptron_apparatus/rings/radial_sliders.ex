@@ -3,6 +3,7 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   Documentation for `RadialSliders`.
   """
   alias Decimal, as: D
+  import PerceptronApparatus.Utils, only: [deg2rad: 1]
 
   defstruct [:width, :shape, :rule, :context]
 
@@ -73,10 +74,10 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
 
         0..(groups - 1)
         |> Enum.map(fn i ->
-          x1 = r * Math.sin(Math.deg2rad(i * theta_sweep + az_padding))
-          y1 = r * Math.cos(Math.deg2rad(i * theta_sweep + az_padding))
-          x2 = r * Math.sin(Math.deg2rad((i + 1) * theta_sweep - az_padding))
-          y2 = r * Math.cos(Math.deg2rad((i + 1) * theta_sweep - az_padding))
+          x1 = r * :math.sin(deg2rad(i * theta_sweep + az_padding))
+          y1 = r * :math.cos(deg2rad(i * theta_sweep + az_padding))
+          x2 = r * :math.sin(deg2rad((i + 1) * theta_sweep - az_padding))
+          y2 = r * :math.cos(deg2rad((i + 1) * theta_sweep - az_padding))
 
           """
           M #{x1} #{y1}

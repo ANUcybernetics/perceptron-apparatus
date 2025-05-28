@@ -2,6 +2,11 @@ defmodule PerceptronApparatus.Utils do
   @moduledoc """
   Some handy utilities.
   """
+  @rad_in_deg 180 / :math.pi()
+  def deg2rad(x) do
+    x / @rad_in_deg
+  end
+
   def wrap_in_svg(body) do
     """
     <svg stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">

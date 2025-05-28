@@ -45,7 +45,7 @@ defmodule PerceptronApparatus.Rings.SlideRule do
     |> Enum.map(fn x -> D.new(1, x, -1) end)
     |> Enum.map(fn val ->
       theta =
-        (Math.log(D.to_float(val)) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0)) * 360.0
+        (:math.log(D.to_float(val)) - :math.log(1.0)) / (:math.log(10.0) - :math.log(1.0)) * 360.0
 
       label = val |> D.normalize() |> D.to_string(:normal)
 

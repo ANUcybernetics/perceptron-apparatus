@@ -3,6 +3,7 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
   Documentation for `AzimuthalSliders`.
   """
   alias Decimal, as: D
+  import PerceptronApparatus.Utils, only: [deg2rad: 1]
 
   defstruct [:width, :shape, :rule, :context]
 
@@ -72,10 +73,10 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
       )
       |> Enum.join()
 
-    x1 = radius * Math.sin(Math.deg2rad(az_padding))
-    y1 = radius * Math.cos(Math.deg2rad(az_padding))
-    x2 = radius * Math.sin(Math.deg2rad(theta_sweep - az_padding))
-    y2 = radius * Math.cos(Math.deg2rad(theta_sweep - az_padding))
+    x1 = radius * :math.sin(deg2rad(az_padding))
+    y1 = radius * :math.cos(deg2rad(az_padding))
+    x2 = radius * :math.sin(deg2rad(theta_sweep - az_padding))
+    y2 = radius * :math.cos(deg2rad(theta_sweep - az_padding))
 
     """
     <g transform="rotate(#{-theta_offset})"  >
