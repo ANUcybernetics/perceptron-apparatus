@@ -1,4 +1,4 @@
-defmodule PerceptronApparatus.Rings.RadialSliders do
+defmodule PerceptronApparatus.RadialRing do
   @moduledoc """
   Documentation for `RadialSliders`.
   """
@@ -133,8 +133,8 @@ defmodule PerceptronApparatus.Rings.RadialSliders do
   end
 end
 
-defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSliders do
-  def render(%PerceptronApparatus.Rings.RadialSliders{context: nil}) do
+defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.RadialRing do
+  def render(%PerceptronApparatus.RadialRing{context: nil}) do
     raise "cannot render without context"
   end
 
@@ -146,7 +146,7 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.RadialSli
       context: {radius, layer_index}
     } = ring
 
-    PerceptronApparatus.Rings.RadialSliders.render(
+    PerceptronApparatus.RadialRing.render(
       radius - 5,
       width - 10,
       groups,

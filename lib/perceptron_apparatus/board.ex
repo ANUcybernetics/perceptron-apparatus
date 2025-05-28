@@ -1,15 +1,17 @@
-defmodule PerceptronApparatus do
+defmodule PerceptronApparatus.Board do
   @moduledoc """
   Documentation for `PerceptronApparatus`.
   """
-  alias PerceptronApparatus.Rings
+  alias PerceptronApparatus.AzimuthalRing
+  alias PerceptronApparatus.RadialRing
+  alias PerceptronApparatus.RuleRing
   alias PerceptronApparatus.Renderable
 
   defstruct [:size, :rings]
 
   @type t :: %__MODULE__{
           size: {float(), float()},
-          rings: [Rings.AzimuthalSliders.t() | Rings.RadialSliders.t() | Rings.SlideRule.t()]
+          rings: [AzimuthalRing.t() | RadialRing.t() | RuleRing.t()]
         }
 
   def new(size) do
@@ -26,9 +28,9 @@ defmodule PerceptronApparatus do
   def validate!(%__MODULE__{} = apparatus) do
     Enum.each(apparatus.rings, fn ring ->
       case ring do
-        %Rings.AzimuthalSliders{} -> :ok
-        %Rings.RadialSliders{} -> :ok
-        %Rings.SlideRule{} -> :ok
+        %AzimuthalRing{} -> :ok
+        %RadialRing{} -> :ok
+        %RuleRing{} -> :ok
         _ -> raise "Invalid ring type"
       end
     end)
@@ -55,7 +57,7 @@ defmodule PerceptronApparatus do
     rings
     |> Enum.chunk_every(2, 1)
     |> Enum.map(fn
-      [%Rings.SlideRule{} = ring, %Rings.SlideRule{}] -> {ring, 15, true}
+      [%RuleRing{} = ring, %RuleRing{}] -> {ring, 15, true}
       [ring | _] -> {ring, 25, false}
     end)
     |> Enum.reduce(
@@ -135,7 +137,7 @@ defmodule PerceptronApparatus do
     """
   end
 
-  defp next_layer_index(%Rings.SlideRule{}, idx), do: idx
+  defp next_layer_index(%RuleRing{}, idx), do: idx
   defp next_layer_index(_ring, idx), do: idx + 1
 
   defp bottom_rotating_channel(radius, width) do

@@ -1,6 +1,6 @@
-defmodule PerceptronApparatus.Rings.AzimuthalSliders do
+defmodule PerceptronApparatus.AzimuthalRing do
   @moduledoc """
-  Documentation for `AzimuthalSliders`.
+  Documentation for `AzimuthalRing`.
   """
   alias Decimal, as: D
   import PerceptronApparatus.Utils, only: [deg2rad: 1]
@@ -98,16 +98,16 @@ defmodule PerceptronApparatus.Rings.AzimuthalSliders do
   end
 end
 
-defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.AzimuthalSliders do
-  alias PerceptronApparatus.Rings.AzimuthalSliders
+defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.AzimuthalRing do
+  alias PerceptronApparatus.AzimuthalRing
 
-  def render(%AzimuthalSliders{context: nil}) do
+  def render(%AzimuthalRing{context: nil}) do
     raise "cannot render without context"
   end
 
   def render(ring) do
     %{rule: rule, shape: {sliders}, context: {radius, layer_index}} = ring
 
-    AzimuthalSliders.render(radius - 10, sliders, rule, layer_index)
+    AzimuthalRing.render(radius - 10, sliders, rule, layer_index)
   end
 end

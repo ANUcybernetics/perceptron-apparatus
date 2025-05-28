@@ -2,6 +2,9 @@ defmodule PerceptronApparatus.Utils do
   @moduledoc """
   Some handy utilities.
   """
+
+  alias PerceptronApparatus.Board
+
   @rad_in_deg 180 / :math.pi()
   def deg2rad(x) do
     x / @rad_in_deg
@@ -62,8 +65,8 @@ defmodule PerceptronApparatus.Utils do
     end)
   end
 
-  def write_cnc_files!(%PerceptronApparatus{} = apparatus, dir, filename_prefix) do
-    File.write!("#{dir}/svg/#{filename_prefix}.svg", PerceptronApparatus.render(apparatus))
+  def write_cnc_files!(%Board{} = apparatus, dir, filename_prefix) do
+    File.write!("#{dir}/svg/#{filename_prefix}.svg", Board.render(apparatus))
 
     # this is a bit messy because of the nested list, but :shrug:
     cut_selectors = [".top.slider", ".bottom", ".top.etch", ".top.etch.heavy", ".top.full"]
@@ -74,7 +77,7 @@ defmodule PerceptronApparatus.Utils do
 
       File.write!(
         "#{dir}/svg/#{filename_prefix}#{String.replace(cut, ".", "-")}.svg",
-        PerceptronApparatus.render(apparatus, nodisplay_selectors)
+        Board.render(apparatus, nodisplay_selectors)
       )
     end)
   end

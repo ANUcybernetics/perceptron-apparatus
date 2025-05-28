@@ -1,6 +1,6 @@
-defmodule PerceptronApparatus.Rings.SlideRule do
+defmodule PerceptronApparatus.RuleRing do
   @moduledoc """
-  Documentation for `SlideRule`.
+  Documentation for `RuleRing`.
   """
   alias Decimal, as: D
 
@@ -106,16 +106,16 @@ defmodule PerceptronApparatus.Rings.SlideRule do
   end
 end
 
-defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.Rings.SlideRule do
-  alias PerceptronApparatus.Rings.SlideRule
+defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.RuleRing do
+  alias PerceptronApparatus.RuleRing
 
-  def render(%SlideRule{context: nil}) do
+  def render(%RuleRing{context: nil}) do
     raise "cannot render without context"
   end
 
   def render(ring) do
     %{rule: rule, width: width, context: {radius, _layer_index}} = ring
 
-    SlideRule.render(radius - width / 2, rule)
+    RuleRing.render(radius - width / 2, rule)
   end
 end
