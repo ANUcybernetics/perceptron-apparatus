@@ -1,5 +1,7 @@
 import Config
 
+config :perceptron_apparatus, ash_domains: [PerceptronApparatus]
+
 config :ash,
   allow_forbidden_field_for_relationships_by_default?: true,
   include_embedded_source_by_default?: false,
