@@ -2,6 +2,10 @@ defmodule PerceptronApparatus.AzimuthalRing do
   @moduledoc """
   Documentation for `AzimuthalRing`.
   """
+  use Ash.Resource,
+    otp_app: :perceptron_apparatus,
+    domain: PerceptronApparatus
+
   alias Decimal, as: D
   import PerceptronApparatus.Utils, only: [deg2rad: 1]
 

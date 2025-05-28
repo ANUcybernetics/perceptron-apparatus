@@ -2,6 +2,10 @@ defmodule PerceptronApparatus.RadialRing do
   @moduledoc """
   Documentation for `RadialSliders`.
   """
+  use Ash.Resource,
+    otp_app: :perceptron_apparatus,
+    domain: PerceptronApparatus
+
   alias Decimal, as: D
   import PerceptronApparatus.Utils, only: [deg2rad: 1]
 

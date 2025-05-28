@@ -2,6 +2,10 @@ defmodule PerceptronApparatus.RuleRing do
   @moduledoc """
   Documentation for `RuleRing`.
   """
+  use Ash.Resource,
+    otp_app: :perceptron_apparatus,
+    domain: PerceptronApparatus
+
   alias Decimal, as: D
 
   defstruct [:width, :rule, :context]
