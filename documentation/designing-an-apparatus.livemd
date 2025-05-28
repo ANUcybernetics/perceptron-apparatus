@@ -20,13 +20,13 @@ The new simplified interface automatically creates all required rings for a neur
 
 apparatus
 |> PA.Board.render([:full, :etch])
-|> tap(fn data -> File.write!("/tmp/apparatus-v2.svg", data) end)
+|> tap(fn data -> File.write!("svg/apparatus-v2.svg", data) end)
 |> Kino.HTML.new()
 ```
 
 This automatically creates the complete ring sequence:
 1. **Log ring** - logarithmic scale ruler
-2. **ReLU ring** - ReLU activation function ruler  
+2. **ReLU ring** - ReLU activation function ruler
 3. **Input azimuthal ring** - 25 input sliders (0-1 range)
 4. **Weight1 radial ring** - 5 groups × 25 sliders (-10 to 10 range)
 5. **Hidden azimuthal ring** - 5 hidden layer sliders (0-10 range)
