@@ -3,8 +3,6 @@ defmodule PerceptronApparatus.Utils do
   Some handy utilities.
   """
 
-
-
   @rad_in_deg 180 / :math.pi()
   def deg2rad(x) do
     x / @rad_in_deg

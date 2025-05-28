@@ -8,16 +8,9 @@ defmodule PerceptronApparatus.RuleRing do
 
   alias Decimal, as: D
 
-  attributes do
-    uuid_primary_key :id
-    attribute :width, :float, default: 50.0
-    attribute :rule, :term, allow_nil?: false
-    attribute :context, :term, allow_nil?: true
-  end
-
   actions do
     defaults [:read]
-    
+
     create :new do
       accept [:rule, :width]
     end
@@ -25,6 +18,13 @@ defmodule PerceptronApparatus.RuleRing do
     update :set_context do
       accept [:context]
     end
+  end
+
+  attributes do
+    uuid_primary_key :id
+    attribute :width, :float, default: 50.0
+    attribute :rule, :term, allow_nil?: false
+    attribute :context, :term, allow_nil?: true
   end
 
   @type t :: %__MODULE__{
@@ -39,10 +39,10 @@ defmodule PerceptronApparatus.RuleRing do
 
   # Legacy function for backwards compatibility
   def new(rule) do
-    {:ok, rule_ring} = 
+    {:ok, rule_ring} =
       Ash.Changeset.for_create(__MODULE__, :new, %{rule: rule})
       |> Ash.create()
-    
+
     rule_ring
   end
 

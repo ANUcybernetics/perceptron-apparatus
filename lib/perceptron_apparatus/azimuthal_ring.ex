@@ -9,17 +9,9 @@ defmodule PerceptronApparatus.AzimuthalRing do
   alias Decimal, as: D
   import PerceptronApparatus.Utils, only: [deg2rad: 1]
 
-  attributes do
-    uuid_primary_key :id
-    attribute :width, :float, default: 20.0
-    attribute :shape, :term, allow_nil?: false
-    attribute :rule, :term, allow_nil?: false
-    attribute :context, :term, allow_nil?: true
-  end
-
   actions do
     defaults [:read]
-    
+
     create :new do
       accept [:width, :shape, :rule]
     end
@@ -27,6 +19,14 @@ defmodule PerceptronApparatus.AzimuthalRing do
     update :set_context do
       accept [:context]
     end
+  end
+
+  attributes do
+    uuid_primary_key :id
+    attribute :width, :float, default: 20.0
+    attribute :shape, :term, allow_nil?: false
+    attribute :rule, :term, allow_nil?: false
+    attribute :context, :term, allow_nil?: true
   end
 
   @type t :: %__MODULE__{
@@ -43,10 +43,10 @@ defmodule PerceptronApparatus.AzimuthalRing do
 
   # Legacy function for backwards compatibility
   def new(shape, rule) do
-    {:ok, azimuthal_ring} = 
+    {:ok, azimuthal_ring} =
       Ash.Changeset.for_create(__MODULE__, :new, %{shape: shape, rule: rule})
       |> Ash.create()
-    
+
     azimuthal_ring
   end
 
@@ -134,7 +134,11 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.AzimuthalRing d
   end
 
   def render(ring) do
-    %{rule: rule, shape: %{sliders: sliders}, context: %{radius: radius, layer_index: layer_index}} = ring
+    %{
+      rule: rule,
+      shape: %{sliders: sliders},
+      context: %{radius: radius, layer_index: layer_index}
+    } = ring
 
     AzimuthalRing.render(radius - 10, sliders, rule, layer_index)
   end

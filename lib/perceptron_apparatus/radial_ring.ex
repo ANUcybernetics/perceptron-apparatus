@@ -9,17 +9,9 @@ defmodule PerceptronApparatus.RadialRing do
   alias Decimal, as: D
   import PerceptronApparatus.Utils, only: [deg2rad: 1]
 
-  attributes do
-    uuid_primary_key :id
-    attribute :width, :float, default: 80.0
-    attribute :shape, :term, allow_nil?: false
-    attribute :rule, :term, allow_nil?: false
-    attribute :context, :term, allow_nil?: true
-  end
-
   actions do
     defaults [:read]
-    
+
     create :new do
       accept [:width, :shape, :rule]
     end
@@ -27,6 +19,14 @@ defmodule PerceptronApparatus.RadialRing do
     update :set_context do
       accept [:context]
     end
+  end
+
+  attributes do
+    uuid_primary_key :id
+    attribute :width, :float, default: 80.0
+    attribute :shape, :term, allow_nil?: false
+    attribute :rule, :term, allow_nil?: false
+    attribute :context, :term, allow_nil?: true
   end
 
   @type t :: %__MODULE__{
@@ -46,10 +46,10 @@ defmodule PerceptronApparatus.RadialRing do
     # use default values when it makes sense
     width = Keyword.get(opts, :width, 80.0)
 
-    {:ok, radial_ring} = 
+    {:ok, radial_ring} =
       Ash.Changeset.for_create(__MODULE__, :new, %{width: width, shape: shape, rule: rule})
       |> Ash.create()
-    
+
     radial_ring
   end
 

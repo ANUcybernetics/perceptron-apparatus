@@ -9,31 +9,27 @@ defmodule PerceptronApparatus.Board do
 
   alias PerceptronApparatus.{AzimuthalRing, RadialRing, RuleRing, Renderable, Utils}
 
-  attributes do
-    uuid_primary_key :id
-    attribute :size, :float, allow_nil?: false
-    attribute :n_input, :integer, allow_nil?: false
-    attribute :n_hidden, :integer, allow_nil?: false
-    attribute :n_output, :integer, allow_nil?: false
-    attribute :rings, :term, default: []
+  code_interface do
+    define :create, args: [:size, :n_input, :n_hidden, :n_output]
+    define :read
   end
 
   actions do
     defaults [:read]
-    
+
     create :create do
       accept [:size, :n_input, :n_hidden, :n_output]
-      
+
       change fn changeset, _context ->
         # Get the parameters
         size = Ash.Changeset.get_attribute(changeset, :size)
         n_input = Ash.Changeset.get_attribute(changeset, :n_input)
         n_hidden = Ash.Changeset.get_attribute(changeset, :n_hidden)
         n_output = Ash.Changeset.get_attribute(changeset, :n_output)
-        
+
         # Create the ring sequence
         rings = create_ring_sequence(n_input, n_hidden, n_output)
-        
+
         # Set the rings on the changeset
         Ash.Changeset.change_attribute(changeset, :rings, rings)
       end
@@ -50,9 +46,13 @@ defmodule PerceptronApparatus.Board do
     end
   end
 
-  code_interface do
-    define :create, args: [:size, :n_input, :n_hidden, :n_output]
-    define :read
+  attributes do
+    uuid_primary_key :id
+    attribute :size, :float, allow_nil?: false
+    attribute :n_input, :integer, allow_nil?: false
+    attribute :n_hidden, :integer, allow_nil?: false
+    attribute :n_output, :integer, allow_nil?: false
+    attribute :rings, :term, default: []
   end
 
   @type t :: %__MODULE__{
@@ -79,78 +79,84 @@ defmodule PerceptronApparatus.Board do
     [
       # Log ring
       create_log_ring(),
-      
+
       # ReLU ring
       create_relu_ring(),
-      
+
       # Input azimuthal ring
       create_input_ring(n_input),
-      
+
       # Weight1 radial ring (input -> hidden)
       create_weight_ring(n_hidden, n_input),
-      
+
       # Hidden azimuthal ring
       create_hidden_ring(n_hidden),
-      
+
       # Weight2 radial ring (hidden -> output)
       create_weight_ring(n_output, n_hidden),
-      
+
       # Output azimuthal ring
       create_output_ring(n_output)
     ]
   end
 
   defp create_log_ring do
-    {:ok, ring} = 
+    {:ok, ring} =
       Ash.Changeset.for_create(RuleRing, :new, %{rule: RuleRing.log_rule(), width: 15.0})
       |> Ash.create()
+
     ring
   end
 
   defp create_relu_ring do
-    {:ok, ring} = 
+    {:ok, ring} =
       Ash.Changeset.for_create(RuleRing, :new, %{rule: RuleRing.relu_rule(10, 0.25), width: 15.0})
       |> Ash.create()
+
     ring
   end
 
   defp create_input_ring(n_input) do
     rule = Utils.new_rule(0, 1, 0.1, 0.5)
     shape = %{sliders: n_input}
-    
-    {:ok, ring} = 
+
+    {:ok, ring} =
       Ash.Changeset.for_create(AzimuthalRing, :new, %{shape: shape, rule: rule, width: 10.0})
       |> Ash.create()
+
     ring
   end
 
   defp create_weight_ring(n_groups, n_sliders_per_group) do
     rule = Utils.new_rule(-10, 10, 2, 10)
     shape = %{groups: n_groups, sliders_per_group: n_sliders_per_group}
-    
-    {:ok, ring} = 
+
+    {:ok, ring} =
       Ash.Changeset.for_create(RadialRing, :new, %{shape: shape, rule: rule, width: 25.0})
       |> Ash.create()
+
     ring
   end
 
   defp create_hidden_ring(n_hidden) do
     rule = Utils.new_rule(0, 10, 1, 5)
     shape = %{sliders: n_hidden}
-    
-    {:ok, ring} = 
+
+    {:ok, ring} =
       Ash.Changeset.for_create(AzimuthalRing, :new, %{shape: shape, rule: rule, width: 10.0})
       |> Ash.create()
+
     ring
   end
 
   defp create_output_ring(n_output) do
     rule = Utils.new_rule(0, 1, 0.1, 0.5)
     shape = %{sliders: n_output}
-    
-    {:ok, ring} = 
+
+    {:ok, ring} =
       Ash.Changeset.for_create(AzimuthalRing, :new, %{shape: shape, rule: rule, width: 10.0})
       |> Ash.create()
+
     ring
   end
 
@@ -193,11 +199,11 @@ defmodule PerceptronApparatus.Board do
       {radius - radial_padding / 2, 1, ""},
       fn {ring, radial_padding, bottom_channel?}, {r, idx, output} ->
         # Set context for the ring
-        {:ok, ring_with_context} = 
+        {:ok, ring_with_context} =
           ring
           |> Ash.Changeset.for_update(:set_context, %{context: %{radius: r, layer_index: idx}})
           |> Ash.update()
-        
+
         {
           r - ring.width - radial_padding,
           next_layer_index(ring, idx),
