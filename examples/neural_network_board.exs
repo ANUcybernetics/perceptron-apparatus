@@ -21,7 +21,7 @@ IO.puts("- Input neurons: 25")
 IO.puts("- Hidden neurons: 5")
 IO.puts("- Output neurons: 10\n")
 
-{:ok, board} = Board.create(1200.0, 36, 6, 10)
+{:ok, board} = Board.create(1200.0, 25, 5, 10)
 
 IO.puts("Board created successfully!")
 IO.puts("- Board ID: #{board.id}")
