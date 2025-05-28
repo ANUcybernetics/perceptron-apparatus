@@ -2,7 +2,7 @@ defmodule PerceptronApparatusTest do
   use ExUnit.Case
   doctest PerceptronApparatus
 
-  test "greets the world" do
-    assert PerceptronApparatus.hello() == :world
+  test "domain module exists" do
+    assert PerceptronApparatus.__info__(:module) == PerceptronApparatus
   end
 end

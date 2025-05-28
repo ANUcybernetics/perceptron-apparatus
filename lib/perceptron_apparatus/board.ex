@@ -2,30 +2,67 @@ defmodule PerceptronApparatus.Board do
   @moduledoc """
   Documentation for `PerceptronApparatus`.
   """
+  use Ash.Resource,
+    otp_app: :perceptron_apparatus,
+    domain: PerceptronApparatus
+
   alias PerceptronApparatus.AzimuthalRing
   alias PerceptronApparatus.RadialRing
   alias PerceptronApparatus.RuleRing
   alias PerceptronApparatus.Renderable
 
-  defstruct [:size, :rings]
+  attributes do
+    uuid_primary_key :id
+    attribute :size, :float, allow_nil?: false
+    attribute :rings, :term, default: []
+  end
+
+  actions do
+    defaults [:read]
+    
+    create :new do
+      accept [:size]
+    end
+
+    update :add_ring do
+      accept [:rings]
+    end
+
+    read :validate do
+      prepare fn query, _context ->
+        query
+      end
+    end
+  end
 
   @type t :: %__MODULE__{
-          size: {float(), float()},
-          rings: [AzimuthalRing.t() | RadialRing.t() | RuleRing.t()]
+          id: String.t(),
+          size: float(),
+          rings: [map()]
         }
 
+  # Legacy functions for backwards compatibility
   def new(size) do
-    %__MODULE__{
-      size: size,
-      rings: []
-    }
+    {:ok, board} = 
+      Ash.Changeset.for_create(__MODULE__, :new, %{size: size})
+      |> Ash.create()
+    
+    board
   end
 
-  def add_ring(%__MODULE__{} = apparatus, ring) do
-    %{apparatus | rings: apparatus.rings ++ [ring]}
+  def add_ring(apparatus, ring) do
+    current_rings = apparatus.rings || []
+    new_rings = current_rings ++ [ring]
+    
+    {:ok, updated} = 
+      apparatus
+      |> Ash.Changeset.for_update(:add_ring, %{rings: new_rings})
+      |> Ash.update()
+    
+    updated
   end
 
-  def validate!(%__MODULE__{} = apparatus) do
+  def validate!(apparatus) do
     Enum.each(apparatus.rings, fn ring ->
       case ring do
         %AzimuthalRing{} -> :ok
@@ -63,6 +100,12 @@ defmodule PerceptronApparatus.Board do
     |> Enum.reduce(
       {radius - radial_padding / 2, 1, ""},
       fn {ring, radial_padding, bottom_channel?}, {r, idx, output} ->
+        # Set context for the ring
+        {:ok, ring_with_context} = 
+          ring
+          |> Ash.Changeset.for_update(:set_context, %{context: %{radius: r, layer_index: idx}})
+          |> Ash.update()
+        
         {
           r - ring.width - radial_padding,
           next_layer_index(ring, idx),
@@ -70,7 +113,7 @@ defmodule PerceptronApparatus.Board do
           #{bottom_channel? && bottom_rotating_channel(r - (ring.width + radial_padding / 2), ring.width + radial_padding + 10)}
           #{output}
           <circle class="debug" cx="0" cy="0" r="#{r}" stroke-width="1"/>
-          #{Renderable.render(%{ring | context: {r, idx}})}
+          #{Renderable.render(ring_with_context)}
           <circle class="debug" cx="0" cy="0" r="#{r - ring.width}" stroke-width="1"/>
           """
         }

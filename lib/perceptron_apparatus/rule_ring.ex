@@ -8,19 +8,42 @@ defmodule PerceptronApparatus.RuleRing do
 
   alias Decimal, as: D
 
-  defstruct [:width, :rule, :context]
+  attributes do
+    uuid_primary_key :id
+    attribute :width, :float, default: 50.0
+    attribute :rule, :term, allow_nil?: false
+    attribute :context, :term, allow_nil?: true
+  end
+
+  actions do
+    defaults [:read]
+    
+    create :new do
+      accept [:rule, :width]
+    end
+
+    update :set_context do
+      accept [:context]
+    end
+  end
 
   @type t :: %__MODULE__{
+          id: String.t(),
           # rule is a list of {outer_label, theta, inner_label} tuples
-          rule: {[{Decimal.t() | nil, float(), Decimal.t() | nil}]},
+          rule: [{Decimal.t() | nil, float(), Decimal.t() | nil}],
           # ring width (fixed for slide rules)
           width: float(),
           # drawing context: {outer_radius, layer_index}
-          context: {float(), integer()}
+          context: {float(), integer()} | nil
         }
 
+  # Legacy function for backwards compatibility
   def new(rule) do
-    %__MODULE__{width: 50.0, rule: rule}
+    {:ok, rule_ring} = 
+      Ash.Changeset.for_create(__MODULE__, :new, %{rule: rule})
+      |> Ash.create()
+    
+    rule_ring
   end
 
   # each rule should be a list of tuples {theta, label}, where label can be nil (for a minor tick with no label)
@@ -118,7 +141,7 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.RuleRing do
   end
 
   def render(ring) do
-    %{rule: rule, width: width, context: {radius, _layer_index}} = ring
+    %{rule: rule, width: width, context: %{radius: radius}} = ring
 
     RuleRing.render(radius - width / 2, rule)
   end

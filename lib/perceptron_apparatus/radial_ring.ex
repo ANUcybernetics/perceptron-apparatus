@@ -9,9 +9,28 @@ defmodule PerceptronApparatus.RadialRing do
   alias Decimal, as: D
   import PerceptronApparatus.Utils, only: [deg2rad: 1]
 
-  defstruct [:width, :shape, :rule, :context]
+  attributes do
+    uuid_primary_key :id
+    attribute :width, :float, default: 80.0
+    attribute :shape, :term, allow_nil?: false
+    attribute :rule, :term, allow_nil?: false
+    attribute :context, :term, allow_nil?: true
+  end
+
+  actions do
+    defaults [:read]
+    
+    create :new do
+      accept [:width, :shape, :rule]
+    end
+
+    update :set_context do
+      accept [:context]
+    end
+  end
 
   @type t :: %__MODULE__{
+          id: String.t(),
           rule: [{Decimal.t() | nil, float()}],
           # this is not the geometric shape, rather the shape of the corresponding matrix
           # {n_groups, n_sliders_per_group}
@@ -19,14 +38,19 @@ defmodule PerceptronApparatus.RadialRing do
           # ring width (r_outer - r_inner)
           width: float(),
           # drawing context: {r_outer, layer_index}
-          context: {float(), integer()}
+          context: {float(), integer()} | nil
         }
 
+  # Legacy function for backwards compatibility
   def new(shape, rule, opts \\ []) do
     # use default values when it makes sense
     width = Keyword.get(opts, :width, 80.0)
 
-    %__MODULE__{width: width, rule: rule, shape: shape}
+    {:ok, radial_ring} = 
+      Ash.Changeset.for_create(__MODULE__, :new, %{width: width, shape: shape, rule: rule})
+      |> Ash.create()
+    
+    radial_ring
   end
 
   def render_slider(radius, width, theta) do
@@ -146,8 +170,8 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.RadialRing do
     %{
       width: width,
       rule: rule,
-      shape: {groups, sliders_per_group},
-      context: {radius, layer_index}
+      shape: %{groups: groups, sliders_per_group: sliders_per_group},
+      context: %{radius: radius, layer_index: layer_index}
     } = ring
 
     PerceptronApparatus.RadialRing.render(

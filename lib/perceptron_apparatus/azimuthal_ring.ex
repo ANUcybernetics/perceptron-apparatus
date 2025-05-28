@@ -9,9 +9,28 @@ defmodule PerceptronApparatus.AzimuthalRing do
   alias Decimal, as: D
   import PerceptronApparatus.Utils, only: [deg2rad: 1]
 
-  defstruct [:width, :shape, :rule, :context]
+  attributes do
+    uuid_primary_key :id
+    attribute :width, :float, default: 20.0
+    attribute :shape, :term, allow_nil?: false
+    attribute :rule, :term, allow_nil?: false
+    attribute :context, :term, allow_nil?: true
+  end
+
+  actions do
+    defaults [:read]
+    
+    create :new do
+      accept [:width, :shape, :rule]
+    end
+
+    update :set_context do
+      accept [:context]
+    end
+  end
 
   @type t :: %__MODULE__{
+          id: String.t(),
           rule: [{Decimal.t() | nil, float()}],
           # no groups for azimuthal sliders, just the number of sliders
           # this is not the geometric shape, rather the shape of the corresponding matrix
@@ -19,11 +38,16 @@ defmodule PerceptronApparatus.AzimuthalRing do
           # ring width (fixed for azimuthal sliders)
           width: float(),
           # drawing context: {outer_radius, layer_index}
-          context: {float(), integer()}
+          context: {float(), integer()} | nil
         }
 
+  # Legacy function for backwards compatibility
   def new(shape, rule) do
-    %__MODULE__{width: 20.0, rule: rule, shape: shape}
+    {:ok, azimuthal_ring} = 
+      Ash.Changeset.for_create(__MODULE__, :new, %{shape: shape, rule: rule})
+      |> Ash.create()
+    
+    azimuthal_ring
   end
 
   def render_slider(radius, theta_sweep, rule, {layer_index, number}) do
@@ -110,7 +134,7 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.AzimuthalRing d
   end
 
   def render(ring) do
-    %{rule: rule, shape: {sliders}, context: {radius, layer_index}} = ring
+    %{rule: rule, shape: %{sliders: sliders}, context: %{radius: radius, layer_index: layer_index}} = ring
 
     AzimuthalRing.render(radius - 10, sliders, rule, layer_index)
   end
