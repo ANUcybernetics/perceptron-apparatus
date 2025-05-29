@@ -175,7 +175,7 @@ defmodule PerceptronApparatus.Board do
     %{size: size, rings: rings} = apparatus
 
     radius = size / 2
-    radial_padding = 50
+    radial_padding = 30
     center_space = 100
     svg_padding = 10
 
