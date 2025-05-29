@@ -294,12 +294,12 @@ defmodule PerceptronApparatus.Board do
         stroke-width: 0.5;
         stroke: #4834d4;
       }
-      text.etch{
-        stroke: none;
-        fill: #4834d4;
+      text.etch.heavy{
+        stroke-width: 0.5;
+        fill: none;
       }
       .etch.heavy {
-        stroke-width: 1;
+        stroke-width: 2;
         stroke: #eb4d4b;
       }
       text.indices{
