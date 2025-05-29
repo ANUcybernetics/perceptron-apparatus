@@ -102,7 +102,7 @@ defmodule PerceptronApparatus.Board do
 
   defp create_log_ring do
     {:ok, ring} =
-      Ash.Changeset.for_create(RuleRing, :new, %{rule: RuleRing.log_rule(), width: 15.0})
+      Ash.Changeset.for_create(RuleRing, :new, %{rule: RuleRing.log_rule(), width: 30.0})
       |> Ash.create()
 
     ring
@@ -110,7 +110,7 @@ defmodule PerceptronApparatus.Board do
 
   defp create_relu_ring do
     {:ok, ring} =
-      Ash.Changeset.for_create(RuleRing, :new, %{rule: RuleRing.relu_rule(10, 0.25), width: 15.0})
+      Ash.Changeset.for_create(RuleRing, :new, %{rule: RuleRing.relu_rule(10, 0.25), width: 30.0})
       |> Ash.create()
 
     ring
