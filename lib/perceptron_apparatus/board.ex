@@ -283,7 +283,7 @@ defmodule PerceptronApparatus.Board do
         stroke-width: 3;
       }
       .bottom.slider {
-        stroke-width: 6;
+        stroke-width: 8;
         opacity: 0.3;
       }
       .bottom.rotating {
