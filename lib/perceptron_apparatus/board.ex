@@ -280,10 +280,10 @@ defmodule PerceptronApparatus.Board do
         stroke: #f0932b;
       }
       .top.slider {
-        stroke-width: 6;
+        stroke-width: 3;
       }
       .bottom.slider {
-        stroke-width: 12;
+        stroke-width: 6;
         opacity: 0.3;
       }
       .bottom.rotating {
