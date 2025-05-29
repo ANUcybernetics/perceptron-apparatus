@@ -168,15 +168,14 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.RadialRing do
 
   def render(ring) do
     %{
-      width: width,
       rule: rule,
       shape: %{groups: groups, sliders_per_group: sliders_per_group},
-      context: %{radius: radius, layer_index: layer_index}
+      context: %{radius: radius, ring_width: ring_width, layer_index: layer_index}
     } = ring
 
     PerceptronApparatus.RadialRing.render(
       radius - 5,
-      width - 10,
+      ring_width - 10,
       groups,
       sliders_per_group,
       rule,
