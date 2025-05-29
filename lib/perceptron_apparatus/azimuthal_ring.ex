@@ -140,6 +140,6 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.AzimuthalRing d
       context: %{radius: radius, layer_index: layer_index}
     } = ring
 
-    AzimuthalRing.render(radius - 10, sliders, rule, layer_index)
+    AzimuthalRing.render(radius, sliders, rule, layer_index)
   end
 end
