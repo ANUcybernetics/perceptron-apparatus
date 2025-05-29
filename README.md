@@ -1,11 +1,11 @@
 # Perceptron Apparatus
 
-Elixir lib for configuring and generating an (svg) design file for a perceptron
-apparatus---suitable for CNC routing/laser cutting.
+Elixir lib for creating the laser-cutting & cnc-routing files for a fully-analog
+calculation apparatus (think "abacus for deep learning").
 
-See
-[project page](https://anu365.sharepoint.com/sites/CyberneticsHub/SitePages/CyberneticStudio-Human-Scale.aspx)
-for description.
+A [Cybernetic Studio](https://github.com/ANUcybernetics/) project by
+[Ben Swift](https://benswift.me), with fabrication by Sam Shellard at UC's
+[Workshop7](https://www.canberra.edu.au/future-students/study-at-uc/study-areas/design/workshop7).
 
 ## Installation
 
@@ -18,7 +18,8 @@ font.
 
 ## Quick Start
 
-The simplest way to create a perceptron apparatus is using the new `Board.create/4` interface:
+The simplest way to create a perceptron apparatus is using the new
+`Board.create/4` interface:
 
 ```elixir
 # Create a neural network apparatus for a 25-5-10 network
@@ -31,8 +32,9 @@ File.write!("apparatus.svg", svg_output)
 ```
 
 This automatically creates the complete ring sequence:
+
 1. **Log ring** - logarithmic scale ruler
-2. **ReLU ring** - ReLU activation function ruler  
+2. **ReLU ring** - ReLU activation function ruler
 3. **Input azimuthal ring** - input sliders (0-1 range)
 4. **Weight1 radial ring** - input-to-hidden weight sliders (-10 to 10 range)
 5. **Hidden azimuthal ring** - hidden layer sliders (0-10 range)
@@ -40,9 +42,10 @@ This automatically creates the complete ring sequence:
 7. **Output azimuthal ring** - output sliders (0-1 range)
 
 The ring dimensions automatically match the neural network topology:
+
 - Input ring has `n_input` sliders
 - Weight1 ring has `n_hidden` groups × `n_input` sliders per group
-- Hidden ring has `n_hidden` sliders  
+- Hidden ring has `n_hidden` sliders
 - Weight2 ring has `n_output` groups × `n_hidden` sliders per group
 - Output ring has `n_output` sliders
 
