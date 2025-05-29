@@ -268,7 +268,7 @@ defmodule PerceptronApparatus.Board do
     <svg viewBox="#{view_box}" stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">
       <style>
       text {
-        font-family: "Helvetica";
+        font-family: "Libertinus Serif";
         font-size: 12px;
       }
       #{Enum.map(nodisplay_selectors, fn s -> "#{s} { display: none; }" end) |> Enum.join("\n")}

@@ -11,11 +11,6 @@ defmodule PerceptronApparatus.Utils do
   def wrap_in_svg(body) do
     """
     <svg stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">
-      <style>
-      svg {
-        font-family: Helvetica;
-      }
-      </style>
       #{body}
     </svg>
     """
@@ -24,11 +19,6 @@ defmodule PerceptronApparatus.Utils do
   def wrap_in_svg(body, view_box) do
     """
     <svg viewBox="#{view_box}" stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">
-      <style>
-      svg {
-        font-family: Helvetica;
-      }
-      </style>
       #{body}
     </svg>
     """
