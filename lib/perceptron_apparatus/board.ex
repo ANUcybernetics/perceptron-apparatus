@@ -175,44 +175,50 @@ defmodule PerceptronApparatus.Board do
     %{size: size, rings: rings} = apparatus
 
     radius = size / 2
-    total_ring_width = rings |> Enum.map(& &1.width) |> Enum.sum()
-
-    # TODO this check doesn't account for the radial padding, and so doesn't really work
-    if total_ring_width > radius do
-      raise "Total ring width exceeds apparatus radius"
-    end
-
-    radial_padding = 30
-
+    radial_padding = 50
+    center_space = 100
     svg_padding = 10
+
+    # Calculate optimal ring widths with automatic spacing
+    rings_with_widths = calculate_ring_widths(rings, radius, radial_padding, center_space)
 
     view_box =
       "-#{size / 2 + svg_padding} -#{size / 2 + svg_padding} #{size + 2 * svg_padding} #{size + 2 * svg_padding}"
 
-    rings
-    |> Enum.chunk_every(2, 1)
-    |> Enum.map(fn
-      [%RuleRing{} = ring, %RuleRing{}] -> {ring, 15, true}
-      [ring | _] -> {ring, 25, false}
-    end)
+    rings_with_widths
+    |> Enum.with_index()
     |> Enum.reduce(
-      {radius - radial_padding / 2, 1, ""},
-      fn {ring, radial_padding, bottom_channel?}, {r, idx, output} ->
+      {radius, 1, ""},
+      fn {{ring, ring_width}, ring_index}, {current_radius, idx, output} ->
+        # Determine if this should have a bottom channel (consecutive RuleRings)
+        bottom_channel? =
+          ring_index < length(rings_with_widths) - 1 &&
+            match?(%RuleRing{}, ring) &&
+            match?(%RuleRing{}, elem(Enum.at(rings_with_widths, ring_index + 1), 0))
+
         # Set context for the ring
         {:ok, ring_with_context} =
           ring
-          |> Ash.Changeset.for_update(:set_context, %{context: %{radius: r, layer_index: idx}})
+          |> Ash.Changeset.for_update(:set_context, %{
+            context: %{
+              radius: current_radius,
+              layer_index: idx,
+              ring_width: ring_width,
+              outer_radius: current_radius,
+              inner_radius: current_radius - ring_width
+            }
+          })
           |> Ash.update()
 
         {
-          r - ring.width - radial_padding,
+          current_radius - ring_width - radial_padding,
           next_layer_index(ring, idx),
           """
-          #{bottom_channel? && bottom_rotating_channel(r - (ring.width + radial_padding / 2), ring.width + radial_padding + 10)}
+          #{bottom_channel? && bottom_rotating_channel(current_radius - ring_width - radial_padding / 2, radial_padding + 10)}
           #{output}
-          <circle class="debug" cx="0" cy="0" r="#{r}" stroke-width="1"/>
+          <circle class="debug" cx="0" cy="0" r="#{current_radius}" stroke-width="1"/>
           #{Renderable.render(ring_with_context)}
-          <circle class="debug" cx="0" cy="0" r="#{r - ring.width}" stroke-width="1"/>
+          <circle class="debug" cx="0" cy="0" r="#{current_radius - ring_width}" stroke-width="1"/>
           """
         }
       end
@@ -222,6 +228,39 @@ defmodule PerceptronApparatus.Board do
       ~s|<circle cx="0" cy="0" r="#{radius}" stroke-width="2"/>| <> output
     end)
     |> render_body(view_box, nodisplay_selectors)
+  end
+
+  defp calculate_ring_widths(rings, radius, radial_padding, center_space) do
+    # Identify ring types
+    radial_rings = Enum.filter(rings, &match?(%RadialRing{}, &1))
+    fixed_rings = Enum.reject(rings, &match?(%RadialRing{}, &1))
+
+    # Calculate fixed space usage
+    fixed_widths_total = Enum.sum(Enum.map(fixed_rings, & &1.width))
+
+    # Calculate padding: we need (n-1) gaps between n rings
+    padding_total = radial_padding * (length(rings) - 1)
+
+    # Calculate available space for radial rings
+    available_for_radial = radius - center_space - fixed_widths_total - padding_total
+    radial_count = length(radial_rings)
+
+    # Ensure we have positive space available
+    available_for_radial = max(available_for_radial, 0)
+
+    # Distribute space evenly among radial rings
+    radial_width = if radial_count > 0, do: available_for_radial / radial_count, else: 0
+
+    # Map rings to their calculated widths
+    Enum.map(rings, fn ring ->
+      width =
+        case ring do
+          %RadialRing{} -> radial_width
+          _ -> ring.width
+        end
+
+      {ring, width}
+    end)
   end
 
   def render_body(body, view_box, nodisplay_selectors) do
