@@ -12,14 +12,10 @@ A [Cybernetic Studio](https://github.com/ANUcybernetics/) project by
 This package is not (currently) on hex. You can clone the repo and import it via
 a [`:path`](https://hexdocs.pm/mix/Mix.Tasks.Deps.html).
 
-You'll also need to download and install the
-[Relief SingleLine](https://github.com/isdat-type/Relief-SingleLine/tree/main/fonts/open_otf-svg)
-font.
-
 ## Quick Start
 
-The simplest way to create a perceptron apparatus is using the new
-`Board.create/4` interface:
+The simplest way to create a perceptron apparatus is using the `Board.create/4`
+interface:
 
 ```elixir
 # Create a neural network apparatus for a 25-5-10 network
@@ -88,16 +84,6 @@ bottom plate class selectors
   - auto-generating the SVG based on the model (i.e. `%Axon{}` ->
     `%PerceptronApparatus.Board{}`)
   - examples (5x5 MNIST digits, maybe something with language?)
-
-  ## questions for Sam
-
-  - "relief" cuts, or other visual emphasis tricks
-  - class-based approach for different cut types?
-  - baseboard cuts (and captive slider designs)
-  - can Cole & I come help?
-  - prototype next steps
-  - handles & other holes
-  - any other design optimisations?
 
 ## Author
 
