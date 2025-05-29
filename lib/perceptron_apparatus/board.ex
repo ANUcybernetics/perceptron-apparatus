@@ -188,7 +188,7 @@ defmodule PerceptronApparatus.Board do
     rings_with_widths
     |> Enum.with_index()
     |> Enum.reduce(
-      {radius - radial_padding, 1, ""},
+      {radius - radial_padding / 2, 1, ""},
       fn {{ring, ring_width}, ring_index}, {current_radius, idx, output} ->
         # Determine if this should have a bottom channel (consecutive RuleRings)
         bottom_channel? =
