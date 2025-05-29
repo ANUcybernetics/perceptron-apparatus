@@ -59,7 +59,7 @@ defmodule PerceptronApparatus.AzimuthalRing do
 
     # for creating "gaps" at the beginning and end of the [theta_offset, theta_offset + theta_sweep]
     # range (where the labels will go)
-    az_padding = 1000 / radius
+    az_padding = 800 / radius
 
     labels =
       rule
