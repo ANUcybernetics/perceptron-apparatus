@@ -17,11 +17,11 @@ IO.puts("=== PerceptronApparatus Neural Network Board Demo ===\n")
 # Parameters: size, n_input, n_hidden, n_output
 IO.puts("Creating a neural network board with:")
 IO.puts("- Board size: 1200")
-IO.puts("- Input neurons: 25")
-IO.puts("- Hidden neurons: 5")
+IO.puts("- Input neurons: 36")
+IO.puts("- Hidden neurons: 6")
 IO.puts("- Output neurons: 10\n")
 
-{:ok, board} = Board.create(1200.0, 25, 5, 10)
+{:ok, board} = Board.create(1200.0, 36, 6, 10)
 
 IO.puts("Board created successfully!")
 IO.puts("- Board ID: #{board.id}")
