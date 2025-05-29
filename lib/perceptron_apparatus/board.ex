@@ -273,7 +273,7 @@ defmodule PerceptronApparatus.Board do
       }
       #{Enum.map(nodisplay_selectors, fn s -> "#{s} { display: none; }" end) |> Enum.join("\n")}
       .full {
-        stroke-width: 3;
+        stroke-width: 1;
         stroke: #6ab04c;
       }
       .slider {
