@@ -176,7 +176,7 @@ defmodule PerceptronApparatus.Board do
 
     radius = size / 2
     radial_padding = 25
-    center_space = 150
+    center_space = 120
     svg_padding = 10
 
     # Calculate optimal ring widths with automatic spacing
@@ -268,7 +268,7 @@ defmodule PerceptronApparatus.Board do
     <svg viewBox="#{view_box}" stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">
       <style>
       text {
-        font-family: "Libertinus Serif";
+        font-family: "Libertinus Sans";
         font-size: 12px;
       }
       #{Enum.map(nodisplay_selectors, fn s -> "#{s} { display: none; }" end) |> Enum.join("\n")}
