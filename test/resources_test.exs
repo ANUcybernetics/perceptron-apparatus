@@ -184,7 +184,7 @@ defmodule PerceptronApparatus.ResourcesTest do
       # Test that the board renders successfully (integration check)
       svg_output = Board.render(board)
       assert is_binary(svg_output)
-      assert String.contains?(svg_output, "viewBox")
+      assert String.contains?(svg_output, "viewBox") or String.contains?(svg_output, "viewbox")
       # Substantial SVG content
       assert String.length(svg_output) > 1000
     end
@@ -360,7 +360,8 @@ defmodule PerceptronApparatus.ResourcesTest do
       # Verify SVG output contains expected elements
       assert String.contains?(svg_output, "<svg")
       assert String.contains?(svg_output, "</svg>")
-      assert String.contains?(svg_output, "viewBox")
+      # LazyHTML generates lowercase attributes, so check for both
+      assert String.contains?(svg_output, "viewbox") or String.contains?(svg_output, "viewBox")
       assert String.contains?(svg_output, "<circle")
       assert String.contains?(svg_output, "<path")
 
@@ -399,7 +400,7 @@ defmodule PerceptronApparatus.ResourcesTest do
       # Test rendering
       svg = Board.render(board)
       assert is_binary(svg)
-      assert String.contains?(svg, "viewBox")
+      assert String.contains?(svg, "viewBox") or String.contains?(svg, "viewbox")
     end
 
     test "individual ring creation still works" do
@@ -449,10 +450,11 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert %AzimuthalRing{shape: %{sliders: 10}} = output_ring
 
       # Test rendering produces valid SVG with expected complexity
-      svg_output = Board.render(board, [:full, :etch])
+      svg_output = Board.render(board, [".full", ".etch"])
       assert is_binary(svg_output)
       assert String.contains?(svg_output, "<svg")
-      assert String.contains?(svg_output, "viewBox")
+      # LazyHTML generates lowercase attributes, so check for both
+      assert String.contains?(svg_output, "viewbox") or String.contains?(svg_output, "viewBox")
       assert String.contains?(svg_output, "<circle")
       assert String.contains?(svg_output, "<path")
 

@@ -8,6 +8,7 @@ defmodule PerceptronApparatus.RadialRing do
 
   alias Decimal, as: D
   import PerceptronApparatus.Utils, only: [deg2rad: 1]
+  import PerceptronApparatus.Utils
 
   actions do
     defaults [:read]
@@ -54,10 +55,21 @@ defmodule PerceptronApparatus.RadialRing do
   end
 
   def render_slider(radius, width, theta) do
-    """
-    <path class="bottom slider" transform="rotate(#{-theta}) translate(0 #{radius})" stroke-linecap="round" d="M 0 0 v #{-width}" />
-    <path class="top slider" transform="rotate(#{-theta}) translate(0 #{radius})" stroke-linecap="round" d="M 0 0 v #{-width}" />
-    """
+    bottom_path = path_element([
+      {"class", "bottom slider"},
+      {"transform", "rotate(#{-theta}) translate(0 #{radius})"},
+      {"stroke-linecap", "round"},
+      {"d", "M 0 0 v #{-width}"}
+    ])
+
+    top_path = path_element([
+      {"class", "top slider"},
+      {"transform", "rotate(#{-theta}) translate(0 #{radius})"},
+      {"stroke-linecap", "round"},
+      {"d", "M 0 0 v #{-width}"}
+    ])
+
+    [bottom_path, top_path]
   end
 
   @doc """
@@ -69,19 +81,26 @@ defmodule PerceptronApparatus.RadialRing do
     # the extra 1s are to two "gaps" at the beginning and end of the [theta_sweep, theta_sweep + theta_offset] range (where the labels will go)
     theta_offset = theta_sweep * group_index
 
-    1..sliders_per_group
-    |> Enum.map(fn i ->
-      render_slider(radius, width, theta_offset + i * (theta_sweep / (sliders_per_group + 1)))
-    end)
-    |> List.insert_at(
-      -1,
-      """
-        <text transform="rotate(#{-(theta_offset + 0.5 * theta_sweep)})" class="top etch indices" x="0" y="#{radius - width - 10}"
-              text-anchor="middle" dominant-baseline="middle"
-              >#{<<64 + layer_index>>}#{group_index + 1}</text>
-      """
+    sliders = 
+      1..sliders_per_group
+      |> Enum.map(fn i ->
+        render_slider(radius, width, theta_offset + i * (theta_sweep / (sliders_per_group + 1)))
+      end)
+      |> List.flatten()
+
+    index_text = text_element(
+      "#{<<64 + layer_index>>}#{group_index + 1}",
+      [
+        {"transform", "rotate(#{-(theta_offset + 0.5 * theta_sweep)})"},
+        {"class", "top etch indices"},
+        {"x", "0"},
+        {"y", to_string(radius - width - 10)},
+        {"text-anchor", "middle"},
+        {"dominant-baseline", "middle"}
+      ]
     )
-    |> Enum.join()
+
+    sliders ++ [index_text]
   end
 
   def render_guides(radius, width, groups, rule) do
@@ -100,25 +119,25 @@ defmodule PerceptronApparatus.RadialRing do
       Enum.map(radii, fn {label, r} ->
         az_padding = 700 / r
 
-        0..(groups - 1)
-        |> Enum.map(fn i ->
-          x1 = r * :math.sin(deg2rad(i * theta_sweep + az_padding))
-          y1 = r * :math.cos(deg2rad(i * theta_sweep + az_padding))
-          x2 = r * :math.sin(deg2rad((i + 1) * theta_sweep - az_padding))
-          y2 = r * :math.cos(deg2rad((i + 1) * theta_sweep - az_padding))
+        arc_components =
+          0..(groups - 1)
+          |> Enum.map(fn i ->
+            x1 = r * :math.sin(deg2rad(i * theta_sweep + az_padding))
+            y1 = r * :math.cos(deg2rad(i * theta_sweep + az_padding))
+            x2 = r * :math.sin(deg2rad((i + 1) * theta_sweep - az_padding))
+            y2 = r * :math.cos(deg2rad((i + 1) * theta_sweep - az_padding))
 
-          """
-          M #{x1} #{y1}
-          A #{r} #{r} 0 0 0 #{x2} #{y2}
-          """
-        end)
-        |> then(fn arc_components ->
-          """
-          <path class="top etch #{label && "heavy"}" d="#{arc_components}" />
-          """
-        end)
+            "M #{x1} #{y1} A #{r} #{r} 0 0 0 #{x2} #{y2}"
+          end)
+          |> Enum.join(" ")
+
+        path_class = if label, do: "top etch heavy", else: "top etch"
+        
+        path_element([
+          {"class", path_class},
+          {"d", arc_components}
+        ])
       end)
-      |> Enum.join()
 
     labels =
       0..(groups - 1)
@@ -126,38 +145,44 @@ defmodule PerceptronApparatus.RadialRing do
         theta = 360 * i / groups
 
         # now, we need to write the labels on the appropriate circle
-        radii
-        |> Enum.filter(fn {label, _r} -> label end)
-        |> Enum.map(fn {label, r} ->
-          """
-           <text class="top etch" x="0" y="#{r + 1}"
-                 text-anchor="middle" dominant-baseline="middle"
-                 >#{label}</text>
-          """
-        end)
-        |> Enum.join()
-        |> then(fn text ->
-          """
-          <g class="top etch" transform="rotate(#{-theta})" >
-          #{text}
-          </g>
-          """
-        end)
-      end)
-      |> Enum.join()
+        text_elements =
+          radii
+          |> Enum.filter(fn {label, _r} -> label end)
+          |> Enum.map(fn {label, r} ->
+            text_element(
+              label || "",
+              [
+                {"class", "top etch"},
+                {"x", "0"},
+                {"y", to_string(r + 1)},
+                {"text-anchor", "middle"},
+                {"dominant-baseline", "middle"}
+              ]
+            )
+          end)
 
-    circles <> labels
+        group_element(text_elements, [
+          {"class", "top etch"},
+          {"transform", "rotate(#{-theta})"}
+        ])
+      end)
+
+    circles ++ labels
   end
 
   def render(radius, width, groups, sliders_per_group, rule, layer_index) do
     theta_sweep = 360 / groups
 
-    0..(groups - 1)
-    |> Enum.map(fn i ->
-      render_group(radius, width, sliders_per_group, theta_sweep, i, layer_index)
-    end)
-    |> List.insert_at(0, render_guides(radius, width, groups, rule))
-    |> Enum.join()
+    groups_elements = 
+      0..(groups - 1)
+      |> Enum.map(fn i ->
+        render_group(radius, width, sliders_per_group, theta_sweep, i, layer_index)
+      end)
+      |> List.flatten()
+
+    guides_elements = render_guides(radius, width, groups, rule)
+
+    guides_elements ++ groups_elements
   end
 end
 

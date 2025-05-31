@@ -8,6 +8,7 @@ defmodule PerceptronApparatus.Board do
     domain: PerceptronApparatus
 
   alias PerceptronApparatus.{AzimuthalRing, RadialRing, RuleRing, Renderable, Utils}
+  import PerceptronApparatus.Utils
 
   code_interface do
     define :create, args: [:size, :n_input, :n_hidden, :n_output]
@@ -185,49 +186,82 @@ defmodule PerceptronApparatus.Board do
     view_box =
       "-#{size / 2 + svg_padding} -#{size / 2 + svg_padding} #{size + 2 * svg_padding} #{size + 2 * svg_padding}"
 
-    rings_with_widths
-    |> Enum.with_index()
-    |> Enum.reduce(
-      {radius - radial_padding / 2, 1, ""},
-      fn {{ring, ring_width}, ring_index}, {current_radius, idx, output} ->
-        # Determine if this should have a bottom channel (consecutive RuleRings)
-        bottom_channel? =
-          ring_index < length(rings_with_widths) - 1 &&
-            match?(%RuleRing{}, ring) &&
-            match?(%RuleRing{}, elem(Enum.at(rings_with_widths, ring_index + 1), 0))
+    # Add the "board edge" circle
+    board_edge = circle_element([
+      {"class", "full"},
+      {"cx", "0"},
+      {"cy", "0"},
+      {"r", to_string(radius)},
+      {"stroke-width", "2"}
+    ])
 
-        # Set context for the ring
-        {:ok, ring_with_context} =
-          ring
-          |> Ash.Changeset.for_update(:set_context, %{
-            context: %{
-              radius: current_radius,
-              layer_index: idx,
-              ring_width: ring_width,
-              outer_radius: current_radius,
-              inner_radius: current_radius - ring_width
-            }
-          })
-          |> Ash.update()
+    {_, _, ring_elements} =
+      rings_with_widths
+      |> Enum.with_index()
+      |> Enum.reduce(
+        {radius - radial_padding / 2, 1, []},
+        fn {{ring, ring_width}, ring_index}, {current_radius, idx, elements_acc} ->
+          # Determine if this should have a bottom channel (consecutive RuleRings)
+          bottom_channel? =
+            ring_index < length(rings_with_widths) - 1 &&
+              match?(%RuleRing{}, ring) &&
+              match?(%RuleRing{}, elem(Enum.at(rings_with_widths, ring_index + 1), 0))
 
-        {
-          current_radius - ring_width - radial_padding,
-          next_layer_index(ring, idx),
-          """
-          #{bottom_channel? && bottom_rotating_channel(current_radius - ring_width - radial_padding / 2, 2 * ring_width + 10)}
-          #{output}
-          <circle class="debug" cx="0" cy="0" r="#{current_radius}" stroke-width="1"/>
-          #{Renderable.render(ring_with_context)}
-          <circle class="debug" cx="0" cy="0" r="#{current_radius - ring_width}" stroke-width="1"/>
-          """
-        }
-      end
-    )
-    # add the "board edge" circle
-    |> then(fn {_, _, output} ->
-      ~s|<circle class="full" cx="0" cy="0" r="#{radius}" stroke-width="2"/>| <> output
-    end)
-    |> render_body(view_box, nodisplay_selectors)
+          # Set context for the ring
+          {:ok, ring_with_context} =
+            ring
+            |> Ash.Changeset.for_update(:set_context, %{
+              context: %{
+                radius: current_radius,
+                layer_index: idx,
+                ring_width: ring_width,
+                outer_radius: current_radius,
+                inner_radius: current_radius - ring_width
+              }
+            })
+            |> Ash.update()
+
+          # Create elements for this ring layer
+          debug_outer = circle_element([
+            {"class", "debug"},
+            {"cx", "0"},
+            {"cy", "0"},
+            {"r", to_string(current_radius)},
+            {"stroke-width", "1"}
+          ])
+
+          bottom_channel_elem = if bottom_channel? do
+            bottom_rotating_channel_element(current_radius - ring_width - radial_padding / 2, 2 * ring_width + 10)
+          else
+            nil
+          end
+
+          # Get ring content directly as tree structure
+          ring_tree = Renderable.render(ring_with_context)
+
+          debug_inner = circle_element([
+            {"class", "debug"},
+            {"cx", "0"},
+            {"cy", "0"},
+            {"r", to_string(current_radius - ring_width)},
+            {"stroke-width", "1"}
+          ])
+
+          new_elements = [debug_outer, bottom_channel_elem] ++ List.wrap(ring_tree) ++ [debug_inner]
+                         |> Enum.reject(&is_nil/1)
+                         |> List.flatten()
+
+          {
+            current_radius - ring_width - radial_padding,
+            next_layer_index(ring, idx),
+            elements_acc ++ new_elements
+          }
+        end
+      )
+
+    all_elements = [board_edge] ++ ring_elements
+
+    render_body_as_tree(all_elements, view_box, nodisplay_selectors)
   end
 
   defp calculate_ring_widths(rings, radius, radial_padding, center_space) do
@@ -263,64 +297,77 @@ defmodule PerceptronApparatus.Board do
     end)
   end
 
-  def render_body(body, view_box, nodisplay_selectors) do
+  defp render_body_as_tree(elements, view_box, nodisplay_selectors) do
+    style_content = build_style_content(nodisplay_selectors)
+    style_elem = style_element(style_content)
+
+    svg_root(view_box, [style_elem | List.flatten(elements)])
+    |> tree_to_html()
+  end
+
+  defp build_style_content(nodisplay_selectors) do
+    base_styles = """
+    text {
+      font-family: "Libertinus Sans";
+      font-size: 12px;
+    }
+    .full {
+      stroke-width: 1;
+      stroke: #6ab04c;
+    }
+    .slider {
+      stroke: #f0932b;
+    }
+    .top.slider {
+      stroke-width: 3;
+    }
+    .bottom.slider {
+      stroke-width: 8;
+      opacity: 0.3;
+    }
+    .bottom.rotating {
+      stroke: #f0932b;
+      opacity: 0.3;
+    }
+    .etch {
+      stroke-width: 0.5;
+      stroke: black;
+    }
+    .etch.heavy {
+      stroke-width: 1.5;
+    }
+    text {
+      fill: black;
+      stroke: none;
+    }
+    text.indices{
+      font-size: 8px;
+    }
+    .debug {
+      display: none;
+      stroke: red;
+      fill: transparent;
+    }
     """
-    <svg viewBox="#{view_box}" stroke="black" fill="transparent" stroke-width="1" xmlns="http://www.w3.org/2000/svg">
-      <style>
-      text {
-        font-family: "Libertinus Sans";
-        font-size: 12px;
-      }
-      #{Enum.map(nodisplay_selectors, fn s -> "#{s} { display: none; }" end) |> Enum.join("\n")}
-      .full {
-        stroke-width: 1;
-        stroke: #6ab04c;
-      }
-      .slider {
-        stroke: #f0932b;
-      }
-      .top.slider {
-        stroke-width: 3;
-      }
-      .bottom.slider {
-        stroke-width: 8;
-        opacity: 0.3;
-      }
-      .bottom.rotating {
-        stroke: #f0932b;
-        opacity: 0.3;
-      }
-      .etch {
-        stroke-width: 0.5;
-        stroke: black;
-      }
-      .etch.heavy {
-        stroke-width: 1.5;
-      }
-      text {
-        fill: black;
-        stroke: none;
-      }
-      text.indices{
-        font-size: 8px;
-      }
-      .debug {
-        display: none;
-        stroke: red;
-        fill: transparent;
-      }
-      </style>
-      #{body}
-    </svg>
-    """
+
+    nodisplay_styles = 
+      nodisplay_selectors
+      |> Enum.map(fn s -> "#{s} { display: none; }" end)
+      |> Enum.join("\n")
+
+    base_styles <> "\n" <> nodisplay_styles
   end
 
   defp next_layer_index(%RuleRing{}, idx), do: idx
   defp next_layer_index(_ring, idx), do: idx + 1
 
-  defp bottom_rotating_channel(radius, width) do
-    """
-    <circle class="bottom rotating" cx="0" cy="0" r="#{radius}" stroke-width="#{width}"/>
-    """
+  defp bottom_rotating_channel_element(radius, width) do
+    circle_element([
+      {"class", "bottom rotating"},
+      {"cx", "0"},
+      {"cy", "0"},
+      {"r", to_string(radius)},
+      {"stroke-width", to_string(width)}
+    ])
   end
 end

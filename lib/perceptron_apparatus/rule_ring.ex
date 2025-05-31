@@ -7,6 +7,7 @@ defmodule PerceptronApparatus.RuleRing do
     domain: PerceptronApparatus
 
   alias Decimal, as: D
+  import PerceptronApparatus.Utils, only: [group_element: 2, text_element: 2, circle_element: 1, line_element: 1]
 
   actions do
     defaults [:read]
@@ -50,20 +51,46 @@ defmodule PerceptronApparatus.RuleRing do
   def render(radius, rule) do
     tick_length = 10
 
-    labels =
+    rule_groups =
       rule
       |> Enum.map(fn {outer_label, theta, inner_label} ->
-        """
-          <g transform="rotate(#{-theta})" >
-            <line class="top etch" x1="0" y1="#{radius - tick_length}" x2="0" y2="#{radius + tick_length}" />
-            <text class="top etch" x="0" y="#{radius + 2.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{outer_label}</text>
-            <text class="top etch" x="0" y="#{radius - 1.5 * tick_length}" text-anchor="middle" dominant-baseline="auto">#{inner_label}</text>
-          </g>
-        """
-      end)
-      |> Enum.join()
+        line_elem = line_element([
+          {"class", "top etch"},
+          {"x1", "0"},
+          {"y1", to_string(radius - tick_length)},
+          {"x2", "0"},
+          {"y2", to_string(radius + tick_length)}
+        ])
 
-    labels <> ~s|<circle class="top full" cx="0" cy="0" r="#{radius}" />|
+        outer_text = text_element(outer_label || "", [
+          {"class", "top etch"},
+          {"x", "0"},
+          {"y", to_string(radius + 2.5 * tick_length)},
+          {"text-anchor", "middle"},
+          {"dominant-baseline", "auto"}
+        ])
+
+        inner_text = text_element(inner_label || "", [
+          {"class", "top etch"},
+          {"x", "0"},
+          {"y", to_string(radius - 1.5 * tick_length)},
+          {"text-anchor", "middle"},
+          {"dominant-baseline", "auto"}
+        ])
+
+        group_element([line_elem, outer_text, inner_text], [
+          {"transform", "rotate(#{-theta})"}
+        ])
+      end)
+
+    circle_elem = circle_element([
+      {"class", "top full"},
+      {"cx", "0"},
+      {"cy", "0"},
+      {"r", to_string(radius)}
+    ])
+
+    rule_groups ++ [circle_elem]
   end
 
   # no params for log_rule, since it only really makes sense for rules which range from 1.0 - 9.9

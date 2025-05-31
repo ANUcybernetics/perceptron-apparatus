@@ -8,6 +8,7 @@ defmodule PerceptronApparatus.AzimuthalRing do
 
   alias Decimal, as: D
   import PerceptronApparatus.Utils, only: [deg2rad: 1]
+  import PerceptronApparatus.Utils
 
   actions do
     defaults [:read]
@@ -61,58 +62,81 @@ defmodule PerceptronApparatus.AzimuthalRing do
     # range (where the labels will go)
     az_padding = 700 / radius + theta_sweep / 36
 
-    labels =
+    rule_lines =
       rule
       |> Enum.map(fn {label, val} ->
         theta =
           az_padding +
             (theta_sweep - 2 * az_padding) * (D.to_float(val) - range_min) / dynamic_range
 
-        """
-          <line transform="rotate(#{-theta})" class="top etch #{label && "heavy"}" x1="0" x2="0" y1="#{radius - tick_length / 2}" y2="#{radius + tick_length / 2}" />
-        """
+        line_class = if label, do: "top etch heavy", else: "top etch"
+        
+        line_element([
+          {"transform", "rotate(#{-theta})"},
+          {"class", line_class},
+          {"x1", "0"},
+          {"x2", "0"},
+          {"y1", to_string(radius - tick_length / 2)},
+          {"y2", to_string(radius + tick_length / 2)}
+        ])
       end)
-      |> List.insert_at(
-        0,
-        """
-          <text transform="rotate(#{-(0.7 * az_padding)})"
-                class="top etch" x="0" y="#{radius}"
-                text-anchor="end" dominant-baseline="middle"
-                >#{rule |> List.first() |> elem(0)}</text>
-        """
-      )
-      |> List.insert_at(
-        -1,
-        """
-          <text transform="rotate(#{-(theta_sweep - 0.7 * az_padding)})"
-                class="top etch" x="0" y="#{radius}"
-                text-anchor="start" dominant-baseline="middle"
-                >#{rule |> List.last() |> elem(0)}</text>
-        """
-      )
-      |> List.insert_at(
-        -1,
-        """
-          <text transform="rotate(#{-0.5 * theta_sweep})"
-                class="top etch indices" x="0" y="#{radius - tick_length}"
-                text-anchor="middle" dominant-baseline="middle"
-                >#{<<64 + layer_index>>}#{number + 1}</text>
-        """
-      )
-      |> Enum.join()
+
+    first_label_text = text_element(
+      rule |> List.first() |> elem(0) || "",
+      [
+        {"transform", "rotate(#{-(0.7 * az_padding)})"},
+        {"class", "top etch"},
+        {"x", "0"},
+        {"y", to_string(radius)},
+        {"text-anchor", "end"},
+        {"dominant-baseline", "middle"}
+      ]
+    )
+
+    last_label_text = text_element(
+      rule |> List.last() |> elem(0) || "",
+      [
+        {"transform", "rotate(#{-(theta_sweep - 0.7 * az_padding)})"},
+        {"class", "top etch"},
+        {"x", "0"},
+        {"y", to_string(radius)},
+        {"text-anchor", "start"},
+        {"dominant-baseline", "middle"}
+      ]
+    )
+
+    index_text = text_element(
+      "#{<<64 + layer_index>>}#{number + 1}",
+      [
+        {"transform", "rotate(#{-0.5 * theta_sweep})"},
+        {"class", "top etch indices"},
+        {"x", "0"},
+        {"y", to_string(radius - tick_length)},
+        {"text-anchor", "middle"},
+        {"dominant-baseline", "middle"}
+      ]
+    )
 
     x1 = radius * :math.sin(deg2rad(az_padding))
     y1 = radius * :math.cos(deg2rad(az_padding))
     x2 = radius * :math.sin(deg2rad(theta_sweep - az_padding))
     y2 = radius * :math.cos(deg2rad(theta_sweep - az_padding))
 
-    """
-    <g transform="rotate(#{-theta_offset})"  >
-      #{labels}
-      <path class="bottom slider" stroke-linecap="round" d="M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}" />
-      <path class="top slider" stroke-linecap="round" d="M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}" />
-    </g>
-    """
+    bottom_path = path_element([
+      {"class", "bottom slider"},
+      {"stroke-linecap", "round"},
+      {"d", "M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}"}
+    ])
+
+    top_path = path_element([
+      {"class", "top slider"},
+      {"stroke-linecap", "round"},
+      {"d", "M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}"}
+    ])
+
+    children = [first_label_text | rule_lines] ++ [last_label_text, index_text, bottom_path, top_path]
+
+    group_element(children, [{"transform", "rotate(#{-theta_offset})"}])
   end
 
   def render(radius, sliders, rule, layer_index) do
@@ -122,7 +146,6 @@ defmodule PerceptronApparatus.AzimuthalRing do
     |> Enum.map(fn i ->
       render_slider(radius, theta_sweep, rule, {layer_index, i})
     end)
-    |> Enum.join()
   end
 end
 
