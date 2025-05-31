@@ -6,6 +6,7 @@
 
 # Start the application
 Mix.install([
+  :lazy_html,
   {:perceptron_apparatus, path: "."}
 ])
 
