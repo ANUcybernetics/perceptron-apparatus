@@ -175,8 +175,8 @@ defmodule PerceptronApparatus.Board do
     %{size: size, rings: rings} = apparatus
 
     radius = size / 2
-    radial_padding = 30
-    center_space = 100
+    radial_padding = 25
+    center_space = 150
     svg_padding = 10
 
     # Calculate optimal ring widths with automatic spacing
