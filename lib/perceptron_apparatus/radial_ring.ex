@@ -130,7 +130,7 @@ defmodule PerceptronApparatus.RadialRing do
         |> Enum.filter(fn {label, _r} -> label end)
         |> Enum.map(fn {label, r} ->
           """
-           <text class="top etch heavy" x="0" y="#{r + 1}"
+           <text class="top etch" x="0" y="#{r + 1}"
                  text-anchor="middle" dominant-baseline="middle"
                  >#{label}</text>
           """

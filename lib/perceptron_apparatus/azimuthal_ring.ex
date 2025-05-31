@@ -76,7 +76,7 @@ defmodule PerceptronApparatus.AzimuthalRing do
         0,
         """
           <text transform="rotate(#{-(0.7 * az_padding)})"
-                class="top etch heavy" x="0" y="#{radius}"
+                class="top etch" x="0" y="#{radius}"
                 text-anchor="end" dominant-baseline="middle"
                 >#{rule |> List.first() |> elem(0)}</text>
         """
@@ -85,7 +85,7 @@ defmodule PerceptronApparatus.AzimuthalRing do
         -1,
         """
           <text transform="rotate(#{-(theta_sweep - 0.7 * az_padding)})"
-                class="top etch heavy" x="0" y="#{radius}"
+                class="top etch" x="0" y="#{radius}"
                 text-anchor="start" dominant-baseline="middle"
                 >#{rule |> List.last() |> elem(0)}</text>
         """

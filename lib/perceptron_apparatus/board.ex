@@ -214,7 +214,7 @@ defmodule PerceptronApparatus.Board do
           current_radius - ring_width - radial_padding,
           next_layer_index(ring, idx),
           """
-          #{bottom_channel? && bottom_rotating_channel(current_radius - ring_width - radial_padding / 2, radial_padding + 10)}
+          #{bottom_channel? && bottom_rotating_channel(current_radius - ring_width - radial_padding / 2, 2 * ring_width + 10)}
           #{output}
           <circle class="debug" cx="0" cy="0" r="#{current_radius}" stroke-width="1"/>
           #{Renderable.render(ring_with_context)}
@@ -225,7 +225,7 @@ defmodule PerceptronApparatus.Board do
     )
     # add the "board edge" circle
     |> then(fn {_, _, output} ->
-      ~s|<circle cx="0" cy="0" r="#{radius}" stroke-width="2"/>| <> output
+      ~s|<circle class="full" cx="0" cy="0" r="#{radius}" stroke-width="2"/>| <> output
     end)
     |> render_body(view_box, nodisplay_selectors)
   end
@@ -292,19 +292,17 @@ defmodule PerceptronApparatus.Board do
       }
       .etch {
         stroke-width: 0.5;
-        stroke: #4834d4;
-      }
-      text.etch.heavy{
-        stroke-width: 0.5;
-        fill: none;
+        stroke: black;
       }
       .etch.heavy {
-        stroke-width: 2;
-        stroke: #eb4d4b;
+        stroke-width: 1.5;
+      }
+      text {
+        fill: black;
+        stroke: none;
       }
       text.indices{
         font-size: 8px;
-        text-decoration: solid overline;
       }
       .debug {
         display: none;
