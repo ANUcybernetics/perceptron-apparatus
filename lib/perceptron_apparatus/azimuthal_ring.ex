@@ -96,7 +96,7 @@ defmodule PerceptronApparatus.AzimuthalRing do
           <text transform="rotate(#{-0.5 * theta_sweep})"
                 class="top etch indices" x="0" y="#{radius - tick_length}"
                 text-anchor="middle" dominant-baseline="middle"
-                >#{Roman.encode!(layer_index)}-#{number + 1}</text>
+                >#{<<64 + layer_index>>}#{number + 1}</text>
         """
       )
       |> Enum.join()

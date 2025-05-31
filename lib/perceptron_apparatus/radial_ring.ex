@@ -78,7 +78,7 @@ defmodule PerceptronApparatus.RadialRing do
       """
         <text transform="rotate(#{-(theta_offset + 0.5 * theta_sweep)})" class="top etch indices" x="0" y="#{radius - width - 10}"
               text-anchor="middle" dominant-baseline="middle"
-              >#{Roman.encode!(layer_index)}-#{group_index + 1}</text>
+              >#{<<64 + layer_index>>}#{group_index + 1}</text>
       """
     )
     |> Enum.join()

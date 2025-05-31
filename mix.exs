@@ -24,7 +24,6 @@ defmodule PerceptronApparatus.MixProject do
     [
       {:ash_ops, "~> 0.2"},
       {:decimal, "~> 2.0"},
-      {:roman, "~> 0.2"},
       {:sourceror, "~> 1.8", only: [:dev, :test]},
       {:ash, "~> 3.0"},
       {:igniter, "~> 0.5", only: [:dev, :test]}
