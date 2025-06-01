@@ -1,4 +1,4 @@
 defprotocol PerceptronApparatus.Renderable do
-  @spec render(t) :: String.t()
+  @spec render(t) :: list()
   def render(renderable)
 end
