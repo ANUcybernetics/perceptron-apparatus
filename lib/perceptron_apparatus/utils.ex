@@ -128,12 +128,14 @@ defmodule PerceptronApparatus.Utils do
     tree
     |> LazyHTML.from_tree()
     |> LazyHTML.to_html()
+    |> String.replace("viewbox=", "viewBox=")
   end
 
   def tree_to_html(tree_node) do
     [tree_node]
     |> LazyHTML.from_tree()
     |> LazyHTML.to_html()
+    |> String.replace("viewbox=", "viewBox=")
   end
 
   @doc """
