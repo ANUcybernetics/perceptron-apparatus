@@ -11,7 +11,7 @@ defmodule PerceptronApparatus.Board do
   import PerceptronApparatus.Utils
 
   code_interface do
-    define :create, args: [:size, :n_input, :n_hidden, :n_output]
+    # :create is now manually defined
     define :read
   end
 
@@ -34,6 +34,7 @@ defmodule PerceptronApparatus.Board do
         # Set the rings on the changeset
         Ash.Changeset.change_attribute(changeset, :rings, rings)
       end
+      # Removed after_action hook. File writing is now handled in the manual create/4 function.
     end
 
     update :add_ring do
@@ -54,6 +55,40 @@ defmodule PerceptronApparatus.Board do
     attribute :n_hidden, :integer, allow_nil?: false
     attribute :n_output, :integer, allow_nil?: false
     attribute :rings, :term, default: []
+  end
+
+  @doc """
+  Creates a new Board resource with the given parameters and writes SVG files.
+  This function manually implements the code interface for `:create` to ensure
+  file writing occurs after successful resource creation.
+  """
+  def create(size, n_input, n_hidden, n_output) do
+    input = %{
+      size: size,
+      n_input: n_input,
+      n_hidden: n_hidden,
+      n_output: n_output
+    }
+
+    # Create a changeset for the action
+    changeset = Ash.Changeset.for_create(__MODULE__, :create, input)
+
+    # Execute the Ash action
+    case Ash.create(changeset) do
+      {:ok, board_resource} ->
+        # On successful creation, write the CNC files
+        output_dir_for_svg_folder = "." # Assumes current working directory for "svg" folder
+        File.mkdir_p!("#{output_dir_for_svg_folder}/svg")
+
+        filename_prefix = "board_#{board_resource.id}"
+        Utils.write_cnc_files!(board_resource, output_dir_for_svg_folder, filename_prefix)
+
+        {:ok, board_resource}
+
+      error_or_other ->
+        # Pass through any errors or other results from the Ash action
+        error_or_other
+    end
   end
 
   @type t :: %__MODULE__{

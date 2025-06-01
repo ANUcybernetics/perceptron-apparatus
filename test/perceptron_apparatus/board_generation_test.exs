@@ -1,0 +1,95 @@
+defmodule PerceptronApparatus.BoardGenerationTest do
+  # File system operations, use async: false
+  use ExUnit.Case, async: false
+
+  alias PerceptronApparatus.Board
+
+  # Define at module level for clarity
+  @output_dir "svg"
+
+  setup do
+    # Ensure the svg directory is clean and exists before each test
+    File.rm_rf!(@output_dir)
+    File.mkdir_p!(@output_dir)
+
+    # Define a cleanup function to run after each test
+    on_exit(fn ->
+      File.rm_rf!(@output_dir)
+    end)
+
+    :ok
+  end
+
+  describe "PerceptronApparatus.Board generation" do
+    test "creates a board and generates SVG files via Ash action" do
+      # Parameters for the Ash action
+      params = %{
+        size: 250.0,
+        n_input: 3,
+        n_hidden: 2,
+        n_output: 1
+      }
+
+      # Execute the Ash action
+      case Board.create(params.size, params.n_input, params.n_hidden, params.n_output) do
+        {:ok, board} ->
+          # The after_action hook in Board resource should have created the files.
+          # Use board.id to construct expected filenames.
+          filename_base = "board_#{board.id}"
+
+          # Verify that the output directory and SVG files were created
+      assert File.exists?(@output_dir), "Output directory '#{@output_dir}' was not created."
+
+      svg_files =
+        case File.ls(@output_dir) do
+          {:ok, files} ->
+            files
+
+          {:error, reason} ->
+            flunk("Failed to list files in '#{@output_dir}': #{inspect(reason)}")
+        end
+
+      # 1. Check for the main board SVG file (e.g., board_<uuid>.svg)
+      # The UUID part means we need to use a pattern.
+      # With direct Ash call, we know the filename_base.
+      main_board_file_name = filename_base <> ".svg"
+
+      assert Enum.member?(svg_files, main_board_file_name),
+             "Expected main board SVG file '#{main_board_file_name}' not found. Files: #{inspect(svg_files)}"
+
+      # 2. Check for the expected derivative SVG files.
+      # These suffixes are based on `cut_selectors` in `PerceptronApparatus.Utils.write_cnc_files!/3`
+      # and the `String.replace(cut, ".", "-")` logic.
+      expected_derivative_suffixes = [
+        # from ".top.slider"
+        "-top-slider",
+        # from ".bottom"
+        "-bottom",
+        # from ".top.etch"
+        "-top-etch",
+        # from ".top.etch.heavy"
+        "-top-etch-heavy",
+        # from ".top.full"
+        "-top-full"
+      ]
+
+      expected_derivative_files =
+        Enum.map(expected_derivative_suffixes, fn suffix -> filename_base <> suffix <> ".svg" end)
+
+      for expected_file <- expected_derivative_files do
+        assert Enum.member?(svg_files, expected_file),
+               "Expected derivative SVG file '#{expected_file}' not found in generated files: #{inspect(svg_files)}"
+      end
+
+      # 3. Verify the total number of expected files.
+      # This should be 1 (main board file) + the number of `cut_selectors`.
+      total_expected_files = 1 + length(expected_derivative_suffixes)
+      assert length(svg_files) == total_expected_files,
+             "Expected #{total_expected_files} total SVG files, but found #{length(svg_files)}. Files: #{inspect(svg_files)}"
+
+        {:error, changeset} ->
+          flunk("Ash action failed: #{inspect(changeset)}")
+      end
+    end
+  end
+end
