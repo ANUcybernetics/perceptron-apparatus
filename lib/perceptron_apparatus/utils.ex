@@ -149,7 +149,7 @@ defmodule PerceptronApparatus.Utils do
       {"stroke-width", "1"},
       {"xmlns", "http://www.w3.org/2000/svg"}
     ]
-    
+
     attributes = base_attributes ++ extra_attributes
     {"svg", attributes, children}
   end

@@ -38,54 +38,57 @@ defmodule PerceptronApparatus.BoardGenerationTest do
           filename_base = "board_#{board.id}"
 
           # Verify that the output directory and SVG files were created
-      assert File.exists?(@output_dir), "Output directory '#{@output_dir}' was not created."
+          assert File.exists?(@output_dir), "Output directory '#{@output_dir}' was not created."
 
-      svg_files =
-        case File.ls(@output_dir) do
-          {:ok, files} ->
-            files
+          svg_files =
+            case File.ls(@output_dir) do
+              {:ok, files} ->
+                files
 
-          {:error, reason} ->
-            flunk("Failed to list files in '#{@output_dir}': #{inspect(reason)}")
-        end
+              {:error, reason} ->
+                flunk("Failed to list files in '#{@output_dir}': #{inspect(reason)}")
+            end
 
-      # 1. Check for the main board SVG file (e.g., board_<uuid>.svg)
-      # The UUID part means we need to use a pattern.
-      # With direct Ash call, we know the filename_base.
-      main_board_file_name = filename_base <> ".svg"
+          # 1. Check for the main board SVG file (e.g., board_<uuid>.svg)
+          # The UUID part means we need to use a pattern.
+          # With direct Ash call, we know the filename_base.
+          main_board_file_name = filename_base <> ".svg"
 
-      assert Enum.member?(svg_files, main_board_file_name),
-             "Expected main board SVG file '#{main_board_file_name}' not found. Files: #{inspect(svg_files)}"
+          assert Enum.member?(svg_files, main_board_file_name),
+                 "Expected main board SVG file '#{main_board_file_name}' not found. Files: #{inspect(svg_files)}"
 
-      # 2. Check for the expected derivative SVG files.
-      # These suffixes are based on `cut_selectors` in `PerceptronApparatus.Utils.write_cnc_files!/3`
-      # and the `String.replace(cut, ".", "-")` logic.
-      expected_derivative_suffixes = [
-        # from ".top.slider"
-        "-top-slider",
-        # from ".bottom"
-        "-bottom",
-        # from ".top.etch"
-        "-top-etch",
-        # from ".top.etch.heavy"
-        "-top-etch-heavy",
-        # from ".top.full"
-        "-top-full"
-      ]
+          # 2. Check for the expected derivative SVG files.
+          # These suffixes are based on `cut_selectors` in `PerceptronApparatus.Utils.write_cnc_files!/3`
+          # and the `String.replace(cut, ".", "-")` logic.
+          expected_derivative_suffixes = [
+            # from ".top.slider"
+            "-top-slider",
+            # from ".bottom"
+            "-bottom",
+            # from ".top.etch"
+            "-top-etch",
+            # from ".top.etch.heavy"
+            "-top-etch-heavy",
+            # from ".top.full"
+            "-top-full"
+          ]
 
-      expected_derivative_files =
-        Enum.map(expected_derivative_suffixes, fn suffix -> filename_base <> suffix <> ".svg" end)
+          expected_derivative_files =
+            Enum.map(expected_derivative_suffixes, fn suffix ->
+              filename_base <> suffix <> ".svg"
+            end)
 
-      for expected_file <- expected_derivative_files do
-        assert Enum.member?(svg_files, expected_file),
-               "Expected derivative SVG file '#{expected_file}' not found in generated files: #{inspect(svg_files)}"
-      end
+          for expected_file <- expected_derivative_files do
+            assert Enum.member?(svg_files, expected_file),
+                   "Expected derivative SVG file '#{expected_file}' not found in generated files: #{inspect(svg_files)}"
+          end
 
-      # 3. Verify the total number of expected files.
-      # This should be 1 (main board file) + the number of `cut_selectors`.
-      total_expected_files = 1 + length(expected_derivative_suffixes)
-      assert length(svg_files) == total_expected_files,
-             "Expected #{total_expected_files} total SVG files, but found #{length(svg_files)}. Files: #{inspect(svg_files)}"
+          # 3. Verify the total number of expected files.
+          # This should be 1 (main board file) + the number of `cut_selectors`.
+          total_expected_files = 1 + length(expected_derivative_suffixes)
+
+          assert length(svg_files) == total_expected_files,
+                 "Expected #{total_expected_files} total SVG files, but found #{length(svg_files)}. Files: #{inspect(svg_files)}"
 
         {:error, changeset} ->
           flunk("Ash action failed: #{inspect(changeset)}")

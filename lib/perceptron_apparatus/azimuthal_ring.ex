@@ -70,7 +70,7 @@ defmodule PerceptronApparatus.AzimuthalRing do
             (theta_sweep - 2 * az_padding) * (D.to_float(val) - range_min) / dynamic_range
 
         line_class = if label, do: "top etch heavy", else: "top etch"
-        
+
         line_element([
           {"transform", "rotate(#{-theta})"},
           {"class", line_class},
@@ -81,60 +81,66 @@ defmodule PerceptronApparatus.AzimuthalRing do
         ])
       end)
 
-    first_label_text = text_element(
-      rule |> List.first() |> elem(0) || "",
-      [
-        {"transform", "rotate(#{-(0.7 * az_padding)})"},
-        {"class", "top etch"},
-        {"x", "0"},
-        {"y", to_string(radius)},
-        {"text-anchor", "end"},
-        {"dominant-baseline", "middle"}
-      ]
-    )
+    first_label_text =
+      text_element(
+        rule |> List.first() |> elem(0) || "",
+        [
+          {"transform", "rotate(#{-(0.7 * az_padding)})"},
+          {"class", "top etch"},
+          {"x", "0"},
+          {"y", to_string(radius)},
+          {"text-anchor", "end"},
+          {"dominant-baseline", "middle"}
+        ]
+      )
 
-    last_label_text = text_element(
-      rule |> List.last() |> elem(0) || "",
-      [
-        {"transform", "rotate(#{-(theta_sweep - 0.7 * az_padding)})"},
-        {"class", "top etch"},
-        {"x", "0"},
-        {"y", to_string(radius)},
-        {"text-anchor", "start"},
-        {"dominant-baseline", "middle"}
-      ]
-    )
+    last_label_text =
+      text_element(
+        rule |> List.last() |> elem(0) || "",
+        [
+          {"transform", "rotate(#{-(theta_sweep - 0.7 * az_padding)})"},
+          {"class", "top etch"},
+          {"x", "0"},
+          {"y", to_string(radius)},
+          {"text-anchor", "start"},
+          {"dominant-baseline", "middle"}
+        ]
+      )
 
-    index_text = text_element(
-      "#{<<64 + layer_index>>}#{number + 1}",
-      [
-        {"transform", "rotate(#{-0.5 * theta_sweep})"},
-        {"class", "top etch indices"},
-        {"x", "0"},
-        {"y", to_string(radius - tick_length)},
-        {"text-anchor", "middle"},
-        {"dominant-baseline", "middle"}
-      ]
-    )
+    index_text =
+      text_element(
+        "#{<<64 + layer_index>>}#{number + 1}",
+        [
+          {"transform", "rotate(#{-0.5 * theta_sweep})"},
+          {"class", "top etch indices"},
+          {"x", "0"},
+          {"y", to_string(radius - tick_length)},
+          {"text-anchor", "middle"},
+          {"dominant-baseline", "middle"}
+        ]
+      )
 
     x1 = radius * :math.sin(deg2rad(az_padding))
     y1 = radius * :math.cos(deg2rad(az_padding))
     x2 = radius * :math.sin(deg2rad(theta_sweep - az_padding))
     y2 = radius * :math.cos(deg2rad(theta_sweep - az_padding))
 
-    bottom_path = path_element([
-      {"class", "bottom slider"},
-      {"stroke-linecap", "round"},
-      {"d", "M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}"}
-    ])
+    bottom_path =
+      path_element([
+        {"class", "bottom slider"},
+        {"stroke-linecap", "round"},
+        {"d", "M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}"}
+      ])
 
-    top_path = path_element([
-      {"class", "top slider"},
-      {"stroke-linecap", "round"},
-      {"d", "M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}"}
-    ])
+    top_path =
+      path_element([
+        {"class", "top slider"},
+        {"stroke-linecap", "round"},
+        {"d", "M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}"}
+      ])
 
-    children = [first_label_text | rule_lines] ++ [last_label_text, index_text, bottom_path, top_path]
+    children =
+      [first_label_text | rule_lines] ++ [last_label_text, index_text, bottom_path, top_path]
 
     group_element(children, [{"transform", "rotate(#{-theta_offset})"}])
   end

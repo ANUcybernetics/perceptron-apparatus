@@ -7,7 +7,9 @@ defmodule PerceptronApparatus.RuleRing do
     domain: PerceptronApparatus
 
   alias Decimal, as: D
-  import PerceptronApparatus.Utils, only: [group_element: 2, text_element: 2, circle_element: 1, line_element: 1]
+
+  import PerceptronApparatus.Utils,
+    only: [group_element: 2, text_element: 2, circle_element: 1, line_element: 1]
 
   actions do
     defaults [:read]
@@ -54,41 +56,45 @@ defmodule PerceptronApparatus.RuleRing do
     rule_groups =
       rule
       |> Enum.map(fn {outer_label, theta, inner_label} ->
-        line_elem = line_element([
-          {"class", "top etch"},
-          {"x1", "0"},
-          {"y1", to_string(radius - tick_length)},
-          {"x2", "0"},
-          {"y2", to_string(radius + tick_length)}
-        ])
+        line_elem =
+          line_element([
+            {"class", "top etch"},
+            {"x1", "0"},
+            {"y1", to_string(radius - tick_length)},
+            {"x2", "0"},
+            {"y2", to_string(radius + tick_length)}
+          ])
 
-        outer_text = text_element(outer_label || "", [
-          {"class", "top etch"},
-          {"x", "0"},
-          {"y", to_string(radius + 2.5 * tick_length)},
-          {"text-anchor", "middle"},
-          {"dominant-baseline", "auto"}
-        ])
+        outer_text =
+          text_element(outer_label || "", [
+            {"class", "top etch"},
+            {"x", "0"},
+            {"y", to_string(radius + 2.5 * tick_length)},
+            {"text-anchor", "middle"},
+            {"dominant-baseline", "auto"}
+          ])
 
-        inner_text = text_element(inner_label || "", [
-          {"class", "top etch"},
-          {"x", "0"},
-          {"y", to_string(radius - 1.5 * tick_length)},
-          {"text-anchor", "middle"},
-          {"dominant-baseline", "auto"}
-        ])
+        inner_text =
+          text_element(inner_label || "", [
+            {"class", "top etch"},
+            {"x", "0"},
+            {"y", to_string(radius - 1.5 * tick_length)},
+            {"text-anchor", "middle"},
+            {"dominant-baseline", "auto"}
+          ])
 
         group_element([line_elem, outer_text, inner_text], [
           {"transform", "rotate(#{-theta})"}
         ])
       end)
 
-    circle_elem = circle_element([
-      {"class", "top full"},
-      {"cx", "0"},
-      {"cy", "0"},
-      {"r", to_string(radius)}
-    ])
+    circle_elem =
+      circle_element([
+        {"class", "top full"},
+        {"cx", "0"},
+        {"cy", "0"},
+        {"r", to_string(radius)}
+      ])
 
     rule_groups ++ [circle_elem]
   end

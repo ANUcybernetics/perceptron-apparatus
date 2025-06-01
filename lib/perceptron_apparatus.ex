@@ -9,7 +9,10 @@ defmodule PerceptronApparatus do
   end
 
   resources do
-    resource PerceptronApparatus.Board
+    resource PerceptronApparatus.Board do
+      define :create_board, args: [:size, :n_input, :n_hidden, :n_output], action: :create
+    end
+
     resource PerceptronApparatus.RuleRing
     resource PerceptronApparatus.RadialRing
     resource PerceptronApparatus.AzimuthalRing

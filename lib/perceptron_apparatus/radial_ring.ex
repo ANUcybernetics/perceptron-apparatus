@@ -55,19 +55,21 @@ defmodule PerceptronApparatus.RadialRing do
   end
 
   def render_slider(radius, width, theta) do
-    bottom_path = path_element([
-      {"class", "bottom slider"},
-      {"transform", "rotate(#{-theta}) translate(0 #{radius})"},
-      {"stroke-linecap", "round"},
-      {"d", "M 0 0 v #{-width}"}
-    ])
+    bottom_path =
+      path_element([
+        {"class", "bottom slider"},
+        {"transform", "rotate(#{-theta}) translate(0 #{radius})"},
+        {"stroke-linecap", "round"},
+        {"d", "M 0 0 v #{-width}"}
+      ])
 
-    top_path = path_element([
-      {"class", "top slider"},
-      {"transform", "rotate(#{-theta}) translate(0 #{radius})"},
-      {"stroke-linecap", "round"},
-      {"d", "M 0 0 v #{-width}"}
-    ])
+    top_path =
+      path_element([
+        {"class", "top slider"},
+        {"transform", "rotate(#{-theta}) translate(0 #{radius})"},
+        {"stroke-linecap", "round"},
+        {"d", "M 0 0 v #{-width}"}
+      ])
 
     [bottom_path, top_path]
   end
@@ -81,24 +83,25 @@ defmodule PerceptronApparatus.RadialRing do
     # the extra 1s are to two "gaps" at the beginning and end of the [theta_sweep, theta_sweep + theta_offset] range (where the labels will go)
     theta_offset = theta_sweep * group_index
 
-    sliders = 
+    sliders =
       1..sliders_per_group
       |> Enum.map(fn i ->
         render_slider(radius, width, theta_offset + i * (theta_sweep / (sliders_per_group + 1)))
       end)
       |> List.flatten()
 
-    index_text = text_element(
-      "#{<<64 + layer_index>>}#{group_index + 1}",
-      [
-        {"transform", "rotate(#{-(theta_offset + 0.5 * theta_sweep)})"},
-        {"class", "top etch indices"},
-        {"x", "0"},
-        {"y", to_string(radius - width - 10)},
-        {"text-anchor", "middle"},
-        {"dominant-baseline", "middle"}
-      ]
-    )
+    index_text =
+      text_element(
+        "#{<<64 + layer_index>>}#{group_index + 1}",
+        [
+          {"transform", "rotate(#{-(theta_offset + 0.5 * theta_sweep)})"},
+          {"class", "top etch indices"},
+          {"x", "0"},
+          {"y", to_string(radius - width - 10)},
+          {"text-anchor", "middle"},
+          {"dominant-baseline", "middle"}
+        ]
+      )
 
     sliders ++ [index_text]
   end
@@ -132,7 +135,7 @@ defmodule PerceptronApparatus.RadialRing do
           |> Enum.join(" ")
 
         path_class = if label, do: "top etch heavy", else: "top etch"
-        
+
         path_element([
           {"class", path_class},
           {"d", arc_components}
@@ -173,7 +176,7 @@ defmodule PerceptronApparatus.RadialRing do
   def render(radius, width, groups, sliders_per_group, rule, layer_index) do
     theta_sweep = 360 / groups
 
-    groups_elements = 
+    groups_elements =
       0..(groups - 1)
       |> Enum.map(fn i ->
         render_group(radius, width, sliders_per_group, theta_sweep, i, layer_index)

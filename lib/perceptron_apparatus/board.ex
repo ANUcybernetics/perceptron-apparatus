@@ -10,11 +10,6 @@ defmodule PerceptronApparatus.Board do
   alias PerceptronApparatus.{AzimuthalRing, RadialRing, RuleRing, Renderable, Utils}
   import PerceptronApparatus.Utils
 
-  code_interface do
-    # :create is now manually defined
-    define :read
-  end
-
   actions do
     defaults [:read]
 
@@ -34,6 +29,7 @@ defmodule PerceptronApparatus.Board do
         # Set the rings on the changeset
         Ash.Changeset.change_attribute(changeset, :rings, rings)
       end
+
       # Removed after_action hook. File writing is now handled in the manual create/4 function.
     end
 
@@ -77,7 +73,8 @@ defmodule PerceptronApparatus.Board do
     case Ash.create(changeset) do
       {:ok, board_resource} ->
         # On successful creation, write the CNC files
-        output_dir_for_svg_folder = "." # Assumes current working directory for "svg" folder
+        # Assumes current working directory for "svg" folder
+        output_dir_for_svg_folder = "."
         File.mkdir_p!("#{output_dir_for_svg_folder}/svg")
 
         filename_prefix = "board_#{board_resource.id}"
@@ -222,13 +219,14 @@ defmodule PerceptronApparatus.Board do
       "-#{size / 2 + svg_padding} -#{size / 2 + svg_padding} #{size + 2 * svg_padding} #{size + 2 * svg_padding}"
 
     # Add the "board edge" circle
-    board_edge = circle_element([
-      {"class", "full"},
-      {"cx", "0"},
-      {"cy", "0"},
-      {"r", to_string(radius)},
-      {"stroke-width", "2"}
-    ])
+    board_edge =
+      circle_element([
+        {"class", "full"},
+        {"cx", "0"},
+        {"cy", "0"},
+        {"r", to_string(radius)},
+        {"stroke-width", "2"}
+      ])
 
     {_, _, ring_elements} =
       rings_with_widths
@@ -257,34 +255,41 @@ defmodule PerceptronApparatus.Board do
             |> Ash.update()
 
           # Create elements for this ring layer
-          debug_outer = circle_element([
-            {"class", "debug"},
-            {"cx", "0"},
-            {"cy", "0"},
-            {"r", to_string(current_radius)},
-            {"stroke-width", "1"}
-          ])
+          debug_outer =
+            circle_element([
+              {"class", "debug"},
+              {"cx", "0"},
+              {"cy", "0"},
+              {"r", to_string(current_radius)},
+              {"stroke-width", "1"}
+            ])
 
-          bottom_channel_elem = if bottom_channel? do
-            bottom_rotating_channel_element(current_radius - ring_width - radial_padding / 2, 2 * ring_width + 10)
-          else
-            nil
-          end
+          bottom_channel_elem =
+            if bottom_channel? do
+              bottom_rotating_channel_element(
+                current_radius - ring_width - radial_padding / 2,
+                2 * ring_width + 10
+              )
+            else
+              nil
+            end
 
           # Get ring content directly as tree structure
           ring_tree = Renderable.render(ring_with_context)
 
-          debug_inner = circle_element([
-            {"class", "debug"},
-            {"cx", "0"},
-            {"cy", "0"},
-            {"r", to_string(current_radius - ring_width)},
-            {"stroke-width", "1"}
-          ])
+          debug_inner =
+            circle_element([
+              {"class", "debug"},
+              {"cx", "0"},
+              {"cy", "0"},
+              {"r", to_string(current_radius - ring_width)},
+              {"stroke-width", "1"}
+            ])
 
-          new_elements = [debug_outer, bottom_channel_elem] ++ List.wrap(ring_tree) ++ [debug_inner]
-                         |> Enum.reject(&is_nil/1)
-                         |> List.flatten()
+          new_elements =
+            ([debug_outer, bottom_channel_elem] ++ List.wrap(ring_tree) ++ [debug_inner])
+            |> Enum.reject(&is_nil/1)
+            |> List.flatten()
 
           {
             current_radius - ring_width - radial_padding,
@@ -385,7 +390,7 @@ defmodule PerceptronApparatus.Board do
     }
     """
 
-    nodisplay_styles = 
+    nodisplay_styles =
       nodisplay_selectors
       |> Enum.map(fn s -> "#{s} { display: none; }" end)
       |> Enum.join("\n")

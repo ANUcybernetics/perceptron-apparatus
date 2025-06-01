@@ -27,7 +27,7 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert %RuleRing{} = ring1
       assert length(ring1.rule) > 0
 
-      # Ring 2: ReLU ring  
+      # Ring 2: ReLU ring
       assert %RuleRing{} = ring2
       assert length(ring2.rule) > 0
 
@@ -88,7 +88,7 @@ defmodule PerceptronApparatus.ResourcesTest do
     end
 
     test "code interface works" do
-      board = Board.create!(400.0, 5, 3, 2)
+      board = PerceptronApparatus.create_board!(400.0, 5, 3, 2)
 
       assert board.size == 400.0
       assert board.n_input == 5
@@ -143,7 +143,7 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert w1_ring.shape.groups == board.n_hidden
       assert w1_ring.shape.sliders_per_group == board.n_input
 
-      # W2: (output_size, hidden_size) = (2, 3)  
+      # W2: (output_size, hidden_size) = (2, 3)
       assert w2_ring.shape.groups == board.n_output
       assert w2_ring.shape.sliders_per_group == board.n_hidden
 
@@ -389,7 +389,7 @@ defmodule PerceptronApparatus.ResourcesTest do
 
     test "code interface works for full workflow" do
       # Create board using code interface
-      board = Board.create!(500.0, 5, 4, 3)
+      board = PerceptronApparatus.create_board!(500.0, 5, 4, 3)
 
       # Verify structure
       assert board.n_input == 5
