@@ -53,10 +53,6 @@ defmodule PerceptronApparatus.Utils do
     end)
   end
 
-  def write_cnc_files!(apparatus, dir, filename_prefix) do
-    File.write!("#{dir}/svg/#{filename_prefix}.svg", PerceptronApparatus.Board.render(apparatus))
-  end
-
   # LazyHTML helper functions for SVG generation
 
   @doc """

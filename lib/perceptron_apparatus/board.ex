@@ -38,11 +38,14 @@ defmodule PerceptronApparatus.Board do
         filename = input.arguments.filename
         board_resource = input.context.private.actor
 
-        # Write SVG files
-        output_dir_for_svg_folder = "."
-        File.mkdir_p!("#{output_dir_for_svg_folder}/svg")
+        # Extract directory and filename parts
+        output_dir = Path.dirname(filename)
+        base_filename = Path.basename(filename)
 
-        Utils.write_cnc_files!(board_resource, output_dir_for_svg_folder, filename)
+        # Ensure parent directory exists
+        File.mkdir_p!(output_dir)
+
+        File.write!(filename, PerceptronApparatus.Board.render(board_resource))
 
         :ok
       end
@@ -90,14 +93,14 @@ defmodule PerceptronApparatus.Board do
 
   def write_svg(board, filename) do
     # Execute the generic action
-    input = Ash.ActionInput.for_action(__MODULE__, :write_svg, %{filename: filename}, actor: board)
+    input =
+      Ash.ActionInput.for_action(__MODULE__, :write_svg, %{filename: filename}, actor: board)
+
     case Ash.run_action(input) do
       :ok -> {:ok, board}
       {:error, error} -> {:error, error}
     end
   end
-
-
 
   @doc """
   Creates the standard ring sequence for a perceptron apparatus.

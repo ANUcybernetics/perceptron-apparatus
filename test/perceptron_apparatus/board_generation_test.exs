@@ -34,36 +34,31 @@ defmodule PerceptronApparatus.BoardGenerationTest do
       case Board.create(params.size, params.n_input, params.n_hidden, params.n_output) do
         {:ok, board} ->
           # Now write the SVG file using the separate action
-          filename_base = "board_#{board.id}"
+          full_filename = "svg/test/board_#{board.id}.svg"
 
-          case Board.write_svg(board, filename_base) do
+          case Board.write_svg(board, full_filename) do
             {:ok, _updated_board} ->
               # Verify that the output directory and SVG files were created
-              assert File.exists?(@output_dir), "Output directory '#{@output_dir}' was not created."
+              assert File.exists?(@output_dir),
+                     "Output directory '#{@output_dir}' was not created."
 
-              svg_files =
-                case File.ls(@output_dir) do
-                  {:ok, files} ->
-                    files
+              # Verify that the test subdirectory was created
+              test_dir = Path.join([@output_dir, "test"])
+              assert File.exists?(test_dir),
+                     "Test subdirectory '#{test_dir}' was not created."
 
-                  {:error, reason} ->
-                    flunk("Failed to list files in '#{@output_dir}': #{inspect(reason)}")
-                end
+              # Check that the SVG file was actually created
+              assert File.exists?(full_filename),
+                     "Expected SVG file '#{full_filename}' was not created."
 
-              # 1. Check for the main board SVG file (e.g., board_<uuid>.svg)
-              # The UUID part means we need to use a pattern.
-              # With direct Ash call, we know the filename_base.
-              main_board_file_name = filename_base <> ".svg"
+              # Verify the file is not empty
+              {:ok, content} = File.read(full_filename)
+              assert String.length(content) > 0,
+                     "SVG file '#{full_filename}' is empty."
 
-              assert Enum.member?(svg_files, main_board_file_name),
-                     "Expected main board SVG file '#{main_board_file_name}' not found. Files: #{inspect(svg_files)}"
-
-              # 2. Verify the total number of expected files.
-              # This should be 1 (main board file) only.
-              total_expected_files = 1
-
-              assert length(svg_files) == total_expected_files,
-                     "Expected #{total_expected_files} total SVG file, but found #{length(svg_files)}. Files: #{inspect(svg_files)}"
+              # Verify it contains SVG content
+              assert String.contains?(content, "<svg"),
+                     "File '#{full_filename}' does not contain SVG content."
 
             {:error, changeset} ->
               flunk("SVG writing failed: #{inspect(changeset)}")

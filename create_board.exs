@@ -4,7 +4,11 @@
 
 IO.puts("Starting board creation process...")
 IO.puts("This script will create a neural network board and generate an SVG file.")
-IO.puts("The SVG file will be saved in the 'svg/' directory, relative to where you run the script.")
+
+IO.puts(
+  "The SVG file will be saved in the 'svg/' directory, relative to where you run the script."
+)
+
 IO.puts("---")
 
 # Define board parameters
@@ -22,26 +26,23 @@ IO.puts("---")
 
 # Create the board first
 IO.puts("Creating board...")
+
 case PerceptronApparatus.create_board(size, n_input, n_hidden, n_output) do
   {:ok, board} ->
     IO.puts("Board created successfully with ID: #{board.id}")
-    
+
     # Now generate the SVG file
-    filename_prefix = "board_#{board.id}"
-    output_svg_path = "svg/#{filename_prefix}.svg"
-    
+    filename = "svg/board.svg"
+
     IO.puts("Generating SVG file...")
-    case PerceptronApparatus.Board.write_svg(board, filename_prefix) do
+
+    case PerceptronApparatus.Board.write_svg(board, filename) do
       {:ok, _updated_board} ->
         IO.puts("")
         IO.puts("==================================================")
         IO.puts("  SUCCESS: Board created and SVG generated!  ")
         IO.puts("==================================================")
-        IO.puts("Board ID: #{board.id}")
-        IO.puts("SVG file has been saved to: #{output_svg_path}")
-        IO.puts("---")
-        IO.puts("You can now find the SVG file in the '#{File.cwd!()}/svg/' directory.")
-        IO.puts("To view the SVG, open '#{output_svg_path}' in a web browser or SVG viewer.")
+        IO.puts("SVG file has been saved to: #{filename}")
         IO.puts("==================================================")
         IO.puts("")
 
@@ -69,7 +70,11 @@ case PerceptronApparatus.create_board(size, n_input, n_hidden, n_output) do
     IO.inspect(changeset, pretty: true, width: 80)
     IO.puts("---")
     IO.puts("Board creation failed. Please check the error messages above.")
-    IO.puts("Ensure your Ash domain and resources are correctly configured and migrations (if any) are run.")
+
+    IO.puts(
+      "Ensure your Ash domain and resources are correctly configured and migrations (if any) are run."
+    )
+
     IO.puts("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     IO.puts("")
     # Exit with a non-zero status to indicate failure
