@@ -30,7 +30,16 @@ defmodule PerceptronApparatus.Board do
         Ash.Changeset.change_attribute(changeset, :rings, rings)
       end
 
-      # Removed after_action hook. File writing is now handled in the manual create/4 function.
+      after_action fn _changeset, board_resource, _context ->
+        # Write SVG files after successful board creation
+        output_dir_for_svg_folder = "."
+        File.mkdir_p!("#{output_dir_for_svg_folder}/svg")
+
+        filename_prefix = "board_#{board_resource.id}"
+        Utils.write_cnc_files!(board_resource, output_dir_for_svg_folder, filename_prefix)
+
+        {:ok, board_resource}
+      end
     end
 
     update :add_ring do
