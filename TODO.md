@@ -6,7 +6,8 @@
   well)
 - add drill holes for the PLA sliders (12 pairs 40mm apart)
 
-- add mix task for generating an svg file
+- have single rotating rule, make it the outer ring, perhaps a "knurled" edge?
+
 - (maybe) add ash_phoenix just to get tidewave/ash_ai support? (although seems a
   bit gross)
 - check with Sam about the most helpful way to output the different svg layer
