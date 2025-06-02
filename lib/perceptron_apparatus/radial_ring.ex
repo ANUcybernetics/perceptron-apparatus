@@ -30,17 +30,7 @@ defmodule PerceptronApparatus.RadialRing do
     attribute :context, :term, allow_nil?: true
   end
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          rule: [{Decimal.t() | nil, float()}],
-          # this is not the geometric shape, rather the shape of the corresponding matrix
-          # {n_groups, n_sliders_per_group}
-          shape: {integer(), integer},
-          # ring width (r_outer - r_inner)
-          width: float(),
-          # drawing context: {r_outer, layer_index}
-          context: {float(), integer()} | nil
-        }
+
 
   # Legacy function for backwards compatibility
   def new(shape, rule, opts \\ []) do

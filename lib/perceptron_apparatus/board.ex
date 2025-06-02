@@ -31,12 +31,12 @@ defmodule PerceptronApparatus.Board do
       end
     end
 
-    update :write_svg do
+    action :write_svg do
       argument :filename, :string, allow_nil?: false
 
-      change fn changeset, _context ->
-        filename = Ash.Changeset.get_argument(changeset, :filename)
-        board_resource = changeset.data
+      run fn input, _context ->
+        filename = input.arguments.filename
+        board_resource = input.context.private.actor
 
         # Write SVG files
         output_dir_for_svg_folder = "."
@@ -44,7 +44,7 @@ defmodule PerceptronApparatus.Board do
 
         Utils.write_cnc_files!(board_resource, output_dir_for_svg_folder, filename)
 
-        changeset
+        :ok
       end
     end
 
@@ -89,21 +89,15 @@ defmodule PerceptronApparatus.Board do
   end
 
   def write_svg(board, filename) do
-    # Create a changeset for the write_svg action
-    changeset = Ash.Changeset.for_update(board, :write_svg, %{filename: filename})
-
-    # Execute the Ash action
-    Ash.update(changeset)
+    # Execute the generic action
+    input = Ash.ActionInput.for_action(__MODULE__, :write_svg, %{filename: filename}, actor: board)
+    case Ash.run_action(input) do
+      :ok -> {:ok, board}
+      {:error, error} -> {:error, error}
+    end
   end
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          size: float(),
-          n_input: integer(),
-          n_hidden: integer(),
-          n_output: integer(),
-          rings: [map()]
-        }
+
 
   @doc """
   Creates the standard ring sequence for a perceptron apparatus.

@@ -30,15 +30,7 @@ defmodule PerceptronApparatus.RuleRing do
     attribute :context, :term, allow_nil?: true
   end
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          # rule is a list of {outer_label, theta, inner_label} tuples
-          rule: [{Decimal.t() | nil, float(), Decimal.t() | nil}],
-          # ring width (fixed for slide rules)
-          width: float(),
-          # drawing context: {outer_radius, layer_index}
-          context: {float(), integer()} | nil
-        }
+
 
   # Legacy function for backwards compatibility
   def new(rule) do

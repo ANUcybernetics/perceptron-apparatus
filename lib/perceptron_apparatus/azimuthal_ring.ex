@@ -30,17 +30,7 @@ defmodule PerceptronApparatus.AzimuthalRing do
     attribute :context, :term, allow_nil?: true
   end
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          rule: [{Decimal.t() | nil, float()}],
-          # no groups for azimuthal sliders, just the number of sliders
-          # this is not the geometric shape, rather the shape of the corresponding matrix
-          shape: {integer()},
-          # ring width (fixed for azimuthal sliders)
-          width: float(),
-          # drawing context: {outer_radius, layer_index}
-          context: {float(), integer()} | nil
-        }
+
 
   # Legacy function for backwards compatibility
   def new(shape, rule) do
