@@ -57,38 +57,12 @@ defmodule PerceptronApparatus.BoardGenerationTest do
           assert Enum.member?(svg_files, main_board_file_name),
                  "Expected main board SVG file '#{main_board_file_name}' not found. Files: #{inspect(svg_files)}"
 
-          # 2. Check for the expected derivative SVG files.
-          # These suffixes are based on `cut_selectors` in `PerceptronApparatus.Utils.write_cnc_files!/3`
-          # and the `String.replace(cut, ".", "-")` logic.
-          expected_derivative_suffixes = [
-            # from ".top.slider"
-            "-top-slider",
-            # from ".bottom"
-            "-bottom",
-            # from ".top.etch"
-            "-top-etch",
-            # from ".top.etch.heavy"
-            "-top-etch-heavy",
-            # from ".top.full"
-            "-top-full"
-          ]
-
-          expected_derivative_files =
-            Enum.map(expected_derivative_suffixes, fn suffix ->
-              filename_base <> suffix <> ".svg"
-            end)
-
-          for expected_file <- expected_derivative_files do
-            assert Enum.member?(svg_files, expected_file),
-                   "Expected derivative SVG file '#{expected_file}' not found in generated files: #{inspect(svg_files)}"
-          end
-
-          # 3. Verify the total number of expected files.
-          # This should be 1 (main board file) + the number of `cut_selectors`.
-          total_expected_files = 1 + length(expected_derivative_suffixes)
+          # 2. Verify the total number of expected files.
+          # This should be 1 (main board file) only.
+          total_expected_files = 1
 
           assert length(svg_files) == total_expected_files,
-                 "Expected #{total_expected_files} total SVG files, but found #{length(svg_files)}. Files: #{inspect(svg_files)}"
+                 "Expected #{total_expected_files} total SVG file, but found #{length(svg_files)}. Files: #{inspect(svg_files)}"
 
         {:error, changeset} ->
           flunk("Ash action failed: #{inspect(changeset)}")

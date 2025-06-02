@@ -450,7 +450,7 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert %AzimuthalRing{shape: %{sliders: 10}} = output_ring
 
       # Test rendering produces valid SVG with expected complexity
-      svg_output = Board.render(board, [".full", ".etch"])
+      svg_output = Board.render(board)
       assert is_binary(svg_output)
       assert String.contains?(svg_output, "<svg")
       # LazyHTML generates lowercase attributes, so check for both

@@ -55,19 +55,6 @@ defmodule PerceptronApparatus.Utils do
 
   def write_cnc_files!(apparatus, dir, filename_prefix) do
     File.write!("#{dir}/svg/#{filename_prefix}.svg", PerceptronApparatus.Board.render(apparatus))
-
-    # this is a bit messy because of the nested list, but :shrug:
-    cut_selectors = [".top.slider", ".bottom", ".top.etch", ".top.etch.heavy", ".top.full"]
-
-    cut_selectors
-    |> Enum.each(fn cut ->
-      nodisplay_selectors = cut_selectors -- [cut]
-
-      File.write!(
-        "#{dir}/svg/#{filename_prefix}#{String.replace(cut, ".", "-")}.svg",
-        PerceptronApparatus.Board.render(apparatus, nodisplay_selectors)
-      )
-    end)
   end
 
   # LazyHTML helper functions for SVG generation

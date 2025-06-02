@@ -213,7 +213,7 @@ defmodule PerceptronApparatus.Board do
     end)
   end
 
-  def render(apparatus, nodisplay_selectors \\ []) do
+  def render(apparatus) do
     %{size: size, rings: rings} = apparatus
 
     radius = size / 2
@@ -310,7 +310,7 @@ defmodule PerceptronApparatus.Board do
 
     all_elements = [board_edge] ++ ring_elements
 
-    render_body_as_tree(all_elements, view_box, nodisplay_selectors)
+    render_body_as_tree(all_elements, view_box)
   end
 
   defp calculate_ring_widths(rings, radius, radial_padding, center_space) do
@@ -346,15 +346,15 @@ defmodule PerceptronApparatus.Board do
     end)
   end
 
-  defp render_body_as_tree(elements, view_box, nodisplay_selectors) do
-    style_content = build_style_content(nodisplay_selectors)
+  defp render_body_as_tree(elements, view_box) do
+    style_content = build_style_content()
     style_elem = style_element(style_content)
 
     svg_root(view_box, [style_elem | List.flatten(elements)])
     |> tree_to_html()
   end
 
-  defp build_style_content(nodisplay_selectors) do
+  defp build_style_content() do
     base_styles = """
     text {
       font-family: "Libertinus Sans";
@@ -399,12 +399,7 @@ defmodule PerceptronApparatus.Board do
     }
     """
 
-    nodisplay_styles =
-      nodisplay_selectors
-      |> Enum.map(fn s -> "#{s} { display: none; }" end)
-      |> Enum.join("\n")
-
-    base_styles <> "\n" <> nodisplay_styles
+    base_styles
   end
 
   defp next_layer_index(%RuleRing{}, idx), do: idx
