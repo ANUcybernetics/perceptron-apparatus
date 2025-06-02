@@ -5,12 +5,13 @@ defmodule PerceptronApparatus do
 
   mix_tasks do
     create PerceptronApparatus.Board, :create_board, :create,
-      description: "Creates a new perceptron apparatus board and generates SVG files."
+      description: "Creates a new perceptron apparatus board."
   end
 
   resources do
     resource PerceptronApparatus.Board do
       define :create_board, args: [:size, :n_input, :n_hidden, :n_output], action: :create
+      define :write_svg, args: [:filename], action: :write_svg
     end
 
     resource PerceptronApparatus.RuleRing

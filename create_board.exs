@@ -20,27 +20,45 @@ IO.puts("  Hidden Neurons (n_hidden): #{n_hidden}")
 IO.puts("  Output Neurons (n_output): #{n_output}")
 IO.puts("---")
 
-# Attempt to create the board
-# This will also trigger the SVG file generation via the after_action hook in Board.create
-IO.puts("Creating board and generating SVG...")
+# Create the board first
+IO.puts("Creating board...")
 case PerceptronApparatus.create_board(size, n_input, n_hidden, n_output) do
   {:ok, board} ->
-    # The Board.create function's after_action hook (or the manual call to Utils.write_cnc_files!
-    # within Board.create/4) should have created the svg directory and written the file.
-    # The path is relative to the current working directory where the script is run.
-    output_svg_path = "svg/board_#{board.id}.svg"
+    IO.puts("Board created successfully with ID: #{board.id}")
+    
+    # Now generate the SVG file
+    filename_prefix = "board_#{board.id}"
+    output_svg_path = "svg/#{filename_prefix}.svg"
+    
+    IO.puts("Generating SVG file...")
+    case PerceptronApparatus.Board.write_svg(board, filename_prefix) do
+      {:ok, _updated_board} ->
+        IO.puts("")
+        IO.puts("==================================================")
+        IO.puts("  SUCCESS: Board created and SVG generated!  ")
+        IO.puts("==================================================")
+        IO.puts("Board ID: #{board.id}")
+        IO.puts("SVG file has been saved to: #{output_svg_path}")
+        IO.puts("---")
+        IO.puts("You can now find the SVG file in the '#{File.cwd!()}/svg/' directory.")
+        IO.puts("To view the SVG, open '#{output_svg_path}' in a web browser or SVG viewer.")
+        IO.puts("==================================================")
+        IO.puts("")
 
-    IO.puts("")
-    IO.puts("==================================================")
-    IO.puts("  SUCCESS: Board created and SVG generated!  ")
-    IO.puts("==================================================")
-    IO.puts("Board ID: #{board.id}")
-    IO.puts("SVG file has been saved to: #{output_svg_path}")
-    IO.puts("---")
-    IO.puts("You can now find the SVG file in the '#{File.cwd!()}/svg/' directory.")
-    IO.puts("To view the SVG, open '#{output_svg_path}' in a web browser or SVG viewer.")
-    IO.puts("==================================================")
-    IO.puts("")
+      {:error, changeset} ->
+        IO.puts("")
+        IO.puts("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        IO.puts("  ERROR: Failed to generate SVG file.  ")
+        IO.puts("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        IO.puts("Details of the error:")
+        IO.inspect(changeset, pretty: true, width: 80)
+        IO.puts("---")
+        IO.puts("Board was created but SVG generation failed.")
+        IO.puts("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        IO.puts("")
+        # Exit with a non-zero status to indicate failure
+        System.halt(1)
+    end
 
   {:error, changeset} ->
     IO.puts("")

@@ -29,16 +29,22 @@ defmodule PerceptronApparatus.Board do
         # Set the rings on the changeset
         Ash.Changeset.change_attribute(changeset, :rings, rings)
       end
+    end
 
-      after_action fn _changeset, board_resource, _context ->
-        # Write SVG files after successful board creation
+    update :write_svg do
+      argument :filename, :string, allow_nil?: false
+
+      change fn changeset, _context ->
+        filename = Ash.Changeset.get_argument(changeset, :filename)
+        board_resource = changeset.data
+
+        # Write SVG files
         output_dir_for_svg_folder = "."
         File.mkdir_p!("#{output_dir_for_svg_folder}/svg")
 
-        filename_prefix = "board_#{board_resource.id}"
-        Utils.write_cnc_files!(board_resource, output_dir_for_svg_folder, filename_prefix)
+        Utils.write_cnc_files!(board_resource, output_dir_for_svg_folder, filename)
 
-        {:ok, board_resource}
+        changeset
       end
     end
 
@@ -79,22 +85,15 @@ defmodule PerceptronApparatus.Board do
     changeset = Ash.Changeset.for_create(__MODULE__, :create, input)
 
     # Execute the Ash action
-    case Ash.create(changeset) do
-      {:ok, board_resource} ->
-        # On successful creation, write the CNC files
-        # Assumes current working directory for "svg" folder
-        output_dir_for_svg_folder = "."
-        File.mkdir_p!("#{output_dir_for_svg_folder}/svg")
+    Ash.create(changeset)
+  end
 
-        filename_prefix = "board_#{board_resource.id}"
-        Utils.write_cnc_files!(board_resource, output_dir_for_svg_folder, filename_prefix)
+  def write_svg(board, filename) do
+    # Create a changeset for the write_svg action
+    changeset = Ash.Changeset.for_update(board, :write_svg, %{filename: filename})
 
-        {:ok, board_resource}
-
-      error_or_other ->
-        # Pass through any errors or other results from the Ash action
-        error_or_other
-    end
+    # Execute the Ash action
+    Ash.update(changeset)
   end
 
   @type t :: %__MODULE__{

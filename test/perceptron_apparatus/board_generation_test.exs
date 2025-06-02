@@ -21,7 +21,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
   end
 
   describe "PerceptronApparatus.Board generation" do
-    test "creates a board and generates SVG files via Ash action" do
+    test "creates a board and generates SVG files via separate actions" do
       # Parameters for the Ash action
       params = %{
         size: 250.0,
@@ -30,42 +30,47 @@ defmodule PerceptronApparatus.BoardGenerationTest do
         n_output: 1
       }
 
-      # Execute the Ash action
+      # Execute the Ash action to create the board
       case Board.create(params.size, params.n_input, params.n_hidden, params.n_output) do
         {:ok, board} ->
-          # The after_action hook in Board resource should have created the files.
-          # Use board.id to construct expected filenames.
+          # Now write the SVG file using the separate action
           filename_base = "board_#{board.id}"
 
-          # Verify that the output directory and SVG files were created
-          assert File.exists?(@output_dir), "Output directory '#{@output_dir}' was not created."
+          case Board.write_svg(board, filename_base) do
+            {:ok, _updated_board} ->
+              # Verify that the output directory and SVG files were created
+              assert File.exists?(@output_dir), "Output directory '#{@output_dir}' was not created."
 
-          svg_files =
-            case File.ls(@output_dir) do
-              {:ok, files} ->
-                files
+              svg_files =
+                case File.ls(@output_dir) do
+                  {:ok, files} ->
+                    files
 
-              {:error, reason} ->
-                flunk("Failed to list files in '#{@output_dir}': #{inspect(reason)}")
-            end
+                  {:error, reason} ->
+                    flunk("Failed to list files in '#{@output_dir}': #{inspect(reason)}")
+                end
 
-          # 1. Check for the main board SVG file (e.g., board_<uuid>.svg)
-          # The UUID part means we need to use a pattern.
-          # With direct Ash call, we know the filename_base.
-          main_board_file_name = filename_base <> ".svg"
+              # 1. Check for the main board SVG file (e.g., board_<uuid>.svg)
+              # The UUID part means we need to use a pattern.
+              # With direct Ash call, we know the filename_base.
+              main_board_file_name = filename_base <> ".svg"
 
-          assert Enum.member?(svg_files, main_board_file_name),
-                 "Expected main board SVG file '#{main_board_file_name}' not found. Files: #{inspect(svg_files)}"
+              assert Enum.member?(svg_files, main_board_file_name),
+                     "Expected main board SVG file '#{main_board_file_name}' not found. Files: #{inspect(svg_files)}"
 
-          # 2. Verify the total number of expected files.
-          # This should be 1 (main board file) only.
-          total_expected_files = 1
+              # 2. Verify the total number of expected files.
+              # This should be 1 (main board file) only.
+              total_expected_files = 1
 
-          assert length(svg_files) == total_expected_files,
-                 "Expected #{total_expected_files} total SVG file, but found #{length(svg_files)}. Files: #{inspect(svg_files)}"
+              assert length(svg_files) == total_expected_files,
+                     "Expected #{total_expected_files} total SVG file, but found #{length(svg_files)}. Files: #{inspect(svg_files)}"
+
+            {:error, changeset} ->
+              flunk("SVG writing failed: #{inspect(changeset)}")
+          end
 
         {:error, changeset} ->
-          flunk("Ash action failed: #{inspect(changeset)}")
+          flunk("Board creation failed: #{inspect(changeset)}")
       end
     end
   end
