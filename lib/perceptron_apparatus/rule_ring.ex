@@ -46,9 +46,12 @@ defmodule PerceptronApparatus.RuleRing do
     rule_groups =
       rule
       |> Enum.map(fn {outer_label, theta, inner_label} ->
+        line_class =
+          if outer_label != nil || inner_label != nil, do: "top etch heavy", else: "top etch"
+
         line_elem =
           line_element([
-            {"class", "top etch"},
+            {"class", line_class},
             {"x1", "0"},
             {"y1", to_string(radius - tick_length)},
             {"x2", "0"},
@@ -59,7 +62,7 @@ defmodule PerceptronApparatus.RuleRing do
           text_element(outer_label || "", [
             {"class", "top etch"},
             {"x", "0"},
-            {"y", to_string(radius + 2.5 * tick_length)},
+            {"y", to_string(radius + 2.0 * tick_length)},
             {"text-anchor", "middle"},
             {"dominant-baseline", "auto"}
           ])
@@ -68,7 +71,7 @@ defmodule PerceptronApparatus.RuleRing do
           text_element(inner_label || "", [
             {"class", "top etch"},
             {"x", "0"},
-            {"y", to_string(radius - 1.5 * tick_length)},
+            {"y", to_string(radius - 1.3 * tick_length)},
             {"text-anchor", "middle"},
             {"dominant-baseline", "auto"}
           ])
