@@ -168,6 +168,25 @@ defmodule PerceptronApparatus.MLP do
         IO.puts(
           "  #{param_name}: min=#{Float.round(min_val, 4)}, max=#{Float.round(max_val, 4)}, mean=#{Float.round(mean_val, 4)}"
         )
+
+        # For weight parameters, also show the specific min/max weight values
+        if param_name == "kernel" do
+          # Find indices of min and max values
+          min_indices = Nx.argmin(Nx.flatten(param_tensor)) |> Nx.to_number()
+          max_indices = Nx.argmax(Nx.flatten(param_tensor)) |> Nx.to_number()
+          
+          # Convert flat indices to multi-dimensional indices
+          shape = Nx.shape(param_tensor)
+          {rows, cols} = shape
+          
+          min_row = div(min_indices, cols)
+          min_col = rem(min_indices, cols)
+          max_row = div(max_indices, cols)
+          max_col = rem(max_indices, cols)
+          
+          IO.puts("    Min weight: #{Float.round(min_val, 6)} at position [#{min_row}, #{min_col}]")
+          IO.puts("    Max weight: #{Float.round(max_val, 6)} at position [#{max_row}, #{max_col}]")
+        end
       end)
     end)
 
