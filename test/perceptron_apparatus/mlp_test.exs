@@ -2,94 +2,111 @@ defmodule PerceptronApparatus.MLPTest do
   use ExUnit.Case
   alias PerceptronApparatus.MLP
 
-  describe "MLP functionality" do
-    test "creates and trains a simple MLP model" do
-      input_size = 4
-      hidden_size = 8
-      output_size = 2
-
-      # Create model
-      model = MLP.create_model(input_size, hidden_size, output_size)
+  describe "MLP MNIST functionality" do
+    test "creates a 36x6x10 MLP model" do
+      model = MLP.create_model()
       assert %Axon{} = model
+    end
 
-      # Train model (small number of epochs for testing)
-      trained_params = MLP.train_model(model, input_size, output_size, epochs: 10, batch_size: 16)
-      
+    test "creates model with hooks" do
+      model_with_hooks = MLP.create_model_with_hooks()
+      assert %Axon{} = model_with_hooks
+    end
+
+    test "loads and preprocesses MNIST data" do
+      {train_data, test_data} = MLP.load_mnist_data()
+
+      {train_images, train_labels} = train_data
+      {test_images, test_labels} = test_data
+
+      # Verify train data shapes
+      # 90% of 60,000
+      assert Nx.shape(train_images) == {54000, 36}
+      assert Nx.shape(train_labels) == {54000, 10}
+
+      # Verify test data shapes  
+      # 10% of 60,000
+      assert Nx.shape(test_images) == {6000, 36}
+      assert Nx.shape(test_labels) == {6000, 10}
+
+      # Verify data ranges
+      assert Nx.reduce_min(train_images) |> Nx.to_number() >= 0.0
+      assert Nx.reduce_max(train_images) |> Nx.to_number() <= 1.0
+
+      # Verify labels are one-hot encoded
+      assert Nx.sum(train_labels, axes: [1]) |> Nx.reduce_min() |> Nx.to_number() == 1.0
+      assert Nx.sum(train_labels, axes: [1]) |> Nx.reduce_max() |> Nx.to_number() == 1.0
+    end
+
+    @tag timeout: 60_000
+    test "trains model on MNIST data" do
+      {train_data, _test_data} = MLP.load_mnist_data()
+      model = MLP.create_model()
+
+      # Train for just a few epochs for testing
+      trained_params = MLP.train_model(model, train_data, epochs: 2, batch_size: 128)
+
       # Verify we have an Axon.ModelState
       assert %Axon.ModelState{} = trained_params
-      
+
       # Extract parameters and verify structure
       params = trained_params.data
       assert Map.has_key?(params, "hidden")
       assert Map.has_key?(params, "output")
-      
+
       # Verify hidden layer has weights and biases
       assert Map.has_key?(params["hidden"], "kernel")
       assert Map.has_key?(params["hidden"], "bias")
-      
+      assert Nx.shape(params["hidden"]["kernel"]) == {36, 6}
+      assert Nx.shape(params["hidden"]["bias"]) == {6}
+
       # Verify output layer has weights and biases
       assert Map.has_key?(params["output"], "kernel")
       assert Map.has_key?(params["output"], "bias")
+      assert Nx.shape(params["output"]["kernel"]) == {6, 10}
+      assert Nx.shape(params["output"]["bias"]) == {10}
     end
 
-    test "generates random training data correctly" do
-      input_size = 3
-      output_size = 2
-      batch_size = 8
-      total_samples = 24
-
-      data_stream = MLP.generate_random_data(input_size, output_size, total_samples, batch_size)
-      batches = Enum.take(data_stream, 3)
-
-      assert length(batches) == 3
-      
-      Enum.each(batches, fn {inputs, targets} ->
-        assert Nx.shape(inputs) == {batch_size, input_size}
-        assert Nx.shape(targets) == {batch_size, output_size}
-      end)
-    end
-
+    @tag timeout: 60_000
     test "inspects parameters without crashing" do
-      input_size = 3
-      hidden_size = 5
-      output_size = 2
+      {train_data, _test_data} = MLP.load_mnist_data()
+      model = MLP.create_model()
 
-      model = MLP.create_model(input_size, hidden_size, output_size)
-      trained_params = MLP.train_model(model, input_size, output_size, epochs: 5)
-      
+      trained_params = MLP.train_model(model, train_data, epochs: 2, batch_size: 128)
+
       # This should not crash
       assert :ok = MLP.inspect_parameters(trained_params)
     end
 
+    @tag timeout: 120_000
     test "runs inference with activation tracking" do
-      input_size = 3
-      hidden_size = 4
-      output_size = 2
-      num_samples = 5
+      {train_data, test_data} = MLP.load_mnist_data()
 
-      # Train a model first
-      model = MLP.create_model(input_size, hidden_size, output_size)
-      trained_params = MLP.train_model(model, input_size, output_size, epochs: 5)
-      
+      # Train a model first (quick training)
+      model = MLP.create_model()
+      trained_params = MLP.train_model(model, train_data, epochs: 2, batch_size: 128)
+
       # Create model with hooks
-      model_with_hooks = MLP.create_model_with_hooks(input_size, hidden_size, output_size)
-      
-      # Run inference with tracking
-      {predictions, activations} = MLP.run_inference_with_tracking(
-        model_with_hooks, 
-        trained_params, 
-        input_size, 
-        num_samples
-      )
-      
+      model_with_hooks = MLP.create_model_with_hooks()
+
+      # Run inference with tracking on small sample
+      {predictions, activations} =
+        MLP.run_inference_with_tracking(
+          model_with_hooks,
+          trained_params,
+          test_data,
+          # Small sample for testing
+          10
+        )
+
       # Verify predictions shape
-      assert Nx.shape(predictions) == {num_samples, output_size}
-      
+      assert Nx.shape(predictions) == {10, 10}
+
       # Verify we captured activations for each layer
       assert Map.has_key?(activations, "input")
-      assert Map.has_key?(activations, "hidden") 
+      assert Map.has_key?(activations, "hidden")
       assert Map.has_key?(activations, "output")
-      
+
       # Verify each layer has min, max, mean stats
       Enum.each(activations, fn {_layer_name, stats} ->
         assert Map.has_key?(stats, :min)
@@ -102,77 +119,70 @@ defmodule PerceptronApparatus.MLPTest do
     end
 
     @tag :integration
-    test "complete workflow analysis" do
-      input_size = 6
-      hidden_size = 10
-      output_size = 3
+    @tag timeout: 180_000
+    test "complete MNIST workflow analysis" do
+      # Run complete analysis with reduced epochs for testing
+      result = MLP.analyze_mnist_mlp(epochs: 3, batch_size: 128)
 
-      # Run complete analysis
-      result = MLP.analyze_mlp(input_size, hidden_size, output_size, epochs: 20, batch_size: 32)
-      
       # Verify result structure
       assert Map.has_key?(result, :model)
       assert Map.has_key?(result, :params)
       assert Map.has_key?(result, :predictions)
       assert Map.has_key?(result, :activations)
-      
+      assert Map.has_key?(result, :test_accuracy)
+
       # Verify model
       assert %Axon{} = result.model
-      
+
       # Verify parameters
       assert %Axon.ModelState{} = result.params
       params = result.params.data
       assert Map.has_key?(params, "hidden")
       assert Map.has_key?(params, "output")
-      
-      # Verify predictions shape (default is 10 samples)
-      assert Nx.shape(result.predictions) == {10, output_size}
-      
+
+      # Verify predictions shape (default is 100 samples)
+      assert Nx.shape(result.predictions) == {100, 10}
+
       # Verify activations were captured
       assert Map.has_key?(result.activations, "input")
       assert Map.has_key?(result.activations, "hidden")
       assert Map.has_key?(result.activations, "output")
+
+      # Verify test accuracy is reasonable (should be > 0.1 for random)
+      assert result.test_accuracy > 0.1
+      assert result.test_accuracy <= 1.0
     end
   end
 
   describe "demonstration tests" do
     @tag :demo
-    test "demonstrates small network analysis" do
+    @tag timeout: 300_000
+    test "demonstrates MNIST MLP analysis" do
       IO.puts("\n" <> String.duplicate("=", 60))
-      IO.puts("DEMONSTRATING MLP ANALYSIS")
+      IO.puts("DEMONSTRATING MNIST MLP ANALYSIS (36x6x10)")
       IO.puts(String.duplicate("=", 60))
-      
-      # Small network for clear output
-      MLP.analyze_mlp(3, 5, 2, epochs: 50, batch_size: 16, learning_rate: 0.02)
-      
+
+      # Run analysis with reasonable epochs for demonstration
+      MLP.analyze_mnist_mlp(epochs: 8, batch_size: 128, learning_rate: 0.001)
+
       IO.puts(String.duplicate("=", 60))
     end
 
     @tag :demo
-    test "demonstrates larger network analysis" do
-      IO.puts("\n" <> String.duplicate("=", 60))
-      IO.puts("DEMONSTRATING LARGER MLP ANALYSIS")
-      IO.puts(String.duplicate("=", 60))
-      
-      # Larger network
-      MLP.analyze_mlp(10, 20, 5, epochs: 100, batch_size: 32, learning_rate: 0.01)
-      
-      IO.puts(String.duplicate("=", 60))
-    end
-
-    @tag :demo
+    @tag timeout: 120_000
     test "demonstrates parameter inspection only" do
       IO.puts("\n" <> String.duplicate("=", 60))
       IO.puts("DEMONSTRATING PARAMETER INSPECTION")
       IO.puts(String.duplicate("=", 60))
-      
-      # Train a model
-      model = MLP.create_model(4, 8, 3)
-      trained_params = MLP.train_model(model, 4, 3, epochs: 30)
-      
+
+      # Load data and train a model
+      {train_data, _test_data} = MLP.load_mnist_data()
+      model = MLP.create_model()
+      trained_params = MLP.train_model(model, train_data, epochs: 3, batch_size: 128)
+
       # Just inspect parameters
       MLP.inspect_parameters(trained_params)
-      
+
       IO.puts(String.duplicate("=", 60))
     end
   end
