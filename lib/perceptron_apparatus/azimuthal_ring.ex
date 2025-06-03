@@ -97,7 +97,7 @@ defmodule PerceptronApparatus.AzimuthalRing do
 
     index_text =
       text_element(
-        "#{<<64 + layer_index>>}#{number + 1}",
+        "#{<<64 + layer_index>>}#{number}",
         [
           {"transform", "rotate(#{-0.5 * theta_sweep})"},
           {"class", "top etch indices"},

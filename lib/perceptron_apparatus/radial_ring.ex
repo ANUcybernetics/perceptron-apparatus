@@ -80,7 +80,7 @@ defmodule PerceptronApparatus.RadialRing do
 
     index_text =
       text_element(
-        "#{<<64 + layer_index>>}#{group_index + 1}",
+        "#{<<64 + layer_index>>}#{group_index}",
         [
           {"transform", "rotate(#{-(theta_offset + 0.5 * theta_sweep)})"},
           {"class", "top etch indices"},
