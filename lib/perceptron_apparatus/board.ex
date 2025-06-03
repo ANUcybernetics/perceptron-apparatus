@@ -106,7 +106,7 @@ defmodule PerceptronApparatus.Board do
   Creates the standard ring sequence for a perceptron apparatus.
   From outside to inside:
   1. Log ring
-  2. ReLU ring
+  2. ReLU ring (NOTE: currently not using this ring)
   3. Input azimuthal ring (n_input sliders)
   4. Weight1 radial ring (n_hidden groups x n_input sliders per group)
   5. Hidden azimuthal ring (n_hidden sliders)
@@ -117,9 +117,6 @@ defmodule PerceptronApparatus.Board do
     [
       # Log ring
       create_log_ring(),
-
-      # ReLU ring
-      create_relu_ring(),
 
       # Input azimuthal ring
       create_input_ring(n_input),
@@ -213,8 +210,8 @@ defmodule PerceptronApparatus.Board do
     %{size: size, rings: rings} = apparatus
 
     radius = size / 2
-    radial_padding = 25
-    center_space = 120
+    radial_padding = 30
+    center_space = 150
     svg_padding = 10
 
     # Calculate optimal ring widths with automatic spacing
@@ -237,7 +234,7 @@ defmodule PerceptronApparatus.Board do
       rings_with_widths
       |> Enum.with_index()
       |> Enum.reduce(
-        {radius - radial_padding / 2, 1, []},
+        {radius - radial_padding, 1, []},
         fn {{ring, ring_width}, ring_index}, {current_radius, idx, elements_acc} ->
           # Determine if this should have a bottom channel (consecutive RuleRings)
           bottom_channel? =
