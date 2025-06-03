@@ -22,6 +22,7 @@ defmodule PerceptronApparatus.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:qr_code, "~> 3.0"},
       {:usage_rules, "~> 0.1", only: [:dev]},
       {:decimal, "~> 2.0"},
       {:sourceror, "~> 1.8", only: [:dev, :test]},
