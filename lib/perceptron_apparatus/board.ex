@@ -427,8 +427,40 @@ defmodule PerceptronApparatus.Board do
   defp render_qr_code(data, center_space) do
     case QRCode.create(data) do
       {:ok, qr} ->
+        # Create bounding box with padding
+        padding = center_space * 0.05
+        box_size = center_space * 0.8 + padding * 2
+        box_offset = -box_size / 2
+        corner_radius = box_size * 0.1
+
+        # Create path for rectangle with three rounded corners (bottom-right non-rounded)
+        x1 = box_offset
+        y1 = box_offset
+        x2 = box_offset + box_size
+        y2 = box_offset + box_size
+        r = corner_radius
+
+        path_data = "M #{x1 + r},#{y1} " <>
+                    "L #{x2 - r},#{y1} " <>
+                    "Q #{x2},#{y1} #{x2},#{y1 + r} " <>
+                    "L #{x2},#{y2} " <>
+                    "L #{x1 + r},#{y2} " <>
+                    "Q #{x1},#{y2} #{x1},#{y2 - r} " <>
+                    "L #{x1},#{y1 + r} " <>
+                    "Q #{x1},#{y1} #{x1 + r},#{y1} " <>
+                    "Z"
+
+        bounding_box = Utils.path_element([
+          {"class", "full"},
+          {"d", path_data},
+          {"fill", "white"},
+          {"stroke-width", "2"}
+        ])
+
         # Use the QR matrix directly
-        render_qr_matrix(qr.matrix, center_space)
+        qr_elements = render_qr_matrix(qr.matrix, center_space)
+        
+        [bounding_box | qr_elements]
 
       {:error, _} ->
         []
