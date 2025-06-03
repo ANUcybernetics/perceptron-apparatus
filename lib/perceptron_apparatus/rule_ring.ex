@@ -30,8 +30,6 @@ defmodule PerceptronApparatus.RuleRing do
     attribute :context, :term, allow_nil?: true
   end
 
-
-
   # Legacy function for backwards compatibility
   def new(rule) do
     {:ok, rule_ring} =

@@ -44,6 +44,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
 
               # Verify that the test subdirectory was created
               test_dir = Path.join([@output_dir, "test"])
+
               assert File.exists?(test_dir),
                      "Test subdirectory '#{test_dir}' was not created."
 
@@ -53,6 +54,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
 
               # Verify the file is not empty
               {:ok, content} = File.read(full_filename)
+
               assert String.length(content) > 0,
                      "SVG file '#{full_filename}' is empty."
 
@@ -71,7 +73,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
 
     test "creates a board with QR code data and renders it in the center" do
       qr_data = "Hello QR World Test"
-      
+
       case Board.create(800.0, 2, 3, 1, qr_data) do
         {:ok, board} ->
           # Verify QR data is stored
@@ -79,22 +81,24 @@ defmodule PerceptronApparatus.BoardGenerationTest do
 
           # Generate SVG content
           svg_content = Board.render(board)
-          
+
           # Verify SVG content contains QR code elements
           assert String.contains?(svg_content, "class=\"qr-code\""),
                  "SVG content should contain QR code elements when qr_data is provided"
-          
+
           # Write to file for visual inspection
           filename = "svg/test/board_with_qr_#{board.id}.svg"
+
           case Board.write_svg(board, filename) do
             {:ok, _} ->
               assert File.exists?(filename),
                      "QR code SVG file should be created"
-              
+
               {:ok, file_content} = File.read(filename)
+
               assert String.contains?(file_content, "class=\"qr-code\""),
                      "Written SVG file should contain QR code elements"
-            
+
             {:error, error} ->
               flunk("Failed to write QR code SVG: #{inspect(error)}")
           end
@@ -112,22 +116,24 @@ defmodule PerceptronApparatus.BoardGenerationTest do
 
           # Generate SVG content
           svg_content = Board.render(board)
-          
+
           # Verify SVG content does not contain QR code elements
           refute String.contains?(svg_content, "class=\"qr-code\""),
                  "SVG content should not contain QR code elements when no qr_data is provided"
-          
+
           # Write to file for comparison
           filename = "svg/test/board_no_qr_#{board.id}.svg"
+
           case Board.write_svg(board, filename) do
             {:ok, _} ->
               assert File.exists?(filename),
                      "SVG file without QR should be created"
-              
+
               {:ok, file_content} = File.read(filename)
+
               refute String.contains?(file_content, "class=\"qr-code\""),
                      "Written SVG file should not contain QR code elements"
-            
+
             {:error, error} ->
               flunk("Failed to write SVG without QR: #{inspect(error)}")
           end
@@ -140,12 +146,12 @@ defmodule PerceptronApparatus.BoardGenerationTest do
     test "handles invalid QR data gracefully" do
       # Test with very long string that might exceed QR code limits
       long_qr_data = String.duplicate("A", 3000)
-      
+
       case Board.create(800.0, 2, 3, 1, long_qr_data) do
         {:ok, board} ->
           # Even if QR creation fails, board should render without QR elements
           svg_content = Board.render(board)
-          
+
           # Should still be valid SVG
           assert String.contains?(svg_content, "<svg"),
                  "Should still generate valid SVG even with invalid QR data"

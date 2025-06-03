@@ -307,11 +307,12 @@ defmodule PerceptronApparatus.Board do
       )
 
     # Add QR code in center if qr_data is present
-    qr_elements = if apparatus.qr_data do
-      render_qr_code(apparatus.qr_data, center_space)
-    else
-      []
-    end
+    qr_elements =
+      if apparatus.qr_data do
+        render_qr_code(apparatus.qr_data, center_space)
+      else
+        []
+      end
 
     all_elements = [board_edge] ++ ring_elements ++ qr_elements
 
@@ -428,7 +429,7 @@ defmodule PerceptronApparatus.Board do
       {:ok, qr} ->
         # Use the QR matrix directly
         render_qr_matrix(qr.matrix, center_space)
-      
+
       {:error, _} ->
         []
     end
@@ -437,19 +438,21 @@ defmodule PerceptronApparatus.Board do
   defp render_qr_matrix(matrix, center_space) do
     # Calculate QR code dimensions
     matrix_size = length(matrix)
-    qr_size = center_space * 0.8  # Use 80% of center space
+    # Use 80% of center space
+    qr_size = center_space * 0.8
     cell_size = qr_size / matrix_size
-    
+
     # Calculate offset to center the QR code
     offset = -qr_size / 2
-    
+
     # Convert matrix to rectangles
     matrix
     |> Enum.with_index()
     |> Enum.flat_map(fn {row, y} ->
       row
       |> Enum.with_index()
-      |> Enum.filter(fn {cell, _x} -> cell == 1 end)  # Only render filled cells
+      # Only render filled cells
+      |> Enum.filter(fn {cell, _x} -> cell == 1 end)
       |> Enum.map(fn {_cell, x} ->
         Utils.rect_element([
           {"class", "qr-code"},

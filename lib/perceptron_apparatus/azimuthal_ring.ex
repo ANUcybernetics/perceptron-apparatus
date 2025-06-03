@@ -30,8 +30,6 @@ defmodule PerceptronApparatus.AzimuthalRing do
     attribute :context, :term, allow_nil?: true
   end
 
-
-
   # Legacy function for backwards compatibility
   def new(shape, rule) do
     {:ok, azimuthal_ring} =

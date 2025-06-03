@@ -30,8 +30,6 @@ defmodule PerceptronApparatus.RadialRing do
     attribute :context, :term, allow_nil?: true
   end
 
-
-
   # Legacy function for backwards compatibility
   def new(shape, rule, opts \\ []) do
     # use default values when it makes sense
