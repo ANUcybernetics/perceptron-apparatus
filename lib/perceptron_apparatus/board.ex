@@ -440,26 +440,28 @@ defmodule PerceptronApparatus.Board do
         y2 = box_offset + box_size
         r = corner_radius
 
-        path_data = "M #{x1 + r},#{y1} " <>
-                    "L #{x2 - r},#{y1} " <>
-                    "Q #{x2},#{y1} #{x2},#{y1 + r} " <>
-                    "L #{x2},#{y2} " <>
-                    "L #{x1 + r},#{y2} " <>
-                    "Q #{x1},#{y2} #{x1},#{y2 - r} " <>
-                    "L #{x1},#{y1 + r} " <>
-                    "Q #{x1},#{y1} #{x1 + r},#{y1} " <>
-                    "Z"
+        path_data =
+          "M #{x1 + r},#{y1} " <>
+            "L #{x2 - r},#{y1} " <>
+            "Q #{x2},#{y1} #{x2},#{y1 + r} " <>
+            "L #{x2},#{y2} " <>
+            "L #{x1 + r},#{y2} " <>
+            "Q #{x1},#{y2} #{x1},#{y2 - r} " <>
+            "L #{x1},#{y1 + r} " <>
+            "Q #{x1},#{y1} #{x1 + r},#{y1} " <>
+            "Z"
 
-        bounding_box = Utils.path_element([
-          {"class", "full"},
-          {"d", path_data},
-          {"fill", "transparent"},
-          {"stroke-width", "2"}
-        ])
+        bounding_box =
+          Utils.path_element([
+            {"class", "full"},
+            {"d", path_data},
+            {"fill", "transparent"},
+            {"stroke-width", "2"}
+          ])
 
         # Use the QR matrix directly
         qr_elements = render_qr_matrix(qr.matrix, center_space)
-        
+
         [bounding_box | qr_elements]
 
       {:error, _} ->
@@ -505,8 +507,8 @@ defmodule PerceptronApparatus.Board do
         end
       )
 
-    # Add 3 fasteners underneath QR code
-    qr_fasteners = add_fasteners(center_space * 0.6, 3)
+    # Add 4 fasteners underneath QR code
+    qr_fasteners = add_fasteners(center_space * 0.6, 4)
 
     fastener_rings ++ qr_fasteners
   end
