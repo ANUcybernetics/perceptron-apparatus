@@ -121,7 +121,7 @@ defmodule PerceptronApparatus.Board do
       create_log_ring(),
 
       # ReLU ring (NOTE: currently not using this ring)
-      create_relu_ring(),
+      # create_relu_ring(),
 
       # Input azimuthal ring
       create_input_ring(n_input),
