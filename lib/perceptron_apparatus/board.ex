@@ -148,8 +148,6 @@ defmodule PerceptronApparatus.Board do
     ring
   end
 
-
-
   defp create_input_ring(n_input) do
     rule = Utils.new_rule(0, 1, 0.1, 0.5)
     shape = %{sliders: n_input}
@@ -308,7 +306,11 @@ defmodule PerceptronApparatus.Board do
         []
       end
 
-    all_elements = [board_edge] ++ ring_elements ++ qr_elements
+    # Add fastener rings
+    fastener_elements =
+      create_fastener_rings(rings_with_widths, radius, radial_padding, center_space / 2)
+
+    all_elements = [board_edge] ++ ring_elements ++ qr_elements ++ fastener_elements
 
     render_body_as_tree(all_elements, view_box)
   end
@@ -400,6 +402,10 @@ defmodule PerceptronApparatus.Board do
     .qr-code {
       fill: #000000;
     }
+    .fastener {
+      fill: red;
+      stroke: none;
+    }
     """
 
     base_styles
@@ -427,6 +433,50 @@ defmodule PerceptronApparatus.Board do
       {:error, _} ->
         []
     end
+  end
+
+  defp create_fastener_rings(rings_with_widths, radius, radial_padding, center_space) do
+    # Calculate ring positions (same logic as in render function)
+    {_, _, fastener_rings} =
+      rings_with_widths
+      |> Enum.with_index()
+      |> Enum.reduce(
+        {radius - radial_padding, 1, []},
+        fn {{ring, ring_width}, ring_index}, {current_radius, idx, fasteners_acc} ->
+          # Check if this is an azimuthal/radial ring pair boundary
+          current_is_azimuthal = match?(%AzimuthalRing{}, ring)
+
+          next_ring =
+            if ring_index < length(rings_with_widths) - 1 do
+              elem(Enum.at(rings_with_widths, ring_index + 1), 0)
+            else
+              nil
+            end
+
+          next_is_radial = match?(%RadialRing{}, next_ring)
+
+          # Add fasteners between azimuthal and radial rings
+          new_fasteners =
+            if current_is_azimuthal && next_is_radial do
+              # Place fasteners in the gap between rings
+              fastener_radius = current_radius - ring_width - radial_padding / 2
+              add_fasteners(fastener_radius, 6)
+            else
+              []
+            end
+
+          {
+            current_radius - ring_width - radial_padding,
+            next_layer_index(ring, idx),
+            fasteners_acc ++ new_fasteners
+          }
+        end
+      )
+
+    # Add 3 fasteners underneath QR code
+    qr_fasteners = add_fasteners(center_space * 0.6, 3)
+
+    fastener_rings ++ qr_fasteners
   end
 
   defp render_qr_matrix(matrix, center_space) do
@@ -457,6 +507,30 @@ defmodule PerceptronApparatus.Board do
           {"fill", "#000000"}
         ])
       end)
+    end)
+  end
+
+  @doc """
+  Creates n evenly spaced fastener holes (circles) at radius r.
+  """
+  def add_fasteners(r, n) do
+    angle_step = 2 * :math.pi() / n
+
+    0..(n - 1)
+    |> Enum.map(fn i ->
+      angle = i * angle_step
+      x = r * :math.cos(angle)
+      y = r * :math.sin(angle)
+
+      circle_element([
+        {"class", "fastener"},
+        {"cx", to_string(x)},
+        {"cy", to_string(y)},
+        {"r", "3"},
+        {"fill", "white"},
+        {"stroke", "black"},
+        {"stroke-width", "1"}
+      ])
     end)
   end
 end
