@@ -359,7 +359,7 @@ defmodule PerceptronApparatus.Board do
   defp build_style_content() do
     base_styles = """
     text {
-      font-family: "Libertinus Sans";
+      font-family: "Alegreya";
       font-size: 12px;
     }
     .full {
@@ -390,13 +390,14 @@ defmodule PerceptronApparatus.Board do
     text {
       fill: black;
       stroke: none;
+      font-weight: 500;
     }
     text.indices{
       font-size: 12px;
+      font-weight: 300;
     }
     text.indices.small{
       font-size: 8px;
-      font-weight: 300;
     }
     .debug {
       display: none;
