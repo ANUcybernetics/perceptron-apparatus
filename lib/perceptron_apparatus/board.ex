@@ -160,7 +160,7 @@ defmodule PerceptronApparatus.Board do
   end
 
   defp create_weight_ring(n_groups, n_sliders_per_group) do
-    rule = Utils.new_rule(-10, 10, 2, 10)
+    rule = Utils.new_rule(-5, 5, 1, 5)
     shape = %{groups: n_groups, sliders_per_group: n_sliders_per_group}
 
     {:ok, ring} =
