@@ -432,7 +432,7 @@ defmodule PerceptronApparatus.Board do
     case QRCode.create(data, :high) do
       {:ok, qr} ->
         # Create bounding box with padding (reduced by factor of 2)
-        padding = center_space * 0.025
+        padding = center_space * 0.05
         box_size = center_space * 0.4 + padding * 2
         box_offset = -box_size / 2
         corner_radius = box_size * 0.1
