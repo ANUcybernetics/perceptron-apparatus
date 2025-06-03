@@ -425,7 +425,7 @@ defmodule PerceptronApparatus.Board do
   end
 
   defp render_qr_code(data, center_space) do
-    case QRCode.create(data) do
+    case QRCode.create(data, :high) do
       {:ok, qr} ->
         # Create bounding box with padding
         padding = center_space * 0.05
@@ -453,7 +453,7 @@ defmodule PerceptronApparatus.Board do
         bounding_box = Utils.path_element([
           {"class", "full"},
           {"d", path_data},
-          {"fill", "white"},
+          {"fill", "transparent"},
           {"stroke-width", "2"}
         ])
 
