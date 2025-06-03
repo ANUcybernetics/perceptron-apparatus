@@ -1,6 +1,6 @@
 # TODO
 
-- central QR code feature (removable)
+- darken the "< 0" regions of radial sliders (ReLU indicators)
 - put a spot in the middle for replaceable put drill holes in the bottom piece
 - add 3mm drill holes (6 per ring, in the spaces - and in the two outer rings as
   well)

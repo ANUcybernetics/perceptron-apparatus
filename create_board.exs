@@ -16,6 +16,7 @@ size = 1199.0
 n_input = 36
 n_hidden = 6
 n_output = 10
+qr_data = "https://benswift.me"
 
 IO.puts("Board Parameters:")
 IO.puts("  Size: #{size}")
@@ -27,7 +28,7 @@ IO.puts("---")
 # Create the board first
 IO.puts("Creating board...")
 
-case PerceptronApparatus.create_board(size, n_input, n_hidden, n_output) do
+case PerceptronApparatus.create_board(size, n_input, n_hidden, n_output, qr_data) do
   {:ok, board} ->
     IO.puts("Board created successfully with ID: #{board.id}")
 

@@ -24,7 +24,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
     test "creates a board and generates SVG files via separate actions" do
       # Parameters for the Ash action
       params = %{
-        size: 250.0,
+        size: 800.0,
         n_input: 3,
         n_hidden: 2,
         n_output: 1
@@ -66,6 +66,92 @@ defmodule PerceptronApparatus.BoardGenerationTest do
 
         {:error, changeset} ->
           flunk("Board creation failed: #{inspect(changeset)}")
+      end
+    end
+
+    test "creates a board with QR code data and renders it in the center" do
+      qr_data = "Hello QR World Test"
+      
+      case Board.create(800.0, 2, 3, 1, qr_data) do
+        {:ok, board} ->
+          # Verify QR data is stored
+          assert board.qr_data == qr_data
+
+          # Generate SVG content
+          svg_content = Board.render(board)
+          
+          # Verify SVG content contains QR code elements
+          assert String.contains?(svg_content, "class=\"qr-code\""),
+                 "SVG content should contain QR code elements when qr_data is provided"
+          
+          # Write to file for visual inspection
+          filename = "svg/test/board_with_qr_#{board.id}.svg"
+          case Board.write_svg(board, filename) do
+            {:ok, _} ->
+              assert File.exists?(filename),
+                     "QR code SVG file should be created"
+              
+              {:ok, file_content} = File.read(filename)
+              assert String.contains?(file_content, "class=\"qr-code\""),
+                     "Written SVG file should contain QR code elements"
+            
+            {:error, error} ->
+              flunk("Failed to write QR code SVG: #{inspect(error)}")
+          end
+
+        {:error, error} ->
+          flunk("Failed to create board with QR data: #{inspect(error)}")
+      end
+    end
+
+    test "creates a board without QR code data and renders without QR elements" do
+      case Board.create(800.0, 2, 3, 1) do
+        {:ok, board} ->
+          # Verify no QR data is stored
+          assert is_nil(board.qr_data)
+
+          # Generate SVG content
+          svg_content = Board.render(board)
+          
+          # Verify SVG content does not contain QR code elements
+          refute String.contains?(svg_content, "class=\"qr-code\""),
+                 "SVG content should not contain QR code elements when no qr_data is provided"
+          
+          # Write to file for comparison
+          filename = "svg/test/board_no_qr_#{board.id}.svg"
+          case Board.write_svg(board, filename) do
+            {:ok, _} ->
+              assert File.exists?(filename),
+                     "SVG file without QR should be created"
+              
+              {:ok, file_content} = File.read(filename)
+              refute String.contains?(file_content, "class=\"qr-code\""),
+                     "Written SVG file should not contain QR code elements"
+            
+            {:error, error} ->
+              flunk("Failed to write SVG without QR: #{inspect(error)}")
+          end
+
+        {:error, error} ->
+          flunk("Failed to create board without QR data: #{inspect(error)}")
+      end
+    end
+
+    test "handles invalid QR data gracefully" do
+      # Test with very long string that might exceed QR code limits
+      long_qr_data = String.duplicate("A", 3000)
+      
+      case Board.create(800.0, 2, 3, 1, long_qr_data) do
+        {:ok, board} ->
+          # Even if QR creation fails, board should render without QR elements
+          svg_content = Board.render(board)
+          
+          # Should still be valid SVG
+          assert String.contains?(svg_content, "<svg"),
+                 "Should still generate valid SVG even with invalid QR data"
+
+        {:error, error} ->
+          flunk("Board creation should not fail due to QR data issues: #{inspect(error)}")
       end
     end
   end

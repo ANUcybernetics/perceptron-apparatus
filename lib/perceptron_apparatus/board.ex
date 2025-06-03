@@ -14,7 +14,7 @@ defmodule PerceptronApparatus.Board do
     defaults [:read]
 
     create :create do
-      accept [:size, :n_input, :n_hidden, :n_output]
+      accept [:size, :n_input, :n_hidden, :n_output, :qr_data]
 
       change fn changeset, _context ->
         # Get the parameters
@@ -68,6 +68,7 @@ defmodule PerceptronApparatus.Board do
     attribute :n_input, :integer, allow_nil?: false
     attribute :n_hidden, :integer, allow_nil?: false
     attribute :n_output, :integer, allow_nil?: false
+    attribute :qr_data, :string, allow_nil?: true
     attribute :rings, :term, default: []
   end
 
@@ -76,12 +77,13 @@ defmodule PerceptronApparatus.Board do
   This function manually implements the code interface for `:create` to ensure
   file writing occurs after successful resource creation.
   """
-  def create(size, n_input, n_hidden, n_output) do
+  def create(size, n_input, n_hidden, n_output, qr_data \\ nil) do
     input = %{
       size: size,
       n_input: n_input,
       n_hidden: n_hidden,
-      n_output: n_output
+      n_output: n_output,
+      qr_data: qr_data
     }
 
     # Create a changeset for the action
@@ -117,6 +119,9 @@ defmodule PerceptronApparatus.Board do
     [
       # Log ring
       create_log_ring(),
+
+      # ReLU ring (NOTE: currently not using this ring)
+      create_relu_ring(),
 
       # Input azimuthal ring
       create_input_ring(n_input),
@@ -301,7 +306,14 @@ defmodule PerceptronApparatus.Board do
         end
       )
 
-    all_elements = [board_edge] ++ ring_elements
+    # Add QR code in center if qr_data is present
+    qr_elements = if apparatus.qr_data do
+      render_qr_code(apparatus.qr_data, center_space)
+    else
+      []
+    end
+
+    all_elements = [board_edge] ++ ring_elements ++ qr_elements
 
     render_body_as_tree(all_elements, view_box)
   end
@@ -390,6 +402,9 @@ defmodule PerceptronApparatus.Board do
       stroke: red;
       fill: transparent;
     }
+    .qr-code {
+      fill: #000000;
+    }
     """
 
     base_styles
@@ -406,5 +421,45 @@ defmodule PerceptronApparatus.Board do
       {"r", to_string(radius)},
       {"stroke-width", to_string(width)}
     ])
+  end
+
+  defp render_qr_code(data, center_space) do
+    case QRCode.create(data) do
+      {:ok, qr} ->
+        # Use the QR matrix directly
+        render_qr_matrix(qr.matrix, center_space)
+      
+      {:error, _} ->
+        []
+    end
+  end
+
+  defp render_qr_matrix(matrix, center_space) do
+    # Calculate QR code dimensions
+    matrix_size = length(matrix)
+    qr_size = center_space * 0.8  # Use 80% of center space
+    cell_size = qr_size / matrix_size
+    
+    # Calculate offset to center the QR code
+    offset = -qr_size / 2
+    
+    # Convert matrix to rectangles
+    matrix
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {row, y} ->
+      row
+      |> Enum.with_index()
+      |> Enum.filter(fn {cell, _x} -> cell == 1 end)  # Only render filled cells
+      |> Enum.map(fn {_cell, x} ->
+        Utils.rect_element([
+          {"class", "qr-code"},
+          {"x", to_string(offset + x * cell_size)},
+          {"y", to_string(offset + y * cell_size)},
+          {"width", to_string(cell_size)},
+          {"height", to_string(cell_size)},
+          {"fill", "#000000"}
+        ])
+      end)
+    end)
   end
 end

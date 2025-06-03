@@ -77,6 +77,13 @@ defmodule PerceptronApparatus.Utils do
   end
 
   @doc """
+  Creates a rectangle element with the given attributes.
+  """
+  def rect_element(attributes) do
+    {"rect", attributes, []}
+  end
+
+  @doc """
   Creates a text element with content and attributes.
   """
   def text_element(content, attributes \\ []) do

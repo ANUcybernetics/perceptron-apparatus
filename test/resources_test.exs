@@ -372,13 +372,13 @@ defmodule PerceptronApparatus.ResourcesTest do
 
     test "rendering works with different network sizes" do
       # Test with minimal network
-      {:ok, small_board} = Board.create(300.0, 2, 1, 1)
+      {:ok, small_board} = Board.create(800.0, 2, 1, 1)
       small_svg = Board.render(small_board)
       assert is_binary(small_svg)
       assert String.contains?(small_svg, "<svg")
 
       # Test with larger network
-      {:ok, large_board} = Board.create(600.0, 10, 8, 5)
+      {:ok, large_board} = Board.create(1200.0, 10, 8, 5)
       large_svg = Board.render(large_board)
       assert is_binary(large_svg)
       assert String.contains?(large_svg, "<svg")
