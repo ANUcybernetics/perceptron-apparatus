@@ -431,9 +431,9 @@ defmodule PerceptronApparatus.Board do
   defp render_qr_code(data, center_space) do
     case QRCode.create(data, :high) do
       {:ok, qr} ->
-        # Create bounding box with padding
-        padding = center_space * 0.05
-        box_size = center_space * 0.8 + padding * 2
+        # Create bounding box with padding (reduced by factor of 2)
+        padding = center_space * 0.025
+        box_size = center_space * 0.4 + padding * 2
         box_offset = -box_size / 2
         corner_radius = box_size * 0.1
 
@@ -523,8 +523,8 @@ defmodule PerceptronApparatus.Board do
   defp render_qr_matrix(matrix, center_space) do
     # Calculate QR code dimensions
     matrix_size = length(matrix)
-    # Use 80% of center space
-    qr_size = center_space * 0.8
+    # Use 40% of center space (reduced by factor of 2)
+    qr_size = center_space * 0.4
     cell_size = qr_size / matrix_size
 
     # Calculate offset to center the QR code
