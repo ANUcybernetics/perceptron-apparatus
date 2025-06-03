@@ -392,6 +392,9 @@ defmodule PerceptronApparatus.Board do
       stroke: none;
     }
     text.indices{
+      font-size: 12px;
+    }
+    text.indices.small{
       font-size: 8px;
     }
     .debug {

@@ -42,7 +42,7 @@ defmodule PerceptronApparatus.RadialRing do
     radial_ring
   end
 
-  def render_slider(radius, width, theta) do
+  def render_slider(radius, width, theta, slider_index) do
     bottom_path =
       path_element([
         {"class", "bottom slider"},
@@ -59,7 +59,20 @@ defmodule PerceptronApparatus.RadialRing do
         {"d", "M 0 0 v #{-width}"}
       ])
 
-    [bottom_path, top_path]
+    slider_index_text =
+      text_element(
+        "#{slider_index}",
+        [
+          {"transform", "rotate(#{-theta})"},
+          {"class", "top etch indices small"},
+          {"x", "0"},
+          {"y", to_string(radius + 8)},
+          {"text-anchor", "middle"},
+          {"dominant-baseline", "middle"}
+        ]
+      )
+
+    [bottom_path, top_path, slider_index_text]
   end
 
   @doc """
@@ -73,8 +86,14 @@ defmodule PerceptronApparatus.RadialRing do
 
     sliders =
       1..sliders_per_group
-      |> Enum.map(fn i ->
-        render_slider(radius, width, theta_offset + i * (theta_sweep / (sliders_per_group + 1)))
+      |> Enum.with_index()
+      |> Enum.map(fn {i, slider_index} ->
+        render_slider(
+          radius,
+          width,
+          theta_offset + i * (theta_sweep / (sliders_per_group + 1)),
+          slider_index
+        )
       end)
       |> List.flatten()
 
