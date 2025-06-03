@@ -13,49 +13,45 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert board.n_hidden == 5
       assert board.n_output == 10
       assert is_list(board.rings)
-      # log, relu, input, w1, hidden, w2, output
-      assert length(board.rings) == 7
+      # log, input, w1, hidden, w2, output
+      assert length(board.rings) == 6
       assert is_binary(board.id)
     end
 
     test "creates the correct ring sequence" do
       {:ok, board} = Board.create(400.0, 3, 2, 1)
 
-      [ring1, ring2, ring3, ring4, ring5, ring6, ring7] = board.rings
+      [ring1, ring2, ring3, ring4, ring5, ring6] = board.rings
 
       # Ring 1: Log ring
       assert %RuleRing{} = ring1
       assert length(ring1.rule) > 0
 
-      # Ring 2: ReLU ring
-      assert %RuleRing{} = ring2
-      assert length(ring2.rule) > 0
+      # Ring 2: Input azimuthal ring (3 sliders)
+      assert %AzimuthalRing{} = ring2
+      assert ring2.shape == %{sliders: 3}
 
-      # Ring 3: Input azimuthal ring (3 sliders)
-      assert %AzimuthalRing{} = ring3
-      assert ring3.shape == %{sliders: 3}
+      # Ring 3: Weight1 radial ring (2 groups x 3 sliders per group)
+      assert %RadialRing{} = ring3
+      assert ring3.shape == %{groups: 2, sliders_per_group: 3}
 
-      # Ring 4: Weight1 radial ring (2 groups x 3 sliders per group)
-      assert %RadialRing{} = ring4
-      assert ring4.shape == %{groups: 2, sliders_per_group: 3}
+      # Ring 4: Hidden azimuthal ring (2 sliders)
+      assert %AzimuthalRing{} = ring4
+      assert ring4.shape == %{sliders: 2}
 
-      # Ring 5: Hidden azimuthal ring (2 sliders)
-      assert %AzimuthalRing{} = ring5
-      assert ring5.shape == %{sliders: 2}
+      # Ring 5: Weight2 radial ring (1 group x 2 sliders per group)
+      assert %RadialRing{} = ring5
+      assert ring5.shape == %{groups: 1, sliders_per_group: 2}
 
-      # Ring 6: Weight2 radial ring (1 group x 2 sliders per group)
-      assert %RadialRing{} = ring6
-      assert ring6.shape == %{groups: 1, sliders_per_group: 2}
-
-      # Ring 7: Output azimuthal ring (1 slider)
-      assert %AzimuthalRing{} = ring7
-      assert ring7.shape == %{sliders: 1}
+      # Ring 6: Output azimuthal ring (1 slider)
+      assert %AzimuthalRing{} = ring6
+      assert ring6.shape == %{sliders: 1}
     end
 
     test "creates rings with appropriate rules" do
       {:ok, board} = Board.create(400.0, 2, 3, 1)
 
-      [_log, _relu, input, w1, hidden, _w2, output] = board.rings
+      [_log, input, w1, hidden, _w2, output] = board.rings
 
       # Input ring should have 0-1 range rule
       input_rule = input.rule
@@ -94,7 +90,7 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert board.n_input == 5
       assert board.n_hidden == 3
       assert board.n_output == 2
-      assert length(board.rings) == 7
+      assert length(board.rings) == 6
     end
 
     test "validates board structure" do
@@ -115,13 +111,12 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert board.size == 500.0
 
       # Extract rings
-      [log_ring, relu_ring, input_ring, w1_ring, hidden_ring, w2_ring, output_ring] = board.rings
+      [log_ring, input_ring, w1_ring, hidden_ring, w2_ring, output_ring] = board.rings
 
       # Verify neural network topology in ring sequence
 
-      # 1. Log and ReLU rings (computation aids)
+      # 1. Log ring (computation aid)
       assert %RuleRing{} = log_ring
-      assert %RuleRing{} = relu_ring
 
       # 2. Input layer (4 neurons)
       assert %AzimuthalRing{shape: %{sliders: 4}} = input_ring
@@ -178,8 +173,8 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert w2_max <= 10.0
 
       # Verify total ring count matches expected neural network structure
-      # 2 computation aids + 5 network layers
-      assert length(board.rings) == 7
+      # 1 computation aid + 5 network layers
+      assert length(board.rings) == 6
 
       # Test that the board renders successfully (integration check)
       svg_output = Board.render(board)
@@ -395,7 +390,7 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert board.n_input == 5
       assert board.n_hidden == 4
       assert board.n_output == 3
-      assert length(board.rings) == 7
+      assert length(board.rings) == 6
 
       # Test rendering
       svg = Board.render(board)
@@ -438,11 +433,10 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert board.size == 1200.0
 
       # Extract and verify ring sequence matches neural network expectations
-      [log_ring, relu_ring, input_ring, w1_ring, hidden_ring, w2_ring, output_ring] = board.rings
+      [log_ring, input_ring, w1_ring, hidden_ring, w2_ring, output_ring] = board.rings
 
       # Verify ring types and dimensions match neural network structure
       assert %RuleRing{} = log_ring
-      assert %RuleRing{} = relu_ring
       assert %AzimuthalRing{shape: %{sliders: 25}} = input_ring
       assert %RadialRing{shape: %{groups: 5, sliders_per_group: 25}} = w1_ring
       assert %AzimuthalRing{shape: %{sliders: 5}} = hidden_ring
@@ -464,8 +458,8 @@ defmodule PerceptronApparatus.ResourcesTest do
       # Verify it matches the complexity expected from the original example
       # (which produced a 25-input, 5-hidden, 10-output network)
       ring_count = length(board.rings)
-      # 2 computation + 5 neural network layers
-      assert ring_count == 7
+      # 1 computation + 5 neural network layers
+      assert ring_count == 6
 
       # Test that all rings have valid widths that fit within the board
       total_width = Enum.sum(Enum.map(board.rings, & &1.width))

@@ -5,7 +5,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
   alias PerceptronApparatus.Board
 
   # Define at module level for clarity
-  @output_dir "svg"
+  @output_dir "svg/test"
 
   setup do
     # Ensure the svg directory is clean and exists before each test
@@ -34,19 +34,13 @@ defmodule PerceptronApparatus.BoardGenerationTest do
       case Board.create(params.size, params.n_input, params.n_hidden, params.n_output) do
         {:ok, board} ->
           # Now write the SVG file using the separate action
-          full_filename = "svg/test/board_#{board.id}.svg"
+          full_filename = Path.join(@output_dir, "board_#{board.id}.svg")
 
           case Board.write_svg(board, full_filename) do
             {:ok, _updated_board} ->
               # Verify that the output directory and SVG files were created
               assert File.exists?(@output_dir),
                      "Output directory '#{@output_dir}' was not created."
-
-              # Verify that the test subdirectory was created
-              test_dir = Path.join([@output_dir, "test"])
-
-              assert File.exists?(test_dir),
-                     "Test subdirectory '#{test_dir}' was not created."
 
               # Check that the SVG file was actually created
               assert File.exists?(full_filename),
@@ -87,7 +81,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
                  "SVG content should contain QR code elements when qr_data is provided"
 
           # Write to file for visual inspection
-          filename = "svg/test/board_with_qr_#{board.id}.svg"
+          filename = Path.join(@output_dir, "board_with_qr_#{board.id}.svg")
 
           case Board.write_svg(board, filename) do
             {:ok, _} ->
@@ -122,7 +116,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
                  "SVG content should not contain QR code elements when no qr_data is provided"
 
           # Write to file for comparison
-          filename = "svg/test/board_no_qr_#{board.id}.svg"
+          filename = Path.join(@output_dir, "board_no_qr_#{board.id}.svg")
 
           case Board.write_svg(board, filename) do
             {:ok, _} ->

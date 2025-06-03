@@ -148,13 +148,7 @@ defmodule PerceptronApparatus.Board do
     ring
   end
 
-  defp create_relu_ring do
-    {:ok, ring} =
-      Ash.Changeset.for_create(RuleRing, :new, %{rule: RuleRing.relu_rule(10, 0.25), width: 30.0})
-      |> Ash.create()
 
-    ring
-  end
 
   defp create_input_ring(n_input) do
     rule = Utils.new_rule(0, 1, 0.1, 0.5)

@@ -108,7 +108,8 @@ defmodule PerceptronApparatus.RadialRing do
 
     circles =
       Enum.map(radii, fn {label, r} ->
-        az_padding = 700 / r
+        # Guard against division by zero or very small radii
+        az_padding = if r > 0.1, do: 700 / r, else: 0
 
         arc_components =
           0..(groups - 1)
