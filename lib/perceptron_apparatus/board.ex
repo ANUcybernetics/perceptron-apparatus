@@ -513,7 +513,10 @@ defmodule PerceptronApparatus.Board do
     # Add 4 fasteners underneath QR code
     qr_fasteners = add_fasteners(center_space * 0.6, 4)
 
-    fastener_rings ++ qr_fasteners
+    # Add 12 evenly-spaced pairs of fasteners to the outer ring
+    outer_fasteners = add_fastener_pairs(radius)
+
+    fastener_rings ++ qr_fasteners ++ outer_fasteners
   end
 
   defp render_qr_matrix(matrix, center_space) do
@@ -568,6 +571,51 @@ defmodule PerceptronApparatus.Board do
         {"stroke", "black"},
         {"stroke-width", "1"}
       ])
+    end)
+  end
+
+  @doc """
+  Creates 12 evenly-spaced pairs of fastener holes in the outer ring.
+  Each pair is at the same radius (halfway between board edge and log ring)
+  with holes 40 units apart.
+  """
+  def add_fastener_pairs(board_radius) do
+    # Calculate the radius for the outer ring fasteners
+    # Halfway between board edge and the log ring outer radius
+    fastener_radius = board_radius - 20
+
+    # 12 pairs evenly spaced around the circle
+    pair_angle_step = 2 * :math.pi() / 12
+
+    # Distance between holes in each pair (40 units apart)
+    pair_separation = 40
+    # Convert separation distance to angle at this radius
+    separation_angle = pair_separation / fastener_radius
+
+    0..11
+    |> Enum.flat_map(fn i ->
+      # Base angle for this pair
+      base_angle = i * pair_angle_step
+
+      # Create two holes: one at base_angle - separation_angle/2, one at base_angle + separation_angle/2
+      [
+        {base_angle - separation_angle / 2},
+        {base_angle + separation_angle / 2}
+      ]
+      |> Enum.map(fn {angle} ->
+        x = fastener_radius * :math.cos(angle)
+        y = fastener_radius * :math.sin(angle)
+
+        circle_element([
+          {"class", "fastener"},
+          {"cx", to_string(x)},
+          {"cy", to_string(y)},
+          {"r", "3"},
+          {"fill", "white"},
+          {"stroke", "black"},
+          {"stroke-width", "1"}
+        ])
+      end)
     end)
   end
 end
