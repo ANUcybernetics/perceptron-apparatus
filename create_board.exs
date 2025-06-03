@@ -12,7 +12,7 @@ IO.puts(
 IO.puts("---")
 
 # Define board parameters
-size = 1199.0
+size = 1150.0
 n_input = 36
 n_hidden = 6
 n_output = 10
