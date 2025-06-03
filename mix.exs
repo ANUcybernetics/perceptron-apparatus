@@ -21,6 +21,8 @@ defmodule PerceptronApparatus.MixProject do
   defp deps do
     [
       {:axon, "~> 0.7"},
+      {:nx, "~> 0.9"},
+      {:polaris, "~> 0.1"},
       {:qr_code, "~> 3.0"},
       {:usage_rules, "~> 0.1", only: [:dev]},
       {:decimal, "~> 2.0"},
