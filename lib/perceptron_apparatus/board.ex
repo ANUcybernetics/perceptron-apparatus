@@ -512,7 +512,7 @@ defmodule PerceptronApparatus.Board do
       )
 
     # Add 4 fasteners underneath QR code
-    qr_fasteners = add_fasteners(center_space * 0.6, 4)
+    qr_fasteners = add_fasteners(center_space, 6)
 
     # Add 12 evenly-spaced pairs of fasteners to the outer ring
     outer_fasteners = add_fastener_pairs(radius)
