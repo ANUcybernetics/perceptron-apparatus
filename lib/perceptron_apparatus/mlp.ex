@@ -30,10 +30,13 @@ defmodule PerceptronApparatus.MLP do
   """
   def create_model do
     Axon.input("input", shape: {nil, 36})
-    |> Axon.dense(6, activation: :relu, use_bias: false, name: "hidden", 
-                  kernel_initializer: :glorot_uniform)
-    |> Axon.dense(10, use_bias: false, name: "output",
-                  kernel_initializer: :glorot_uniform)
+    |> Axon.dense(6,
+      activation: :relu,
+      use_bias: false,
+      name: "hidden",
+      kernel_initializer: :glorot_uniform
+    )
+    |> Axon.dense(10, use_bias: false, name: "output", kernel_initializer: :glorot_uniform)
   end
 
   @doc """
@@ -46,13 +49,24 @@ defmodule PerceptronApparatus.MLP do
     input_with_hook = Axon.attach_hook(input, &capture_activation(&1, "input"), on: :forward)
 
     # Hidden layer with hook
-    hidden = Axon.dense(input_with_hook, 6, activation: :relu, use_bias: false, name: "hidden",
-                        kernel_initializer: :glorot_uniform)
+    hidden =
+      Axon.dense(input_with_hook, 6,
+        activation: :relu,
+        use_bias: false,
+        name: "hidden",
+        kernel_initializer: :glorot_uniform
+      )
+
     hidden_with_hook = Axon.attach_hook(hidden, &capture_activation(&1, "hidden"), on: :forward)
 
     # Output layer with hook
-    output = Axon.dense(hidden_with_hook, 10, use_bias: false, name: "output",
-                        kernel_initializer: :glorot_uniform)
+    output =
+      Axon.dense(hidden_with_hook, 10,
+        use_bias: false,
+        name: "output",
+        kernel_initializer: :glorot_uniform
+      )
+
     Axon.attach_hook(output, &capture_activation(&1, "output"), on: :forward)
   end
 

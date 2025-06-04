@@ -27,7 +27,7 @@ defmodule PerceptronApparatus.MLPTest do
       # Step 4: Run inference on ENTIRE test dataset for activation analysis
       IO.puts("Running inference on FULL test dataset for activation analysis...")
       IO.puts("(This may take a while - analyzing all 6,000 test samples)")
-      
+
       model_with_hooks = MLP.create_model_with_hooks()
       {test_images, test_labels} = test_data
       full_test_size = Nx.axis_size(test_images, 0)
@@ -37,7 +37,8 @@ defmodule PerceptronApparatus.MLPTest do
           model_with_hooks,
           trained_params,
           test_data,
-          full_test_size  # Use entire test dataset
+          # Use entire test dataset
+          full_test_size
         )
 
       # Step 5: Calculate final test accuracy
@@ -53,19 +54,24 @@ defmodule PerceptronApparatus.MLPTest do
 
       # Print additional activation statistics (median)
       IO.puts("\n=== DETAILED ACTIVATION STATISTICS ===")
+
       Enum.each(activations, fn {layer_name, stats} ->
         overall_min = Enum.min(stats.min)
         overall_max = Enum.max(stats.max)
         avg_mean = Enum.sum(stats.mean) / length(stats.mean)
-        
+
         # Calculate median
         sorted_means = Enum.sort(stats.mean)
-        median = 
+
+        median =
           case length(sorted_means) do
-            0 -> 0.0
+            0 ->
+              0.0
+
             len when rem(len, 2) == 0 ->
               mid = div(len, 2)
               (Enum.at(sorted_means, mid - 1) + Enum.at(sorted_means, mid)) / 2
+
             len ->
               Enum.at(sorted_means, div(len, 2))
           end
@@ -85,9 +91,10 @@ defmodule PerceptronApparatus.MLPTest do
       assert %Axon.ModelState{} = trained_params
       assert Nx.shape(predictions) == {full_test_size, 10}
       assert Map.has_key?(activations, "input")
-      assert Map.has_key?(activations, "hidden") 
+      assert Map.has_key?(activations, "hidden")
       assert Map.has_key?(activations, "output")
-      assert accuracy > 0.1  # Should be better than random
+      # Should be better than random
+      assert accuracy > 0.1
       assert accuracy <= 1.0
     end
   end
