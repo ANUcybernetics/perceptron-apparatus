@@ -54,20 +54,28 @@ defmodule PerceptronApparatus.MLPTest do
 
       # Print concise parameter and activation summary
       IO.puts("\n=== PARAMETER RANGES ===")
+
       Enum.each(parameter_stats, fn {layer_name, layer_params} ->
         kernel_param = Enum.find(layer_params, fn param -> param.name == "kernel" end)
+
         if kernel_param do
-          IO.puts("#{layer_name} kernel: min=#{Float.round(kernel_param.min, 4)}, max=#{Float.round(kernel_param.max, 4)}, mean=#{Float.round(kernel_param.mean, 4)}")
+          IO.puts(
+            "#{layer_name} kernel: min=#{Float.round(kernel_param.min, 4)}, max=#{Float.round(kernel_param.max, 4)}, mean=#{Float.round(kernel_param.mean, 4)}"
+          )
         end
       end)
 
       IO.puts("\n=== ACTIVATION RANGES ===")
+
       Enum.each(["input", "hidden", "output"], fn layer_name ->
         if Map.has_key?(activations, layer_name) do
           stats = activations[layer_name]
           min_activation = Enum.min(stats.min)
           max_activation = Enum.max(stats.max)
-          IO.puts("#{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}")
+
+          IO.puts(
+            "#{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}"
+          )
         end
       end)
 
