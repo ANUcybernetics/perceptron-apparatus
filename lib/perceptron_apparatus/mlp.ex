@@ -30,8 +30,8 @@ defmodule PerceptronApparatus.MLP do
   """
   def create_model do
     Axon.input("input", shape: {nil, 36})
-    |> Axon.dense(6, activation: :relu, name: "hidden")
-    |> Axon.dense(10, activation: :softmax, name: "output")
+    |> Axon.dense(6, use_bias: false, name: "hidden")
+    |> Axon.dense(10, use_bias: false, name: "output")
   end
 
   @doc """
