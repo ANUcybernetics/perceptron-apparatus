@@ -160,7 +160,7 @@ defmodule PerceptronApparatus.Board do
   end
 
   defp create_weight_ring(n_groups, n_sliders_per_group) do
-    rule = Utils.new_rule(-5, 5, 1, 5)
+    rule = Utils.new_rule(-2, 2, 0.25, 1)
     shape = %{groups: n_groups, sliders_per_group: n_sliders_per_group}
 
     {:ok, ring} =
@@ -171,7 +171,7 @@ defmodule PerceptronApparatus.Board do
   end
 
   defp create_hidden_ring(n_hidden) do
-    rule = Utils.new_rule(0, 10, 1, 5)
+    rule = Utils.new_rule(-2, 2, 0.5, 1)
     shape = %{sliders: n_hidden}
 
     {:ok, ring} =
@@ -182,7 +182,7 @@ defmodule PerceptronApparatus.Board do
   end
 
   defp create_output_ring(n_output) do
-    rule = Utils.new_rule(0, 1, 0.1, 0.5)
+    rule = Utils.new_rule(0, 2, 0.5, 1)
     shape = %{sliders: n_output}
 
     {:ok, ring} =
