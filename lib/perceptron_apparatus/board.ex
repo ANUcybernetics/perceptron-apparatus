@@ -352,7 +352,14 @@ defmodule PerceptronApparatus.Board do
     style_content = build_style_content()
     style_elem = style_element(style_content)
 
-    svg_root(view_box, [style_elem | List.flatten(elements)])
+    # Add Illustrator-specific attributes for better import
+    illustrator_attrs = [
+      {"xmlns:xlink", "http://www.w3.org/1999/xlink"},
+      {"xml:space", "preserve"},
+      {"style", "enable-background:new #{view_box};"}
+    ]
+
+    svg_root(view_box, [style_elem | List.flatten(elements)], illustrator_attrs)
     |> tree_to_html()
   end
 
