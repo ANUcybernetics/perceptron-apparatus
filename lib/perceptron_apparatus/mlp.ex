@@ -15,7 +15,7 @@ defmodule PerceptronApparatus.MLP do
 
       # Run complete analysis workflow
       result = PerceptronApparatus.MLP.analyze_mnist_mlp(epochs: 8, batch_size: 128)
-      
+
       # Or run individual steps
       {train_data, test_data} = PerceptronApparatus.MLP.load_mnist_data()
       model = PerceptronApparatus.MLP.create_model()
@@ -174,18 +174,23 @@ defmodule PerceptronApparatus.MLP do
           # Find indices of min and max values
           min_indices = Nx.argmin(Nx.flatten(param_tensor)) |> Nx.to_number()
           max_indices = Nx.argmax(Nx.flatten(param_tensor)) |> Nx.to_number()
-          
+
           # Convert flat indices to multi-dimensional indices
           shape = Nx.shape(param_tensor)
-          {rows, cols} = shape
-          
+          {_rows, cols} = shape
+
           min_row = div(min_indices, cols)
           min_col = rem(min_indices, cols)
           max_row = div(max_indices, cols)
           max_col = rem(max_indices, cols)
-          
-          IO.puts("    Min weight: #{Float.round(min_val, 6)} at position [#{min_row}, #{min_col}]")
-          IO.puts("    Max weight: #{Float.round(max_val, 6)} at position [#{max_row}, #{max_col}]")
+
+          IO.puts(
+            "    Min weight: #{Float.round(min_val, 6)} at position [#{min_row}, #{min_col}]"
+          )
+
+          IO.puts(
+            "    Max weight: #{Float.round(max_val, 6)} at position [#{max_row}, #{max_col}]"
+          )
         end
       end)
     end)
