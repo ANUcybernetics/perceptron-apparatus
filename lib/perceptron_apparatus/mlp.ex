@@ -26,6 +26,54 @@ defmodule PerceptronApparatus.MLP do
   alias Axon.Loop
 
   @doc """
+  Custom initializer that creates weights in a tight, consistent range.
+  All weights will be uniformly distributed in [-bound, +bound].
+  This ensures close grouping of parameters (same order of magnitude).
+  """
+  def bounded_uniform_initializer(opts \\ []) do
+    bound = Keyword.get(opts, :bound, 0.1)
+    
+    fn shape, type, _key ->
+      # Create deterministic uniform values in [-bound, +bound]
+      total_elements = Tuple.product(shape)
+      
+      uniform_values = 
+        0..(total_elements - 1)
+        |> Enum.map(fn i -> 
+          # Create a pseudo-random but deterministic pattern
+          base = rem(i * 23 + 47, 1000) / 1000.0  # Values between 0 and 1
+          (base - 0.5) * 2 * bound  # Scale to [-bound, +bound]
+        end)
+        |> Nx.tensor(type: type)
+        |> Nx.reshape(shape)
+      
+      uniform_values
+    end
+  end
+
+  @doc """
+  Custom initializer for hidden layer weights to achieve [0,1] activation range.
+  Designed for 36 inputs (MNIST 6x6 flattened) to keep ReLU outputs in [0,1].
+  """
+  def hidden_bounded_initializer(opts \\ []) do
+    # With 36 inputs each in [0,1], we want max sum ~1.0 after ReLU
+    # So individual weights should be around ±(1.0/36) = ±0.028
+    bound = Keyword.get(opts, :bound, 0.03)
+    bounded_uniform_initializer(bound: bound)
+  end
+
+  @doc """
+  Custom initializer for output layer weights to achieve [-1,1] activation range.
+  Designed for 6 hidden units each in [0,1] to keep outputs in [-1,1].
+  """
+  def output_bounded_initializer(opts \\ []) do
+    # With 6 hidden units each in [0,1], we want sums in [-1,1]
+    # So individual weights should be around ±(1.0/6) = ±0.17
+    bound = Keyword.get(opts, :bound, 0.17)
+    bounded_uniform_initializer(bound: bound)
+  end
+
+  @doc """
   Creates a 36x6x10 MLP model with ReLU activation for MNIST classification.
   """
   def create_model do
@@ -37,6 +85,26 @@ defmodule PerceptronApparatus.MLP do
       kernel_initializer: :glorot_uniform
     )
     |> Axon.dense(10, use_bias: false, name: "output", kernel_initializer: :glorot_uniform)
+  end
+
+  @doc """
+  Creates a model with bounded activation ranges using custom initializers.
+  Hidden layer activations: [0,1], Output layer activations: [-1,1].
+  All parameters are closely grouped in similar ranges.
+  """
+  def create_bounded_model do
+    Axon.input("input", shape: {nil, 36})
+    |> Axon.dense(6,
+      activation: :relu,
+      use_bias: false,
+      name: "hidden",
+      kernel_initializer: hidden_bounded_initializer()
+    )
+    |> Axon.dense(10, 
+      use_bias: false, 
+      name: "output", 
+      kernel_initializer: output_bounded_initializer()
+    )
   end
 
   @doc """
@@ -65,6 +133,37 @@ defmodule PerceptronApparatus.MLP do
         use_bias: false,
         name: "output",
         kernel_initializer: :glorot_uniform
+      )
+
+    Axon.attach_hook(output, &capture_activation(&1, "output"), on: :forward)
+  end
+
+  @doc """
+  Creates a bounded model with hooks for activation tracking.
+  """
+  def create_bounded_model_with_hooks do
+    input = Axon.input("input", shape: {nil, 36})
+
+    # Attach hook to capture input values
+    input_with_hook = Axon.attach_hook(input, &capture_activation(&1, "input"), on: :forward)
+
+    # Hidden layer with bounded weights and hook
+    hidden =
+      Axon.dense(input_with_hook, 6,
+        activation: :relu,
+        use_bias: false,
+        name: "hidden",
+        kernel_initializer: hidden_bounded_initializer()
+      )
+
+    hidden_with_hook = Axon.attach_hook(hidden, &capture_activation(&1, "hidden"), on: :forward)
+
+    # Output layer with bounded weights and hook
+    output =
+      Axon.dense(hidden_with_hook, 10,
+        use_bias: false,
+        name: "output",
+        kernel_initializer: output_bounded_initializer()
       )
 
     Axon.attach_hook(output, &capture_activation(&1, "output"), on: :forward)
@@ -384,6 +483,108 @@ defmodule PerceptronApparatus.MLP do
       predictions: predictions,
       activations: activations,
       test_accuracy: accuracy
+    }
+  end
+
+  @doc """
+  Analyzes a model with bounded initialization before and after training.
+  This shows the activation ranges with bounded weights targeting [-1,1] ranges.
+  """
+  def analyze_bounded_initialization(opts \\ []) do
+    IO.puts("Loading and preprocessing MNIST data...")
+    {train_data, test_data} = load_mnist_data()
+
+    IO.puts("Creating bounded 36x6x10 MLP model with grouped parameters...")
+
+    # Create bounded model
+    model = create_bounded_model()
+    
+    # Initialize the model to see initial parameter ranges
+    {init_fn, _predict_fn} = Axon.build(model)
+    initial_params = init_fn.(Nx.template({1, 36}, :f32), %{})
+
+    IO.puts("\n=== INITIAL BOUNDED PARAMETER RANGES ===")
+    initial_param_stats = collect_parameter_stats(initial_params)
+
+    # Create model with hooks for activation tracking
+    model_with_hooks = create_bounded_model_with_hooks()
+
+    IO.puts("Running inference on untrained bounded model...")
+
+    {initial_predictions, initial_activations} = 
+      run_inference_with_tracking(model_with_hooks, initial_params, test_data, 100)
+
+    IO.puts("Initial activations with bounded weights (before training):")
+    
+    # Print initial bounded activation ranges
+    IO.puts("\n=== INITIAL BOUNDED ACTIVATION RANGES ===")
+    Enum.each(["input", "hidden", "output"], fn layer_name ->
+      if Map.has_key?(initial_activations, layer_name) do
+        stats = initial_activations[layer_name]
+        min_activation = Enum.min(stats.min)
+        max_activation = Enum.max(stats.max)
+        IO.puts("#{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}")
+      end
+    end)
+
+    # Train the model
+    IO.puts("\nTraining bounded model for comparison...")
+    epochs = Keyword.get(opts, :epochs, 3)
+    trained_params = train_model(model, train_data, epochs: epochs, batch_size: 128)
+
+    # Analyze trained model
+    trained_param_stats = collect_parameter_stats(trained_params)
+
+    {trained_predictions, trained_activations} = 
+      run_inference_with_tracking(model_with_hooks, trained_params, test_data, 100)
+
+    # Print comparison
+    IO.puts("\n=== PARAMETER COMPARISON ===")
+    IO.puts("INITIAL:")
+    Enum.each(initial_param_stats, fn {layer_name, layer_params} ->
+      kernel_param = Enum.find(layer_params, fn param -> param.name == "kernel" end)
+      if kernel_param do
+        IO.puts("  #{layer_name} kernel: min=#{Float.round(kernel_param.min, 4)}, max=#{Float.round(kernel_param.max, 4)}, mean=#{Float.round(kernel_param.mean, 4)}")
+      end
+    end)
+
+    IO.puts("TRAINED:")
+    Enum.each(trained_param_stats, fn {layer_name, layer_params} ->
+      kernel_param = Enum.find(layer_params, fn param -> param.name == "kernel" end)
+      if kernel_param do
+        IO.puts("  #{layer_name} kernel: min=#{Float.round(kernel_param.min, 4)}, max=#{Float.round(kernel_param.max, 4)}, mean=#{Float.round(kernel_param.mean, 4)}")
+      end
+    end)
+
+    IO.puts("\n=== ACTIVATION COMPARISON ===")
+    IO.puts("INITIAL:")
+    Enum.each(["input", "hidden", "output"], fn layer_name ->
+      if Map.has_key?(initial_activations, layer_name) do
+        stats = initial_activations[layer_name]
+        min_activation = Enum.min(stats.min)
+        max_activation = Enum.max(stats.max)
+        IO.puts("  #{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}")
+      end
+    end)
+
+    IO.puts("TRAINED:")
+    Enum.each(["input", "hidden", "output"], fn layer_name ->
+      if Map.has_key?(trained_activations, layer_name) do
+        stats = trained_activations[layer_name]
+        min_activation = Enum.min(stats.min)
+        max_activation = Enum.max(stats.max)
+        IO.puts("  #{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}")
+      end
+    end)
+
+    %{
+      model: model,
+      initial_params: initial_params,
+      trained_params: trained_params,
+      initial_predictions: initial_predictions,
+      trained_predictions: trained_predictions,
+      initial_activations: initial_activations,
+      trained_activations: trained_activations
     }
   end
 end
