@@ -21,8 +21,8 @@ defmodule PerceptronApparatus.MLPTest do
       IO.puts("Training model on MNIST data...")
       trained_params = MLP.train_model(model, train_data, epochs: 8, batch_size: 128)
 
-      # Step 3: Inspect trained parameters (with min/max weight positions)
-      MLP.inspect_parameters(trained_params)
+      # Step 3: Collect trained parameter statistics (will print at end)
+      parameter_stats = MLP.collect_parameter_stats(trained_params)
 
       # Step 4: Run inference on ENTIRE test dataset for activation analysis
       IO.puts("Running inference on FULL test dataset for activation analysis...")
@@ -51,6 +51,20 @@ defmodule PerceptronApparatus.MLPTest do
       IO.puts(String.duplicate("=", 80))
       IO.puts("Test accuracy on full dataset: #{Float.round(accuracy * 100, 2)}%")
       IO.puts("Total test samples analyzed: #{full_test_size}")
+
+      # Print consolidated parameter statistics
+      IO.puts("\n=== TRAINED PARAMETER RANGES ===")
+      Enum.each(parameter_stats, fn {layer_name, layer_params} ->
+        Enum.each(layer_params, fn param_info ->
+          if Map.has_key?(param_info, :min_position) do
+            [min_row, min_col] = param_info.min_position
+            [max_row, max_col] = param_info.max_position
+            IO.puts("#{layer_name}/#{param_info.name}: min=#{Float.round(param_info.min, 6)} at [#{min_row},#{min_col}], max=#{Float.round(param_info.max, 6)} at [#{max_row},#{max_col}], mean=#{Float.round(param_info.mean, 6)}")
+          else
+            IO.puts("#{layer_name}/#{param_info.name}: min=#{Float.round(param_info.min, 6)}, max=#{Float.round(param_info.max, 6)}, mean=#{Float.round(param_info.mean, 6)}")
+          end
+        end)
+      end)
 
       # Print additional activation statistics (median)
       IO.puts("\n=== DETAILED ACTIVATION STATISTICS ===")

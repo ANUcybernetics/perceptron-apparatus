@@ -217,6 +217,56 @@ defmodule PerceptronApparatus.MLP do
   end
 
   @doc """
+  Collects parameter statistics without printing them.
+  Returns a map with layer statistics for consolidated printing.
+  """
+  def collect_parameter_stats(model_state) do
+    params = model_state.data
+
+    Enum.map(params, fn {layer_name, layer_params} ->
+      layer_stats =
+        Enum.map(layer_params, fn {param_name, param_tensor} ->
+          min_val = Nx.reduce_min(param_tensor) |> Nx.to_number()
+          max_val = Nx.reduce_max(param_tensor) |> Nx.to_number()
+          mean_val = Nx.mean(param_tensor) |> Nx.to_number()
+
+          param_info = %{
+            name: param_name,
+            min: min_val,
+            max: max_val,
+            mean: mean_val
+          }
+
+          # For weight parameters, also collect min/max position info
+          if param_name == "kernel" do
+            # Find indices of min and max values
+            min_indices = Nx.argmin(Nx.flatten(param_tensor)) |> Nx.to_number()
+            max_indices = Nx.argmax(Nx.flatten(param_tensor)) |> Nx.to_number()
+
+            # Convert flat indices to multi-dimensional indices
+            shape = Nx.shape(param_tensor)
+            {_rows, cols} = shape
+
+            min_row = div(min_indices, cols)
+            min_col = rem(min_indices, cols)
+            max_row = div(max_indices, cols)
+            max_col = rem(max_indices, cols)
+
+            Map.merge(param_info, %{
+              min_position: [min_row, min_col],
+              max_position: [max_row, max_col]
+            })
+          else
+            param_info
+          end
+        end)
+
+      {layer_name, layer_stats}
+    end)
+    |> Enum.into(%{})
+  end
+
+  @doc """
   Runs inference on test data while tracking activation values.
   Returns both the predictions and the captured activations.
   """
@@ -231,8 +281,7 @@ defmodule PerceptronApparatus.MLP do
 
     # Run inference
     {_init_fn, predict_fn} = Axon.build(model)
-    params = model_state.data
-    predictions = predict_fn.(params, %{"input" => test_inputs})
+    predictions = predict_fn.(model_state, %{"input" => test_inputs})
 
     # Get captured activations and print summary
     activations = get_captured_activations()
