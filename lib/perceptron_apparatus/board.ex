@@ -406,6 +406,8 @@ defmodule PerceptronApparatus.Board do
     }
     .qr-code {
       fill: #000000;
+      stroke: none;
+      rx: 0.75;
     }
     .fastener {
       fill: red;
