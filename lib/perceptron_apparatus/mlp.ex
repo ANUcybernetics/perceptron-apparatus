@@ -30,8 +30,10 @@ defmodule PerceptronApparatus.MLP do
   """
   def create_model do
     Axon.input("input", shape: {nil, 36})
-    |> Axon.dense(6, use_bias: false, name: "hidden")
-    |> Axon.dense(10, use_bias: false, name: "output")
+    |> Axon.dense(6, activation: :relu, use_bias: false, name: "hidden", 
+                  kernel_initializer: :glorot_uniform)
+    |> Axon.dense(10, use_bias: false, name: "output",
+                  kernel_initializer: :glorot_uniform)
   end
 
   @doc """
@@ -44,11 +46,13 @@ defmodule PerceptronApparatus.MLP do
     input_with_hook = Axon.attach_hook(input, &capture_activation(&1, "input"), on: :forward)
 
     # Hidden layer with hook
-    hidden = Axon.dense(input_with_hook, 6, activation: :relu, name: "hidden")
+    hidden = Axon.dense(input_with_hook, 6, activation: :relu, use_bias: false, name: "hidden",
+                        kernel_initializer: :glorot_uniform)
     hidden_with_hook = Axon.attach_hook(hidden, &capture_activation(&1, "hidden"), on: :forward)
 
     # Output layer with hook
-    output = Axon.dense(hidden_with_hook, 10, activation: :softmax, name: "output")
+    output = Axon.dense(hidden_with_hook, 10, use_bias: false, name: "output",
+                        kernel_initializer: :glorot_uniform)
     Axon.attach_hook(output, &capture_activation(&1, "output"), on: :forward)
   end
 
@@ -129,7 +133,7 @@ defmodule PerceptronApparatus.MLP do
     epochs = Keyword.get(opts, :epochs, 10)
     # Larger batch size for faster training
     batch_size = Keyword.get(opts, :batch_size, 128)
-    learning_rate = Keyword.get(opts, :learning_rate, 0.001)
+    learning_rate = Keyword.get(opts, :learning_rate, 0.005)
 
     {train_images, train_labels} = train_data
 
@@ -139,10 +143,10 @@ defmodule PerceptronApparatus.MLP do
       |> Nx.to_batched(batch_size)
       |> Stream.zip(Nx.to_batched(train_labels, batch_size))
 
-    # Create training loop
+    # Create training loop with MSE loss to avoid numerical issues
     model
     |> Loop.trainer(
-      :categorical_cross_entropy,
+      :mean_squared_error,
       Polaris.Optimizers.adam(learning_rate: learning_rate)
     )
     |> Loop.metric(:accuracy)
@@ -285,7 +289,7 @@ defmodule PerceptronApparatus.MLP do
     model = create_model()
 
     IO.puts("Training model on MNIST data...")
-    default_opts = [epochs: 8, batch_size: 128, learning_rate: 0.001]
+    default_opts = [epochs: 8, batch_size: 128, learning_rate: 0.005]
     merged_opts = Keyword.merge(default_opts, opts)
     trained_params = train_model(model, train_data, merged_opts)
 
