@@ -52,50 +52,23 @@ defmodule PerceptronApparatus.MLPTest do
       IO.puts("Test accuracy on full dataset: #{Float.round(accuracy * 100, 2)}%")
       IO.puts("Total test samples analyzed: #{full_test_size}")
 
-      # Print consolidated parameter statistics
-      IO.puts("\n=== TRAINED PARAMETER RANGES ===")
+      # Print concise parameter and activation summary
+      IO.puts("\n=== PARAMETER RANGES ===")
       Enum.each(parameter_stats, fn {layer_name, layer_params} ->
-        Enum.each(layer_params, fn param_info ->
-          if Map.has_key?(param_info, :min_position) do
-            [min_row, min_col] = param_info.min_position
-            [max_row, max_col] = param_info.max_position
-            IO.puts("#{layer_name}/#{param_info.name}: min=#{Float.round(param_info.min, 6)} at [#{min_row},#{min_col}], max=#{Float.round(param_info.max, 6)} at [#{max_row},#{max_col}], mean=#{Float.round(param_info.mean, 6)}")
-          else
-            IO.puts("#{layer_name}/#{param_info.name}: min=#{Float.round(param_info.min, 6)}, max=#{Float.round(param_info.max, 6)}, mean=#{Float.round(param_info.mean, 6)}")
-          end
-        end)
+        kernel_param = Enum.find(layer_params, fn param -> param.name == "kernel" end)
+        if kernel_param do
+          IO.puts("#{layer_name} kernel: min=#{Float.round(kernel_param.min, 4)}, max=#{Float.round(kernel_param.max, 4)}, mean=#{Float.round(kernel_param.mean, 4)}")
+        end
       end)
 
-      # Print additional activation statistics (median)
-      IO.puts("\n=== DETAILED ACTIVATION STATISTICS ===")
-
-      Enum.each(activations, fn {layer_name, stats} ->
-        overall_min = Enum.min(stats.min)
-        overall_max = Enum.max(stats.max)
-        avg_mean = Enum.sum(stats.mean) / length(stats.mean)
-
-        # Calculate median
-        sorted_means = Enum.sort(stats.mean)
-
-        median =
-          case length(sorted_means) do
-            0 ->
-              0.0
-
-            len when rem(len, 2) == 0 ->
-              mid = div(len, 2)
-              (Enum.at(sorted_means, mid - 1) + Enum.at(sorted_means, mid)) / 2
-
-            len ->
-              Enum.at(sorted_means, div(len, 2))
-          end
-
-        IO.puts("#{layer_name}:")
-        IO.puts("  Min: #{Float.round(overall_min, 6)}")
-        IO.puts("  Max: #{Float.round(overall_max, 6)}")
-        IO.puts("  Mean: #{Float.round(avg_mean, 6)}")
-        IO.puts("  Median: #{Float.round(median, 6)}")
-        IO.puts("  Samples: #{length(stats.mean)}")
+      IO.puts("\n=== ACTIVATION RANGES ===")
+      Enum.each(["input", "hidden", "output"], fn layer_name ->
+        if Map.has_key?(activations, layer_name) do
+          stats = activations[layer_name]
+          min_activation = Enum.min(stats.min)
+          max_activation = Enum.max(stats.max)
+          IO.puts("#{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}")
+        end
       end)
 
       IO.puts("\n" <> String.duplicate("=", 80))
