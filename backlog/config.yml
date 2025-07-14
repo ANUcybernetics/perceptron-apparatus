@@ -5,7 +5,6 @@ labels: []
 milestones: []
 date_format: yyyy-mm-dd
 max_column_width: 20
-backlog_directory: "backlog"
 auto_open_browser: true
 default_port: 6420
 remote_operations: true
