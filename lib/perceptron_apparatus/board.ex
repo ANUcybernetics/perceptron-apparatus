@@ -15,40 +15,14 @@ defmodule PerceptronApparatus.Board do
 
     create :create do
       accept [:size, :n_input, :n_hidden, :n_output, :qr_data]
-
-      change fn changeset, _context ->
-        # Get the parameters
-        size = Ash.Changeset.get_attribute(changeset, :size)
-        n_input = Ash.Changeset.get_attribute(changeset, :n_input)
-        n_hidden = Ash.Changeset.get_attribute(changeset, :n_hidden)
-        n_output = Ash.Changeset.get_attribute(changeset, :n_output)
-
-        # Create the ring sequence
-        rings = create_ring_sequence(n_input, n_hidden, n_output)
-
-        # Set the rings on the changeset
-        Ash.Changeset.change_attribute(changeset, :rings, rings)
-      end
+      change PerceptronApparatus.Board.Changes.CreateRingSequence
     end
 
-    action :write_svg do
+    action :write_svg, :map do
+      argument :board, :map, allow_nil?: false
       argument :filename, :string, allow_nil?: false
 
-      run fn input, _context ->
-        filename = input.arguments.filename
-        board_resource = input.context.private.actor
-
-        # Extract directory and filename parts
-        output_dir = Path.dirname(filename)
-        base_filename = Path.basename(filename)
-
-        # Ensure parent directory exists
-        File.mkdir_p!(output_dir)
-
-        File.write!(filename, PerceptronApparatus.Board.render(board_resource))
-
-        :ok
-      end
+      run PerceptronApparatus.Board.Actions.WriteSvg
     end
 
     update :add_ring do
@@ -72,125 +46,9 @@ defmodule PerceptronApparatus.Board do
     attribute :rings, :term, default: []
   end
 
-  @doc """
-  Creates a new Board resource with the given parameters and writes SVG files.
-  This function manually implements the code interface for `:create` to ensure
-  file writing occurs after successful resource creation.
-  """
-  def create(size, n_input, n_hidden, n_output, qr_data \\ nil) do
-    input = %{
-      size: size,
-      n_input: n_input,
-      n_hidden: n_hidden,
-      n_output: n_output,
-      qr_data: qr_data
-    }
+  # These methods are replaced by code interfaces in the domain
 
-    # Create a changeset for the action
-    changeset = Ash.Changeset.for_create(__MODULE__, :create, input)
-
-    # Execute the Ash action
-    Ash.create(changeset)
-  end
-
-  def write_svg(board, filename) do
-    # Execute the generic action
-    input =
-      Ash.ActionInput.for_action(__MODULE__, :write_svg, %{filename: filename}, actor: board)
-
-    case Ash.run_action(input) do
-      :ok -> {:ok, board}
-      {:error, error} -> {:error, error}
-    end
-  end
-
-  @doc """
-  Creates the standard ring sequence for a perceptron apparatus.
-  From outside to inside:
-  1. Log ring
-  2. ReLU ring (NOTE: currently not using this ring)
-  3. Input azimuthal ring (n_input sliders)
-  4. Weight1 radial ring (n_hidden groups x n_input sliders per group)
-  5. Hidden azimuthal ring (n_hidden sliders)
-  6. Weight2 radial ring (n_output groups x n_hidden sliders per group)
-  7. Output azimuthal ring (n_output sliders)
-  """
-  def create_ring_sequence(n_input, n_hidden, n_output) do
-    [
-      # Log ring
-      create_log_ring(),
-
-      # ReLU ring (NOTE: currently not using this ring)
-      # create_relu_ring(),
-
-      # Input azimuthal ring
-      create_input_ring(n_input),
-
-      # Weight1 radial ring (input -> hidden)
-      create_weight_ring(n_hidden, n_input),
-
-      # Hidden azimuthal ring
-      create_hidden_ring(n_hidden),
-
-      # Weight2 radial ring (hidden -> output)
-      create_weight_ring(n_output, n_hidden),
-
-      # Output azimuthal ring
-      create_output_ring(n_output)
-    ]
-  end
-
-  defp create_log_ring do
-    {:ok, ring} =
-      Ash.Changeset.for_create(RuleRing, :new, %{rule: RuleRing.log_rule(), width: 30.0})
-      |> Ash.create()
-
-    ring
-  end
-
-  defp create_input_ring(n_input) do
-    rule = Utils.new_rule(0, 1, 0.1, 0.5)
-    shape = %{sliders: n_input}
-
-    {:ok, ring} =
-      Ash.Changeset.for_create(AzimuthalRing, :new, %{shape: shape, rule: rule, width: 10.0})
-      |> Ash.create()
-
-    ring
-  end
-
-  defp create_weight_ring(n_groups, n_sliders_per_group) do
-    rule = Utils.new_rule(-5, 5, 1, 5)
-    shape = %{groups: n_groups, sliders_per_group: n_sliders_per_group}
-
-    {:ok, ring} =
-      Ash.Changeset.for_create(RadialRing, :new, %{shape: shape, rule: rule, width: 25.0})
-      |> Ash.create()
-
-    ring
-  end
-
-  defp create_hidden_ring(n_hidden) do
-    rule = Utils.new_rule(-5, 5, 1, 5)
-    shape = %{sliders: n_hidden}
-
-    {:ok, ring} =
-      Ash.Changeset.for_create(AzimuthalRing, :new, %{shape: shape, rule: rule, width: 10.0})
-      |> Ash.create()
-
-    ring
-  end
-
-  defp create_output_ring(n_output) do
-    rule = Utils.new_rule(0, 5, 1, 5)
-    shape = %{sliders: n_output}
-
-    {:ok, ring} =
-      Ash.Changeset.for_create(AzimuthalRing, :new, %{shape: shape, rule: rule, width: 10.0})
-      |> Ash.create()
-
-    ring
-  end
+  # Ring sequence creation logic moved to PerceptronApparatus.Board.Changes.CreateRingSequence
 
   def validate!(apparatus) do
     Enum.each(apparatus.rings, fn ring ->

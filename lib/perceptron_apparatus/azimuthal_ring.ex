@@ -30,14 +30,7 @@ defmodule PerceptronApparatus.AzimuthalRing do
     attribute :context, :term, allow_nil?: true
   end
 
-  # Legacy function for backwards compatibility
-  def new(shape, rule) do
-    {:ok, azimuthal_ring} =
-      Ash.Changeset.for_create(__MODULE__, :new, %{shape: shape, rule: rule})
-      |> Ash.create()
-
-    azimuthal_ring
-  end
+  # Use PerceptronApparatus.create_azimuthal_ring/2 instead
 
   def render_slider(radius, theta_sweep, rule, {layer_index, number}) do
     tick_length = 14

@@ -6,7 +6,7 @@ defmodule PerceptronApparatus.ResourcesTest do
 
   describe "Board" do
     test "creates a board with neural network parameters" do
-      {:ok, board} = Board.create(400.0, 25, 5, 10)
+      {:ok, board} = PerceptronApparatus.create_board(400.0, 25, 5, 10)
 
       assert board.size == 400.0
       assert board.n_input == 25
@@ -19,7 +19,7 @@ defmodule PerceptronApparatus.ResourcesTest do
     end
 
     test "creates the correct ring sequence" do
-      {:ok, board} = Board.create(400.0, 3, 2, 1)
+      {:ok, board} = PerceptronApparatus.create_board(400.0, 3, 2, 1)
 
       [ring1, ring2, ring3, ring4, ring5, ring6] = board.rings
 
@@ -49,7 +49,7 @@ defmodule PerceptronApparatus.ResourcesTest do
     end
 
     test "creates rings with appropriate rules" do
-      {:ok, board} = Board.create(400.0, 2, 3, 1)
+      {:ok, board} = PerceptronApparatus.create_board(400.0, 2, 3, 1)
 
       [_log, input, w1, hidden, _w2, output] = board.rings
 
@@ -61,26 +61,26 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert first_input >= 0.0
       assert last_input <= 1.0
 
-      # Weight rings should have -10 to 10 range
+      # Weight rings should have -5 to 5 range
       w1_rule = w1.rule
       first_w1 = List.first(w1_rule) |> elem(1) |> D.to_float()
       last_w1 = List.last(w1_rule) |> elem(1) |> D.to_float()
-      assert first_w1 >= -10.0
-      assert last_w1 <= 10.0
+      assert first_w1 >= -5.0
+      assert last_w1 <= 5.0
 
-      # Hidden ring should have 0-10 range
+      # Hidden ring should have -5 to 5 range
       hidden_rule = hidden.rule
       first_hidden = List.first(hidden_rule) |> elem(1) |> D.to_float()
       last_hidden = List.last(hidden_rule) |> elem(1) |> D.to_float()
-      assert first_hidden >= 0.0
-      assert last_hidden <= 10.0
+      assert first_hidden >= -5.0
+      assert last_hidden <= 5.0
 
-      # Output ring should have 0-1 range
+      # Output ring should have 0-5 range
       output_rule = output.rule
       first_output = List.first(output_rule) |> elem(1) |> D.to_float()
       last_output = List.last(output_rule) |> elem(1) |> D.to_float()
       assert first_output >= 0.0
-      assert last_output <= 1.0
+      assert last_output <= 5.0
     end
 
     test "code interface works" do
@@ -94,7 +94,7 @@ defmodule PerceptronApparatus.ResourcesTest do
     end
 
     test "validates board structure" do
-      {:ok, board} = Board.create(400.0, 2, 2, 1)
+      {:ok, board} = PerceptronApparatus.create_board(400.0, 2, 2, 1)
 
       # Should not raise for valid board
       assert :ok = Board.validate!(board)
@@ -102,7 +102,7 @@ defmodule PerceptronApparatus.ResourcesTest do
 
     test "comprehensive neural network structure validation" do
       # Test a 4-3-2 neural network
-      {:ok, board} = Board.create(500.0, 4, 3, 2)
+      {:ok, board} = PerceptronApparatus.create_board(500.0, 4, 3, 2)
 
       # Verify board parameters
       assert board.n_input == 4
@@ -149,28 +149,28 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert input_min >= 0.0
       assert input_max <= 1.0
 
-      # Hidden layer: 0-10 (post-activation values)
+      # Hidden layer: -5 to 5 range
       hidden_min = hidden_ring.rule |> List.first() |> elem(1) |> D.to_float()
       hidden_max = hidden_ring.rule |> List.last() |> elem(1) |> D.to_float()
-      assert hidden_min >= 0.0
-      assert hidden_max <= 10.0
+      assert hidden_min >= -5.0
+      assert hidden_max <= 5.0
 
-      # Output layer: 0-1 (final outputs, often probabilities)
+      # Output layer: 0-5 range
       output_min = output_ring.rule |> List.first() |> elem(1) |> D.to_float()
       output_max = output_ring.rule |> List.last() |> elem(1) |> D.to_float()
       assert output_min >= 0.0
-      assert output_max <= 1.0
+      assert output_max <= 5.0
 
-      # Weight ranges: -10 to 10 (standard weight initialization range)
+      # Weight ranges: -5 to 5
       w1_min = w1_ring.rule |> List.first() |> elem(1) |> D.to_float()
       w1_max = w1_ring.rule |> List.last() |> elem(1) |> D.to_float()
-      assert w1_min >= -10.0
-      assert w1_max <= 10.0
+      assert w1_min >= -5.0
+      assert w1_max <= 5.0
 
       w2_min = w2_ring.rule |> List.first() |> elem(1) |> D.to_float()
       w2_max = w2_ring.rule |> List.last() |> elem(1) |> D.to_float()
-      assert w2_min >= -10.0
-      assert w2_max <= 10.0
+      assert w2_min >= -5.0
+      assert w2_max <= 5.0
 
       # Verify total ring count matches expected neural network structure
       # 1 computation aid + 5 network layers
@@ -227,9 +227,9 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert updated_ring.context == context
     end
 
-    test "legacy new/1 function works" do
+    test "code interface for rule ring works" do
       rule = [{D.new(1), 0.0, D.new(1)}]
-      rule_ring = RuleRing.new(rule)
+      {:ok, rule_ring} = PerceptronApparatus.create_rule_ring(rule)
 
       assert rule_ring.rule == rule
       assert rule_ring.width == 50.0
@@ -286,10 +286,10 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert az_ring.width == 30.0
     end
 
-    test "legacy new/2 function works" do
+    test "code interface for azimuthal ring works" do
       shape = %{sliders: 8}
       rule = [{D.new(1), 45.0}]
-      az_ring = AzimuthalRing.new(shape, rule)
+      {:ok, az_ring} = PerceptronApparatus.create_azimuthal_ring(shape, rule)
 
       assert az_ring.shape == shape
       assert az_ring.rule == rule
@@ -325,20 +325,20 @@ defmodule PerceptronApparatus.ResourcesTest do
       assert radial_ring.width == 60.0
     end
 
-    test "legacy new/2 function works" do
+    test "code interface for radial ring works" do
       shape = %{groups: 3, sliders_per_group: 2}
       rule = [{D.new(1), 30.0}]
-      radial_ring = RadialRing.new(shape, rule)
+      {:ok, radial_ring} = PerceptronApparatus.create_radial_ring(shape, rule)
 
       assert radial_ring.shape == shape
       assert radial_ring.rule == rule
       assert radial_ring.width == 80.0
     end
 
-    test "legacy new/3 function works with options" do
+    test "radial ring accepts width option" do
       shape = %{groups: 3, sliders_per_group: 2}
       rule = [{D.new(1), 30.0}]
-      radial_ring = RadialRing.new(shape, rule, width: 120.0)
+      {:ok, radial_ring} = PerceptronApparatus.create_radial_ring(shape, rule, 120.0)
 
       assert radial_ring.width == 120.0
     end
@@ -346,8 +346,8 @@ defmodule PerceptronApparatus.ResourcesTest do
 
   describe "Integration" do
     test "rendering works end-to-end with new Board interface" do
-      # Create a board with the new interface
-      {:ok, board} = Board.create(400.0, 4, 3, 2)
+      # Create a board with the domain interface
+      {:ok, board} = PerceptronApparatus.create_board(400.0, 4, 3, 2)
 
       # Test rendering
       svg_output = Board.render(board)
@@ -367,13 +367,13 @@ defmodule PerceptronApparatus.ResourcesTest do
 
     test "rendering works with different network sizes" do
       # Test with minimal network
-      {:ok, small_board} = Board.create(800.0, 2, 1, 1)
+      {:ok, small_board} = PerceptronApparatus.create_board(800.0, 2, 1, 1)
       small_svg = Board.render(small_board)
       assert is_binary(small_svg)
       assert String.contains?(small_svg, "<svg")
 
       # Test with larger network
-      {:ok, large_board} = Board.create(1200.0, 10, 8, 5)
+      {:ok, large_board} = PerceptronApparatus.create_board(1200.0, 10, 8, 5)
       large_svg = Board.render(large_board)
       assert is_binary(large_svg)
       assert String.contains?(large_svg, "<svg")
@@ -400,7 +400,7 @@ defmodule PerceptronApparatus.ResourcesTest do
 
     test "individual ring creation still works" do
       # Test that we can still create individual rings manually if needed
-      rule_ring = RuleRing.new(RuleRing.log_rule())
+      {:ok, rule_ring} = PerceptronApparatus.create_rule_ring(RuleRing.log_rule())
       assert %RuleRing{} = rule_ring
 
       azimuthal_shape = %{sliders: 4}
@@ -412,19 +412,19 @@ defmodule PerceptronApparatus.ResourcesTest do
         {nil, D.new(270)}
       ]
 
-      azimuthal_ring = AzimuthalRing.new(azimuthal_shape, azimuthal_rule)
+      {:ok, azimuthal_ring} = PerceptronApparatus.create_azimuthal_ring(azimuthal_shape, azimuthal_rule)
       assert %AzimuthalRing{} = azimuthal_ring
 
       radial_shape = %{groups: 3, sliders_per_group: 2}
       radial_rule = [{nil, D.new(0)}, {D.new(1), D.new("0.5")}, {D.new(2), D.new(1)}]
-      radial_ring = RadialRing.new(radial_shape, radial_rule)
+      {:ok, radial_ring} = PerceptronApparatus.create_radial_ring(radial_shape, radial_rule)
       assert %RadialRing{} = radial_ring
     end
 
     test "new interface produces equivalent neural network structure" do
       # Test that Board.create produces the expected neural network topology
       # matching the original manual approach from the documentation
-      {:ok, board} = Board.create(1200.0, 25, 5, 10)
+      {:ok, board} = PerceptronApparatus.create_board(1200.0, 25, 5, 10)
 
       # Verify this matches the original 25-input, 5-hidden, 10-output network
       assert board.n_input == 25

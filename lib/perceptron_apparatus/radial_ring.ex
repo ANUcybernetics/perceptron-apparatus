@@ -30,17 +30,7 @@ defmodule PerceptronApparatus.RadialRing do
     attribute :context, :term, allow_nil?: true
   end
 
-  # Legacy function for backwards compatibility
-  def new(shape, rule, opts \\ []) do
-    # use default values when it makes sense
-    width = Keyword.get(opts, :width, 80.0)
-
-    {:ok, radial_ring} =
-      Ash.Changeset.for_create(__MODULE__, :new, %{width: width, shape: shape, rule: rule})
-      |> Ash.create()
-
-    radial_ring
-  end
+  # Use PerceptronApparatus.create_radial_ring/2 instead
 
   def render_slider(radius, width, theta, slider_index) do
     bottom_path =

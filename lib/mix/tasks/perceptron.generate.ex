@@ -131,8 +131,8 @@ defmodule Mix.Tasks.Perceptron.Generate do
     if separate_layers, do: Mix.shell().info("  Generating separate layer files")
     Mix.shell().info("")
 
-    # Create the board
-    case create_board_with_params(size, n_input, n_hidden, n_output, qr_data) do
+    # Create the board using domain code interface
+    case PerceptronApparatus.create_board(size, n_input, n_hidden, n_output, qr_data) do
       {:ok, board} ->
         Mix.shell().info("Board created successfully (ID: #{board.id})")
 
@@ -143,32 +143,24 @@ defmodule Mix.Tasks.Perceptron.Generate do
           generate_single_svg(board, filename)
         end
 
-      {:error, changeset} ->
+      {:error, error} ->
         Mix.shell().error("Failed to create board:")
-        Mix.shell().error(inspect(changeset, pretty: true))
+        Mix.shell().error(inspect(error, pretty: true))
         System.halt(1)
     end
   end
 
-  defp create_board_with_params(size, n_input, n_hidden, n_output, nil) do
-    PerceptronApparatus.Board.create(size, n_input, n_hidden, n_output)
-  end
-
-  defp create_board_with_params(size, n_input, n_hidden, n_output, qr_data) do
-    PerceptronApparatus.create_board(size, n_input, n_hidden, n_output, qr_data)
-  end
-
   defp generate_single_svg(board, filename) do
-    case PerceptronApparatus.Board.write_svg(board, filename) do
-      {:ok, _} ->
+    case PerceptronApparatus.write_svg(board, filename) do
+      {:ok, result} ->
         Mix.shell().info("")
         Mix.shell().info(String.duplicate("=", 60))
-        Mix.shell().info("SUCCESS! SVG file generated at: #{filename}")
+        Mix.shell().info("SUCCESS! SVG file generated at: #{result.filename}")
         Mix.shell().info(String.duplicate("=", 60))
 
-      {:error, changeset} ->
+      {:error, error} ->
         Mix.shell().error("Failed to generate SVG file:")
-        Mix.shell().error(inspect(changeset, pretty: true))
+        Mix.shell().error(inspect(error, pretty: true))
         System.halt(1)
     end
   end

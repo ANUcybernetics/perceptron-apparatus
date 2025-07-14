@@ -30,14 +30,7 @@ defmodule PerceptronApparatus.RuleRing do
     attribute :context, :term, allow_nil?: true
   end
 
-  # Legacy function for backwards compatibility
-  def new(rule) do
-    {:ok, rule_ring} =
-      Ash.Changeset.for_create(__MODULE__, :new, %{rule: rule})
-      |> Ash.create()
-
-    rule_ring
-  end
+  # Use PerceptronApparatus.create_rule_ring/1 instead
 
   # each rule should be a list of tuples {theta, label}, where label can be nil (for a minor tick with no label)
   def render(radius, rule) do

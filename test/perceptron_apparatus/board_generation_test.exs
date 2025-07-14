@@ -31,12 +31,12 @@ defmodule PerceptronApparatus.BoardGenerationTest do
       }
 
       # Execute the Ash action to create the board
-      case Board.create(params.size, params.n_input, params.n_hidden, params.n_output) do
+      case PerceptronApparatus.create_board(params.size, params.n_input, params.n_hidden, params.n_output) do
         {:ok, board} ->
           # Now write the SVG file using the separate action
           full_filename = Path.join(@output_dir, "board_#{board.id}.svg")
 
-          case Board.write_svg(board, full_filename) do
+          case PerceptronApparatus.write_svg(board, full_filename) do
             {:ok, _updated_board} ->
               # Verify that the output directory and SVG files were created
               assert File.exists?(@output_dir),
@@ -68,7 +68,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
     test "creates a board with QR code data and renders it in the center" do
       qr_data = "Hello QR World Test"
 
-      case Board.create(800.0, 2, 3, 1, qr_data) do
+      case PerceptronApparatus.create_board(800.0, 2, 3, 1, qr_data) do
         {:ok, board} ->
           # Verify QR data is stored
           assert board.qr_data == qr_data
@@ -83,7 +83,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
           # Write to file for visual inspection
           filename = Path.join(@output_dir, "board_with_qr_#{board.id}.svg")
 
-          case Board.write_svg(board, filename) do
+          case PerceptronApparatus.write_svg(board, filename) do
             {:ok, _} ->
               assert File.exists?(filename),
                      "QR code SVG file should be created"
@@ -103,7 +103,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
     end
 
     test "creates a board without QR code data and renders without QR elements" do
-      case Board.create(800.0, 2, 3, 1) do
+      case PerceptronApparatus.create_board(800.0, 2, 3, 1) do
         {:ok, board} ->
           # Verify no QR data is stored
           assert is_nil(board.qr_data)
@@ -118,7 +118,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
           # Write to file for comparison
           filename = Path.join(@output_dir, "board_no_qr_#{board.id}.svg")
 
-          case Board.write_svg(board, filename) do
+          case PerceptronApparatus.write_svg(board, filename) do
             {:ok, _} ->
               assert File.exists?(filename),
                      "SVG file without QR should be created"
@@ -141,7 +141,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
       # Test with very long string that might exceed QR code limits
       long_qr_data = String.duplicate("A", 3000)
 
-      case Board.create(800.0, 2, 3, 1, long_qr_data) do
+      case PerceptronApparatus.create_board(800.0, 2, 3, 1, long_qr_data) do
         {:ok, board} ->
           # Even if QR creation fails, board should render without QR elements
           svg_content = Board.render(board)
