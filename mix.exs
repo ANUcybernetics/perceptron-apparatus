@@ -21,17 +21,17 @@ defmodule PerceptronApparatus.MixProject do
   defp deps do
     [
       {:axon, "~> 0.7"},
-      {:nx, "~> 0.9"},
+      {:nx, "~> 0.10"},
       {:polaris, "~> 0.1"},
       {:scidata, "~> 0.1"},
       {:stb_image, "~> 0.6"},
-      {:qr_code, "~> 3.0"},
+      {:qr_code, "~> 3.2"},
       {:usage_rules, "~> 0.1", only: [:dev]},
-      {:decimal, "~> 2.0"},
-      {:sourceror, "~> 1.8", only: [:dev, :test]},
-      {:ash, "~> 3.0"},
+      {:decimal, "~> 2.3"},
+      {:sourceror, "~> 1.10", only: [:dev, :test]},
+      {:ash, "~> 3.5"},
       {:igniter, "~> 0.6", only: [:dev, :test]},
-      {:lazy_html, "~> 0.1.1"}
+      {:lazy_html, "~> 0.1"}
     ]
   end
 end
