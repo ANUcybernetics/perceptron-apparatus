@@ -14,8 +14,33 @@ a [`:path`](https://hexdocs.pm/mix/Mix.Tasks.Deps.html).
 
 ## Quick Start
 
-The simplest way to create a perceptron apparatus is using the `Board.create/4`
-interface:
+### CLI Usage
+
+The easiest way to generate apparatus SVG files is using the Mix tasks:
+
+```bash
+# Generate with default parameters (1200mm, 36-6-10 network)
+mix perceptron
+
+# Custom configuration
+mix perceptron --size 1150 --input 36 --hidden 6 --output 10
+
+# Save to specific location
+mix perceptron --file /path/to/output.svg
+
+# Include QR code
+mix perceptron --qr "https://example.com"
+
+# Use presets (mnist, xor, language)
+mix perceptron.generate --preset mnist
+
+# Show help
+mix perceptron --help
+```
+
+### Programmatic Usage
+
+You can also use the library programmatically:
 
 ```elixir
 # Create a neural network apparatus for a 25-5-10 network
