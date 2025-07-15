@@ -168,7 +168,18 @@ defmodule PerceptronApparatus.Board do
     fastener_elements =
       create_fastener_rings(rings_with_widths, radius, radial_padding, center_space / 2)
 
-    all_elements = [board_edge] ++ ring_elements ++ qr_elements ++ fastener_elements
+    # Add vertical cut line at x=0
+    vertical_cut_line =
+      line_element([
+        {"class", "top full"},
+        {"x1", "0"},
+        {"y1", to_string(-radius)},
+        {"x2", "0"},
+        {"y2", to_string(radius)},
+        {"stroke-width", "2"}
+      ])
+
+    all_elements = [board_edge] ++ ring_elements ++ qr_elements ++ fastener_elements ++ [vertical_cut_line]
 
     render_body_as_tree(all_elements, view_box)
   end
