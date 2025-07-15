@@ -134,6 +134,16 @@ defmodule PerceptronApparatus.Board do
           # Get ring content directly as tree structure
           ring_tree = Renderable.render(ring_with_context)
 
+          # Apply rotation to log ring (first ring, index 0)
+          # Rotate 10 degrees clockwise (negative rotation in SVG)
+          ring_elements_with_rotation =
+            if ring_index == 0 do
+              # Wrap the log ring elements in a group with rotation
+              [group_element(List.wrap(ring_tree), [{"transform", "rotate(4.2)"}])]
+            else
+              List.wrap(ring_tree)
+            end
+
           debug_inner =
             circle_element([
               {"class", "debug"},
@@ -144,7 +154,7 @@ defmodule PerceptronApparatus.Board do
             ])
 
           new_elements =
-            ([debug_outer, bottom_channel_elem] ++ List.wrap(ring_tree) ++ [debug_inner])
+            ([debug_outer, bottom_channel_elem] ++ ring_elements_with_rotation ++ [debug_inner])
             |> Enum.reject(&is_nil/1)
             |> List.flatten()
 
@@ -179,7 +189,8 @@ defmodule PerceptronApparatus.Board do
         {"stroke-width", "2"}
       ])
 
-    all_elements = [board_edge] ++ ring_elements ++ qr_elements ++ fastener_elements ++ [vertical_cut_line]
+    all_elements =
+      [board_edge] ++ ring_elements ++ qr_elements ++ fastener_elements ++ [vertical_cut_line]
 
     render_body_as_tree(all_elements, view_box)
   end
