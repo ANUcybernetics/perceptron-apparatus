@@ -33,14 +33,18 @@ defmodule PerceptronApparatus.RadialRing do
   # Use PerceptronApparatus.create_radial_ring/2 instead
 
   def render_slider(radius, width, theta, slider_index) do
+    # Extend bottom slider by 10 units at each end
+    extension = 10
+    
     bottom_path =
       path_element([
         {"class", "bottom slider"},
-        {"transform", "rotate(#{-theta}) translate(0 #{radius})"},
+        {"transform", "rotate(#{-theta}) translate(0 #{radius + extension})"},
         {"stroke-linecap", "round"},
-        {"d", "M 0 0 v #{-width}"}
+        {"d", "M 0 0 v #{-(width + 2 * extension)}"}
       ])
 
+    # Top slider uses original dimensions
     top_path =
       path_element([
         {"class", "top slider"},

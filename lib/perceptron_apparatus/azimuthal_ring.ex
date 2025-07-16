@@ -101,18 +101,30 @@ defmodule PerceptronApparatus.AzimuthalRing do
         ]
       )
 
+    # Calculate extended positions for bottom slider (10 units extension at each end)
+    # Extension in angular terms depends on radius - convert arc length to degrees
+    angular_extension_rad = 10 / radius
+    angular_extension_deg = angular_extension_rad * 180 / :math.pi()
+    
     x1 = radius * :math.sin(deg2rad(az_padding))
     y1 = radius * :math.cos(deg2rad(az_padding))
     x2 = radius * :math.sin(deg2rad(theta_sweep - az_padding))
     y2 = radius * :math.cos(deg2rad(theta_sweep - az_padding))
+    
+    # Extended positions for bottom slider
+    x1_extended = radius * :math.sin(deg2rad(az_padding - angular_extension_deg))
+    y1_extended = radius * :math.cos(deg2rad(az_padding - angular_extension_deg))
+    x2_extended = radius * :math.sin(deg2rad(theta_sweep - az_padding + angular_extension_deg))
+    y2_extended = radius * :math.cos(deg2rad(theta_sweep - az_padding + angular_extension_deg))
 
     bottom_path =
       path_element([
         {"class", "bottom slider"},
         {"stroke-linecap", "round"},
-        {"d", "M #{x1} #{y1} A #{radius} #{radius} 0 0 0 #{x2} #{y2}"}
+        {"d", "M #{x1_extended} #{y1_extended} A #{radius} #{radius} 0 0 0 #{x2_extended} #{y2_extended}"}
       ])
 
+    # Top slider uses original (non-extended) positions
     top_path =
       path_element([
         {"class", "top slider"},
