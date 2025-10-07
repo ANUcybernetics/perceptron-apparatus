@@ -520,9 +520,96 @@ defmodule PerceptronApparatus.MLP do
   end
 
   @doc """
+  Scales a weight matrix (2D list) by a constant factor.
+  """
+  def scale_weight_matrix(matrix, factor) do
+    Enum.map(matrix, fn row ->
+      Enum.map(row, fn val -> val * factor end)
+    end)
+  end
+
+  @doc """
+  Finds the maximum absolute value in a weight matrix (2D list).
+  """
+  def max_abs_value(matrix) do
+    matrix
+    |> List.flatten()
+    |> Enum.map(&abs/1)
+    |> Enum.max()
+  end
+
+  @doc """
+  Scales weights so that each layer has a maximum absolute value of target_max.
+  This maintains network outputs up to a multiplicative constant because:
+  - Scaling B by β and D by 1/β preserves outputs exactly (no biases, ReLU is homogeneous)
+  - We find the geometric mean of the required scale factors to distribute scaling equally
+
+  ## Options
+
+    * `:target_max` - Target maximum absolute value (default: 5.0)
+
+  ## Example
+
+      weights = extract_weights(model_state)
+      scaled = scale_weights_to_range(weights, target_max: 5.0)
+  """
+  def scale_weights_to_range(weights, opts \\ []) do
+    target_max = Keyword.get(opts, :target_max, 5.0)
+
+    b_max = max_abs_value(weights["B"])
+    d_max = max_abs_value(weights["D"])
+
+    # Calculate scale factors needed for each layer to reach target_max independently
+    b_scale_needed = target_max / b_max
+    d_scale_needed = target_max / d_max
+
+    # Use geometric mean to distribute scaling between layers while preserving outputs
+    # This maintains outputs: scale B by β, scale D by 1/β where β² = b_scale/d_scale
+    # Both layers will end up with max abs value = target_max * sqrt(b_max * d_max) / sqrt(b_max² * d_max²)
+    # = target_max / sqrt(b_max/d_max * d_max/b_max) = target_max
+    beta = :math.sqrt(b_scale_needed / d_scale_needed)
+
+    # Apply the balanced scaling
+    b_scaled = scale_weight_matrix(weights["B"], beta)
+    d_scaled = scale_weight_matrix(weights["D"], 1.0 / beta)
+
+    # The final max values will be:
+    # b_max_after = b_max * beta = b_max * sqrt(target_max/b_max / (target_max/d_max))
+    #             = sqrt(b_max * d_max * target_max² / (b_max * d_max))
+    #             = sqrt(target_max²) * sqrt(b_max/d_max) / sqrt(b_max/d_max)
+    # Actually: b_max_after = b_max * sqrt((target_max/b_max) / (target_max/d_max))
+    #                       = b_max * sqrt(d_max/b_max) = sqrt(b_max * d_max)
+    # d_max_after = d_max / beta = sqrt(b_max * d_max)
+    # Both equal sqrt(b_max * d_max), so we need to scale overall to hit target_max
+
+    b_max_after = max_abs_value(b_scaled)
+    d_max_after = max_abs_value(d_scaled)
+
+    # Apply final uniform scaling to hit target exactly
+    final_scale = target_max / max(b_max_after, d_max_after)
+    b_final = scale_weight_matrix(b_scaled, final_scale)
+    d_final = scale_weight_matrix(d_scaled, final_scale)
+
+    b_max_final = max_abs_value(b_final)
+    d_max_final = max_abs_value(d_final)
+
+    IO.puts("\nWeight scaling applied:")
+    IO.puts("  B: max #{Float.round(b_max, 4)} -> #{Float.round(b_max_final, 4)} (factor: #{Float.round(beta * final_scale, 4)})")
+    IO.puts("  D: max #{Float.round(d_max, 4)} -> #{Float.round(d_max_final, 4)} (factor: #{Float.round(final_scale / beta, 4)})")
+
+    %{"B" => b_final, "D" => d_final}
+  end
+
+  @doc """
   Writes trained weights to a JSON file.
   The JSON structure has top-level keys "B" and "D" containing 2D arrays of weights,
   and optionally "test_accuracy" if provided.
+
+  ## Options
+
+    * `:test_accuracy` - Test accuracy to include in JSON
+    * `:scale_to_range` - If true, scales weights so max abs value in each layer is 5.0 (default: false)
+    * `:target_max` - Target maximum absolute value when scaling (default: 5.0)
 
   ## Example
 
@@ -531,6 +618,9 @@ defmodule PerceptronApparatus.MLP do
 
       # With test accuracy
       PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json", test_accuracy: 0.85)
+
+      # With scaling
+      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json", scale_to_range: true)
 
   ## Typst Usage
 
@@ -547,6 +637,12 @@ defmodule PerceptronApparatus.MLP do
   """
   def write_weights_to_json(model_state, filename, opts \\ []) do
     weights = extract_weights(model_state)
+
+    weights = if Keyword.get(opts, :scale_to_range, false) do
+      scale_weights_to_range(weights, target_max: Keyword.get(opts, :target_max, 5.0))
+    else
+      weights
+    end
 
     data = if test_accuracy = opts[:test_accuracy] do
       Map.put(weights, "test_accuracy", test_accuracy)

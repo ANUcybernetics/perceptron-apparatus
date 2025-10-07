@@ -17,9 +17,9 @@ model = MLP.create_model()
 IO.puts("Step 3: Training model (5 epochs)")
 trained_params = MLP.train_model(model, train_data, epochs: 5, batch_size: 128)
 
-IO.puts("\nStep 4: Exporting weights to JSON")
+IO.puts("\nStep 4: Exporting weights to JSON (with scaling)")
 output_file = "mnist_weights.json"
-MLP.write_weights_to_json(trained_params, output_file)
+MLP.write_weights_to_json(trained_params, output_file, scale_to_range: true)
 
 IO.puts("\nDone! Weights exported to #{output_file}")
 IO.puts("\nYou can now use these weights in Typst:")
