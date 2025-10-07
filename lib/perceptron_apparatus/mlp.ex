@@ -521,12 +521,16 @@ defmodule PerceptronApparatus.MLP do
 
   @doc """
   Writes trained weights to a JSON file.
-  The JSON structure has top-level keys "B" and "D" containing 2D arrays of weights.
+  The JSON structure has top-level keys "B" and "D" containing 2D arrays of weights,
+  and optionally "test_accuracy" if provided.
 
   ## Example
 
       trained_params = PerceptronApparatus.MLP.train_model(model, train_data, epochs: 5)
       PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json")
+
+      # With test accuracy
+      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json", test_accuracy: 0.85)
 
   ## Typst Usage
 
@@ -537,10 +541,20 @@ defmodule PerceptronApparatus.MLP do
         columns: 6,
         ..weights.B.flatten()
       )
+
+      // Display accuracy if available
+      Test accuracy: #weights.test_accuracy
   """
-  def write_weights_to_json(model_state, filename) do
+  def write_weights_to_json(model_state, filename, opts \\ []) do
     weights = extract_weights(model_state)
-    json = Jason.encode!(weights, pretty: true)
+
+    data = if test_accuracy = opts[:test_accuracy] do
+      Map.put(weights, "test_accuracy", test_accuracy)
+    else
+      weights
+    end
+
+    json = Jason.encode!(data, pretty: true)
     File.write!(filename, json)
     IO.puts("Weights written to #{filename}")
   end
