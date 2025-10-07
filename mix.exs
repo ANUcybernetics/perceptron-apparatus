@@ -22,6 +22,7 @@ defmodule PerceptronApparatus.MixProject do
     [
       {:axon, "~> 0.7"},
       {:nx, "~> 0.10"},
+      {:exla, "~> 0.10"},
       {:polaris, "~> 0.1"},
       {:scidata, "~> 0.1"},
       {:stb_image, "~> 0.6"},
