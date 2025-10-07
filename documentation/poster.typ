@@ -29,14 +29,21 @@
 #set page(
   footer: place(
     bottom + left,
-    dy: -0.5cm,
+    dy: -1.5cm,
     text(
       font: "Neon Tubes 2",
       size: 9pt,
-      fill: anu-colors.socy-yellow,
-    )[CC BY-NC 4.0],
+      fill: anu-colors.socy-yellow-print,
+    )[CC BY-NC-SA 4.0],
   ),
 )
+
+#place(top + right)[
+  #text(font: "Neon Tubes 2", fill: anu-colors.socy-yellow-print, size: 40pt)[
+    Cybernetic\
+    Studio
+  ]
+]
 
 // Load weights
 #let weights = json("weights.json")
