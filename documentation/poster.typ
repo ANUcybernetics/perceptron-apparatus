@@ -53,8 +53,6 @@
     ]
   ],
   [
-    #set text(size: 7pt)
-
     // #if "test_accuracy" in weights [
     //   Test accuracy: #calc.round(weights.test_accuracy * 100, digits: 1)%
     //   (#calc.round(weights.test_accuracy / 0.1, digits: 1) times better than
@@ -71,63 +69,70 @@
 
     #grid(
       columns: (col-width, col-width, col-width),
-      column-gutter: (2em, 6em),
+      column-gutter: (1.5em, 4em),
       rows: (auto, auto),
       row-gutter: 0.5cm,
       // Heading row
       grid.cell(colspan: 2)[
-        = Weight Matrix B
-        _Input → Hidden Layer ($36 times 6$)_
+        == Weight matrix B
+        _Input → Hidden ($36 times 6$)_
       ],
       [
-        = Weight Matrix D
-        _Hidden Layer → Output ($6 times 10$)_
+        == Weight matrix D
+        _Hidden → Output ($6 times 10$)_
       ],
       // Table content row
       // B table first half: rows 0-17
-      table(
-        columns: 7,
-        align: (col, row) => if col == 0 { right } else { right },
-        [],
-        [*#label[B0]*],
-        [*#label[B1]*],
-        [*#label[B2]*],
-        [*#label[B3]*],
-        [*#label[B4]*],
-        [*#label[B5]*],
-        ..weights
-          .B
-          .slice(0, 18)
-          .enumerate()
-          .map(((i, row)) => (
-            [*#label(str(i))*],
-            ..row.map(fmt),
-          ))
-          .flatten(),
-      ),
+      [
+        #set text(size: 7pt)
+        #table(
+          columns: 7,
+          align: (col, row) => if col == 0 { right } else { right },
+          [],
+          [*#label[B0]*],
+          [*#label[B1]*],
+          [*#label[B2]*],
+          [*#label[B3]*],
+          [*#label[B4]*],
+          [*#label[B5]*],
+          ..weights
+            .B
+            .slice(0, 18)
+            .enumerate()
+            .map(((i, row)) => (
+              [*#label(str(i))*],
+              ..row.map(fmt),
+            ))
+            .flatten(),
+        )
+      ],
       // B table second half: rows 18-35
-      table(
-        columns: 7,
-        align: (col, row) => if col == 0 { right } else { right },
-        [],
-        [*#label[B0]*],
-        [*#label[B1]*],
-        [*#label[B2]*],
-        [*#label[B3]*],
-        [*#label[B4]*],
-        [*#label[B5]*],
-        ..weights
-          .B
-          .slice(18)
-          .enumerate()
-          .map(((i, row)) => (
-            [*#label(str(i + 18))*],
-            ..row.map(fmt),
-          ))
-          .flatten(),
-      ),
+      [
+        #set text(size: 7pt)
+        #table(
+          columns: 7,
+          align: (col, row) => if col == 0 { right } else { right },
+          [],
+          [*#label[B0]*],
+          [*#label[B1]*],
+          [*#label[B2]*],
+          [*#label[B3]*],
+          [*#label[B4]*],
+          [*#label[B5]*],
+          ..weights
+            .B
+            .slice(18)
+            .enumerate()
+            .map(((i, row)) => (
+              [*#label(str(i + 18))*],
+              ..row.map(fmt),
+            ))
+            .flatten(),
+        )
+      ],
       // D table in third column
       [
+        #set text(size: 7pt)
         // First 5 columns (D0-D4)
         #table(
           columns: 6,
@@ -174,7 +179,7 @@
 
     #set text(size: 10pt)
 
-    = Algorithm
+    == Algorithm
 
     + set each input slider #label[A0]--#label[A35] to the desired value
       according to the task for which the model has been trained
@@ -201,7 +206,7 @@
     + the slider in the output layer (#label[E]) with the highest value is the
       network's prediction
 
-    = Slide rule instructions
+    == Slide rule instructions
 
     To multiply two values using the slide rule ring: align the first value on
     the outer scale with 1 on the inner scale, then find the second value on the
