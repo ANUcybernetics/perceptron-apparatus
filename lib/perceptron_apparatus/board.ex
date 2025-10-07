@@ -180,19 +180,25 @@ defmodule PerceptronApparatus.Board do
     fastener_elements =
       create_fastener_rings(rings_with_widths, radius, radial_padding, center_space / 2)
 
-    # Add vertical cut line at x=0
+    # Add vertical cut line at x=0 (skip in print mode)
     vertical_cut_line =
-      line_element([
-        {"class", "top full"},
-        {"x1", "0"},
-        {"y1", to_string(-radius)},
-        {"x2", "0"},
-        {"y2", to_string(radius)},
-        {"stroke-width", "2"}
-      ])
+      if print_mode do
+        []
+      else
+        [
+          line_element([
+            {"class", "top full"},
+            {"x1", "0"},
+            {"y1", to_string(-radius)},
+            {"x2", "0"},
+            {"y2", to_string(radius)},
+            {"stroke-width", "2"}
+          ])
+        ]
+      end
 
     all_elements =
-      [board_edge] ++ ring_elements ++ qr_elements ++ fastener_elements ++ [vertical_cut_line]
+      [board_edge] ++ ring_elements ++ qr_elements ++ fastener_elements ++ vertical_cut_line
 
     render_body_as_tree(all_elements, view_box, print_mode)
   end
@@ -332,14 +338,10 @@ defmodule PerceptronApparatus.Board do
       fill: black;
     }
     .bottom.slider {
-      stroke-width: 8;
-      fill: black;
-      opacity: 1;
+      display: none;
     }
     .bottom.rotating {
-      stroke: white;
-      fill: none;
-      opacity: 1;
+      display: none;
     }
     .etch {
       stroke-width: 0.5;
@@ -375,8 +377,7 @@ defmodule PerceptronApparatus.Board do
       rx: 0.75;
     }
     .fastener {
-      fill: white;
-      stroke: white;
+      display: none;
     }
     """
   end
