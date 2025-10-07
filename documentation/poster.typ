@@ -71,7 +71,7 @@
 
     #grid(
       columns: (col-width, col-width, col-width),
-      column-gutter: (1em, 3em),
+      column-gutter: (2em, 6em),
       rows: (auto, auto),
       row-gutter: 0.5cm,
       // Heading row
