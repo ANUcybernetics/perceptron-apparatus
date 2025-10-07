@@ -51,8 +51,8 @@
 // Helper function to format weight values
 #let fmt(x) = {
   let val = calc.round(x, digits: 1)
-  if val >= 0 {
-    " " + str(val)
+  if val == 0 {
+    text(fill: gray.darken(20%), "0.0")
   } else {
     str(val)
   }
@@ -101,6 +101,7 @@
       // B table first half: rows 0-17
       table(
         columns: 7,
+        align: (col, row) => if col == 0 { right } else { right },
         [],
         [*#label[B0]*],
         [*#label[B1]*],
@@ -121,6 +122,7 @@
       // B table second half: rows 18-35
       table(
         columns: 7,
+        align: (col, row) => if col == 0 { right } else { right },
         [],
         [*#label[B0]*],
         [*#label[B1]*],
@@ -143,6 +145,7 @@
         // First 5 columns (D0-D4)
         #table(
           columns: 6,
+          align: (col, row) => if col == 0 { right } else { right },
           [],
           [*#label[D0]*],
           [*#label[D1]*],
@@ -164,6 +167,7 @@
         // Second 5 columns (D5-D9)
         #table(
           columns: 6,
+          align: (col, row) => if col == 0 { right } else { right },
           [],
           [*#label[D5]*],
           [*#label[D6]*],
