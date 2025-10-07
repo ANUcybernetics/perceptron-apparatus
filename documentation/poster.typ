@@ -39,7 +39,7 @@
 )
 
 #place(top + right)[
-  #text(font: "Neon Tubes 2", fill: anu-colors.socy-yellow-print, size: 40pt)[
+  #text(font: "Neon Tubes 2", fill: anu-colors.socy-yellow-print, size: 24pt)[
     Cybernetic\
     Studio
   ]
@@ -83,10 +83,51 @@
 
     == B: Input → Hidden (36×6)
 
-    #table(
-      columns: 6,
-      [*B0*], [*B1*], [*B2*], [*B3*], [*B4*], [*B5*],
-      ..weights.B.flatten().map(fmt),
+    #let label(txt) = text(font: "Alegreya", txt)
+
+    #grid(
+      columns: (1fr, 1fr),
+      gutter: 1em,
+      // First half: rows 0-17
+      table(
+        columns: 7,
+        [],
+        [*#label[B0]*],
+        [*#label[B1]*],
+        [*#label[B2]*],
+        [*#label[B3]*],
+        [*#label[B4]*],
+        [*#label[B5]*],
+        ..weights
+          .B
+          .slice(0, 18)
+          .enumerate()
+          .map(((i, row)) => (
+            [*#i*],
+            ..row.map(fmt),
+          ))
+          .flatten(),
+      ),
+      // Second half: rows 18-35
+      table(
+        columns: 7,
+        [],
+        [*#label[B0]*],
+        [*#label[B1]*],
+        [*#label[B2]*],
+        [*#label[B3]*],
+        [*#label[B4]*],
+        [*#label[B5]*],
+        ..weights
+          .B
+          .slice(18)
+          .enumerate()
+          .map(((i, row)) => (
+            [*#(i + 18)*],
+            ..row.map(fmt),
+          ))
+          .flatten(),
+      ),
     )
 
     #v(1cm)
@@ -94,18 +135,26 @@
     == D: Hidden → Output (6×10)
 
     #table(
-      columns: 10,
-      [*D0*],
-      [*D1*],
-      [*D2*],
-      [*D3*],
-      [*D4*],
-      [*D5*],
-      [*D6*],
-      [*D7*],
-      [*D8*],
-      [*D9*],
-      ..weights.D.flatten().map(fmt),
+      columns: 11,
+      [],
+      [*#label[D0]*],
+      [*#label[D1]*],
+      [*#label[D2]*],
+      [*#label[D3]*],
+      [*#label[D4]*],
+      [*#label[D5]*],
+      [*#label[D6]*],
+      [*#label[D7]*],
+      [*#label[D8]*],
+      [*#label[D9]*],
+      ..weights
+        .D
+        .enumerate()
+        .map(((i, row)) => (
+          [*#i*],
+          ..row.map(fmt),
+        ))
+        .flatten(),
     )
   ],
 )
