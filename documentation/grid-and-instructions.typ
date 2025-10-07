@@ -30,7 +30,7 @@
       ..range(36).map(i => rect(
         width: 50pt,
         height: 50pt,
-        stroke: (paint: gray.lighten(40%), thickness: 0.5pt),
+        stroke: (thickness: 0.5pt),
       )[
         #set text(size: 8pt, fill: gray)
         #align(top + left)[#pad(2pt)[#label[A#i]]]
