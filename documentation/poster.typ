@@ -7,7 +7,11 @@
 #show: doc => anu(
   title: "Perceptron Apparatus",
   paper: "a3",
-  footer_text: "CC BY-NC-SA 4.0",
+  footer_text: text(
+    font: "Neon Tubes 2",
+    fill: anu-colors.socy-yellow,
+    "CC BY-NC-SA 4.0",
+  ),
   config: (
     theme: "dark",
     logos: ("studio",),
