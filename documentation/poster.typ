@@ -19,12 +19,12 @@
   doc,
 )
 
-#place(top + right, dx: -1cm)[
-  #text(font: "Neon Tubes 2", fill: anu-colors.socy-yellow-print, size: 24pt)[
-    Cybernetic\
-    Studio
-  ]
-]
+// #place(bottom + right, dx: -1cm)[
+//   #text(font: "Neon Tubes 2", fill: anu-colors.socy-yellow-print, size: 24pt)[
+//     Cybernetic\
+//     Studio
+//   ]
+// ]
 
 // Load weights
 #let weights = json("weights.json")
@@ -44,13 +44,16 @@
   columns: (1fr, 1fr),
   gutter: 2cm,
   [
+    #v(3.5cm) // Add vertical space to push title down
+    #text(size: 3em, fill: anu-colors.gold)[*Perceptron Apparatus*]
+    #v(0.5cm) // Add vertical space to push title down
+
     #align(center)[
       #image("apparatus1.svg", width: 100%)
     ]
   ],
   [
     #set text(size: 7pt)
-    #v(3cm)
 
     // #if "test_accuracy" in weights [
     //   Test accuracy: #calc.round(weights.test_accuracy * 100, digits: 1)%
@@ -168,5 +171,40 @@
         )
       ],
     )
+
+    #set text(size: 10pt)
+
+    = Algorithm
+
+    + set each input slider #label[A0]--#label[A35] to the desired value
+      according to the task for which the model has been trained
+
+    + calculate the hidden layer (#label[C]) values:
+      - for each slider in the input layer (#label[A]) and each weight bank
+        #label[B0]--#label[B5]:
+        - read the input value from the input layer (#label[A])
+        - read the corresponding weight from the current bank in the weight
+          layer (#label[B])
+        - multiply these values using the slide rule ring (see below)
+        - add the result to the corresponding slider in the hidden layer
+          (#label[C])
+      - once all weights have been processed, set any negative values in the
+        hidden layer (#label[C]) to 0
+
+    + calculate the output layer (#label[E]) values:
+      - repeat the same process, but using the hidden layer (#label[C]) as
+        inputs, the weight layer (#label[D]) as weights, and the output layer
+        (#label[E]) as the destination
+      - once all weights have been processed, set any negative values in the
+        output layer (#label[E]) to 0
+
+    + the slider in the output layer (#label[E]) with the highest value is the
+      network's prediction
+
+    = Slide rule instructions
+
+    To multiply two values using the slide rule ring: align the first value on
+    the outer scale with 1 on the inner scale, then find the second value on the
+    inner scale and read the result on the outer scale.
   ],
 )
