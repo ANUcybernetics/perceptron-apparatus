@@ -22,7 +22,9 @@
   columns: (auto, 1fr),
   gutter: 2cm,
   {
-    v(5cm)
+    v(4cm)
+    text[Draw your input image on this grid---can be whatever you like!]
+    v(1em)
     grid(
       columns: 6,
       rows: 6,
@@ -40,41 +42,35 @@
   [
     == Algorithm
 
-    + draw your input image on the 6×6 grid (whatever you like!)
+    + for each cell #label[A0]--#label[A35] set the corresponding slider in the
+      input layer (#label[A]) to match how much "ink" is in that cell (white =
+      0, black = 1)
 
-    + for each cell #label[A0]--#label[A35] set the corresponding slider in ring
-      #label[A] (input ring) based on how much "ink" is in that cell (white = 0,
-      black = 1)
+    + calculate the hidden layer (#label[C]) values:
+      - for each slider in the input layer (#label[A]) and each weight bank
+        #label[B0]--#label[B5]:
+        - read the input value from the input layer (#label[A])
+        - read the corresponding weight from the current bank in the weight
+          layer (#label[B])
+        - multiply these values using the slide rule ring (see below)
+        - add the result to the corresponding slider in the hidden layer
+          (#label[C])
+      - once all weights have been processed, set any negative values in the
+        hidden layer (#label[C]) to 0
 
-    + for each slider in ring #label[A]:
-      - read slider value
-      - read value of same-numbered slider in ring #label[B0]
-      - multiply the two values (using slide rule ring) and _adjust_ the value
-        of slider #label[C0] by the result
+    + calculate the output layer (#label[E]) values:
+      - repeat the same process, but using the hidden layer (#label[C]) as
+        inputs, the weight layer (#label[D]) as weights, and the output layer
+        (#label[E]) as the destination
+      - once all weights have been processed, set any negative values in the
+        output layer (#label[E]) to 0
 
-    + repeat step 3 for each bank of sliders in ring #label[B] (#label[B1],
-      #label[B2], etc.) until all of the sliders in ring #label[C] have been
-      fully adjusted
-      - once that's done, if any slider in ring #label[C] has a negative value,
-        set it to 0
+    + the slider in the output layer (#label[E]) with the highest value is the
+      network's prediction
 
-    + repeat the process of steps 3 and 4, but starting with ring #label[C]
-      (instead of ring #label[A])
-
-    + once all the sliders in ring #label[E] have been fully adjusted, the
-      slider in ring #label[E] with the highest value is the output value
-
-    === Notes
-
-    This procedure assumes that the weights (rings #label[B] and #label[D]) are
-    pre-populated with the correct values.
-
-    To _adjust_ by a value means to add or subtract the value from the current
-    value of the slider. To _set_ the value means the slider should show that
-    value (regardless of the previous value).
-
-    To multiply two values using the slide rule ring: align the first value on the
-    outer scale with 1 on the inner scale, then find the second value on the inner
-    scale and read the result on the outer scale.
+    == Slide rule instructions
+    To multiply two values using the slide rule ring: align the first value on
+    the outer scale with 1 on the inner scale, then find the second value on the
+    inner scale and read the result on the outer scale.
   ],
 )
