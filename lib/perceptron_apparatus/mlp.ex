@@ -56,24 +56,24 @@ defmodule PerceptronApparatus.MLP do
   end
 
   @doc """
-  Custom initializer for hidden layer weights to achieve [0,2] activation range.
-  Designed for 36 inputs (MNIST 6x6 flattened) to keep ReLU outputs in [0,2].
+  Custom initializer for hidden layer weights to achieve [0,1.5] activation range.
+  Designed for 36 inputs (MNIST 6x6 flattened) to keep ReLU outputs in [0,1.5].
   """
   def hidden_bounded_initializer(opts \\ []) do
-    # With 36 inputs each in [0,1], we want max sum ~2.0 after ReLU
-    # So individual weights should be around ±(2.0/36) = ±0.056
-    bound = Keyword.get(opts, :bound, 0.06)
+    # With 36 inputs each in [0,1], we want max sum ~1.5 after ReLU
+    # So individual weights should be around ±(1.5/36) = ±0.042
+    bound = Keyword.get(opts, :bound, 0.045)
     bounded_uniform_initializer(bound: bound)
   end
 
   @doc """
-  Custom initializer for output layer weights to achieve [-2,2] activation range.
-  Designed for 6 hidden units each in [0,2] to keep outputs in [-2,2].
+  Custom initializer for output layer weights to achieve [-1.5,1.5] activation range.
+  Designed for 6 hidden units each in [0,1.5] to keep outputs in [-1.5,1.5].
   """
   def output_bounded_initializer(opts \\ []) do
-    # With 6 hidden units each in [0,2], we want sums in [-2,2]
-    # So individual weights should be around ±(2.0/6) = ±0.33
-    bound = Keyword.get(opts, :bound, 0.34)
+    # With 6 hidden units each in [0,1.5], we want sums in [-1.5,1.5]
+    # So individual weights should be around ±(1.5/6) = ±0.25
+    bound = Keyword.get(opts, :bound, 0.255)
     bounded_uniform_initializer(bound: bound)
   end
 
