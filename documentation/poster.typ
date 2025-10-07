@@ -79,8 +79,6 @@
     //   #v(0.5cm)
     // ]
 
-    == Weight Matrix B: Input → Hidden Layer ($36 times 6$)
-
     #let label(txt) = text(font: "Alegreya", txt)
 
     // Total gutter: 4em (1em + 3em = 25% + 75%)
@@ -90,6 +88,16 @@
     #grid(
       columns: (col-width, col-width, col-width),
       column-gutter: (1em, 3em),
+      rows: (auto, auto),
+      row-gutter: 0.5cm,
+      // Heading row
+      grid.cell(colspan: 2)[
+        == Weight Matrix B: Input → Hidden Layer ($36 times 6$)
+      ],
+      [
+        == Weight Matrix D: Hidden Layer → Output ($6 times 10$)
+      ],
+      // Table content row
       // B table first half: rows 0-17
       table(
         columns: 7,
@@ -132,8 +140,6 @@
       ),
       // D table in third column
       [
-        == Weight Matrix D: Hidden Layer → Output ($6 times 10$)
-
         // First 5 columns (D0-D4)
         #table(
           columns: 6,
