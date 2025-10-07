@@ -78,11 +78,11 @@
       row-gutter: 0.5cm,
       // Heading row
       grid.cell(colspan: 2)[
-        == Weight matrix B
+        == Weight matrix #label("B")
         _Input → Hidden ($36 times 6$)_
       ],
       [
-        == Weight matrix D
+        == Weight matrix #label("D")
         _Hidden → Output ($6 times 10$)_
       ],
       // Table content row
