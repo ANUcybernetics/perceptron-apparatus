@@ -32,7 +32,7 @@
         height: 50pt,
         stroke: (paint: gray.lighten(40%), thickness: 0.5pt),
       )[
-        #set text(size: 7pt, fill: gray.lighten(60%))
+        #set text(size: 8pt, fill: gray)
         #align(top + left)[#pad(2pt)[#label[A#i]]]
       ])
     )
@@ -40,26 +40,37 @@
   [
     == Algorithm
 
-    + draw your input image on the 6×6 grid, where each cell #label[A0]--#label[A35] represents how much "ink" is in that cell (0 = white, 1 = black)
+    + draw your input image on the 6×6 grid (whatever you like!)
 
-    + for each slider in ring #label[A] (input ring), set the value based on the corresponding cell in the input image grid
+    + for each cell #label[A0]--#label[A35] set the corresponding slider in ring
+      #label[A] (input ring) based on how much "ink" is in that cell (white = 0,
+      black = 1)
 
     + for each slider in ring #label[A]:
       - read slider value
       - read value of same-numbered slider in ring #label[B0]
-      - multiply the two values (using slide rule ring) and _adjust_ the value of slider #label[C0] by the result
+      - multiply the two values (using slide rule ring) and _adjust_ the value
+        of slider #label[C0] by the result
 
-    + repeat step 2 for each bank of sliders in ring #label[B] (#label[B1], #label[B2], etc.) until all of the sliders in ring #label[C] have been fully adjusted
-      - once that's done, if any slider in ring #label[C] has a negative value, set it to 0
+    + repeat step 3 for each bank of sliders in ring #label[B] (#label[B1],
+      #label[B2], etc.) until all of the sliders in ring #label[C] have been
+      fully adjusted
+      - once that's done, if any slider in ring #label[C] has a negative value,
+        set it to 0
 
-    + repeat the process of steps 2 and 3, but starting with ring #label[C] (instead of ring #label[A])
+    + repeat the process of steps 3 and 4, but starting with ring #label[C]
+      (instead of ring #label[A])
 
-    + once all the sliders in ring #label[E] have been fully adjusted, the slider in ring #label[E] with the highest value is the output value
+    + once all the sliders in ring #label[E] have been fully adjusted, the
+      slider in ring #label[E] with the highest value is the output value
 
     === Notes
 
-    This procedure assumes that the weights (rings #label[B] and #label[D]) are pre-populated with the correct values.
+    This procedure assumes that the weights (rings #label[B] and #label[D]) are
+    pre-populated with the correct values.
 
-    To _adjust_ by a value means to add or subtract the value from the current value of the slider. To _set_ the value means the slider should show that value (regardless of the previous value).
+    To _adjust_ by a value means to add or subtract the value from the current
+    value of the slider. To _set_ the value means the slider should show that
+    value (regardless of the previous value).
   ],
 )
