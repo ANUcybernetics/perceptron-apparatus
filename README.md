@@ -36,6 +36,15 @@ mix perceptron.generate --preset mnist
 
 # Show help
 mix perceptron --help
+
+# Train a model and export weights to JSON
+mix perceptron.export_weights
+
+# Custom training parameters
+mix perceptron.export_weights --epochs 10 --batch-size 256
+
+# Save to specific file without scaling
+mix perceptron.export_weights --output weights.json --no-scale
 ```
 
 ### Programmatic Usage
