@@ -48,9 +48,16 @@
   columns: (1fr, 1fr),
   gutter: 2cm,
   [
-    #v(3.5cm) // Add vertical space to push title down
+    #v(3cm) // Add vertical space to push title down
     #text(size: 3em, fill: anu-colors.gold)[*Perceptron Apparatus*]
-    #v(0.5cm) // Add vertical space to push title down
+
+    #text(size: 1em)[
+      Is it an abacus? Is it an ouija board? No, it's a perceptron apparatus---a
+      physical device capable of performing the Artificial Neural Network
+      calculations that underpin all of modern AI.
+    ]
+
+    #v(0.5cm)
 
     #align(center)[
       #image("apparatus1.svg", width: 100%)
