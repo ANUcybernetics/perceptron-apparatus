@@ -3,39 +3,20 @@
 
 // Import base template for colors and styling
 #import "@local/anu-typst-template:0.2.0": *
-#import "@local/anu-typst-template:0.2.0": anu-colors
 
 #show: doc => anu(
-  title: "",
+  title: "Perceptron Apparatus",
+  paper: "a3",
+  footer_text: "CC BY-NC-SA 4.0",
   config: (
     theme: "dark",
     logos: ("studio",),
     hide: ("page-numbers", "title-block"),
   ),
   page-settings: (
-    width: 420mm, // A3 landscape width
-    height: 297mm, // A3 landscape height
-    margin: (
-      left: 3.2cm,
-      right: 1.6cm,
-      top: 2.4cm,
-      bottom: 2.4cm,
-    ),
+    flipped: true,
   ),
   doc,
-)
-
-// Add CC BY-NC 4.0 watermark
-#set page(
-  footer: place(
-    bottom + left,
-    dy: -1.5cm,
-    text(
-      font: "Neon Tubes 2",
-      size: 9pt,
-      fill: anu-colors.socy-yellow-print,
-    )[CC BY-NC-SA 4.0],
-  ),
 )
 
 #place(top + right, dx: -1cm)[
@@ -69,7 +50,7 @@
   ],
   [
     #set text(size: 7pt)
-    #v(1cm)
+    #v(3cm)
 
     // #if "test_accuracy" in weights [
     //   Test accuracy: #calc.round(weights.test_accuracy * 100, digits: 1)%
