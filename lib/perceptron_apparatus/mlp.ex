@@ -9,6 +9,7 @@ defmodule PerceptronApparatus.MLP do
   - Train the model on real MNIST data with 90/10 train/test split
   - Track and analyze parameter ranges after training
   - Track and analyze activation ranges during inference
+  - Export trained weights to JSON format for use in other tools (e.g. Typst)
   - Suppress noisy training logs for cleaner output
 
   ## Example Usage
@@ -21,6 +22,9 @@ defmodule PerceptronApparatus.MLP do
       model = PerceptronApparatus.MLP.create_model()
       trained_params = PerceptronApparatus.MLP.train_model(model, train_data, epochs: 5)
       PerceptronApparatus.MLP.inspect_parameters(trained_params)
+
+      # Export weights to JSON
+      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json")
   """
 
   alias Axon.Loop
@@ -484,6 +488,61 @@ defmodule PerceptronApparatus.MLP do
       activations: activations,
       test_accuracy: accuracy
     }
+  end
+
+  @doc """
+  Extracts weight matrices from trained model parameters.
+  Returns a map with keys "B" (input->hidden weights) and "D" (hidden->output weights).
+  Each value is a 2D list representing the weight matrix.
+
+  The structure uses 2D arrays (list of lists) which can be easily:
+  - Accessed by index in Typst: `weights.B.at(row).at(col)`
+  - Converted to tables in Typst using `#table(...weights.B.flatten())`
+  - Iterated over for creating custom visualisations
+
+  ## Shape
+
+  - B: {36, 6} - Maps each of 36 input features to 6 hidden neurons
+  - D: {6, 10} - Maps each of 6 hidden neurons to 10 output classes
+  """
+  def extract_weights(model_state) do
+    params = model_state.data
+
+    # Extract hidden layer weights (input -> hidden): shape {36, 6}
+    b_weights = params["hidden"]["kernel"]
+    b_list = b_weights |> Nx.to_list()
+
+    # Extract output layer weights (hidden -> output): shape {6, 10}
+    d_weights = params["output"]["kernel"]
+    d_list = d_weights |> Nx.to_list()
+
+    %{"B" => b_list, "D" => d_list}
+  end
+
+  @doc """
+  Writes trained weights to a JSON file.
+  The JSON structure has top-level keys "B" and "D" containing 2D arrays of weights.
+
+  ## Example
+
+      trained_params = PerceptronApparatus.MLP.train_model(model, train_data, epochs: 5)
+      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json")
+
+  ## Typst Usage
+
+  In Typst, you can read and use the weights like this:
+
+      #let weights = json("weights.json")
+      #table(
+        columns: 6,
+        ..weights.B.flatten()
+      )
+  """
+  def write_weights_to_json(model_state, filename) do
+    weights = extract_weights(model_state)
+    json = Jason.encode!(weights, pretty: true)
+    File.write!(filename, json)
+    IO.puts("Weights written to #{filename}")
   end
 
   @doc """

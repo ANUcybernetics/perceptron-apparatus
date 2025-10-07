@@ -124,4 +124,56 @@ defmodule PerceptronApparatus.MLPTest do
       assert accuracy <= 1.0
     end
   end
+
+  describe "Weight extraction and JSON export" do
+    @tag timeout: 300_000
+    test "extracts weights and writes to JSON file" do
+      IO.puts("\n" <> String.duplicate("=", 80))
+      IO.puts("WEIGHT EXTRACTION AND JSON EXPORT")
+      IO.puts(String.duplicate("=", 80))
+
+      {train_data, _test_data} = MLP.load_mnist_data()
+      model = MLP.create_model()
+
+      trained_params = MLP.train_model(model, train_data, epochs: 2, batch_size: 128)
+
+      weights = MLP.extract_weights(trained_params)
+
+      assert Map.has_key?(weights, "B")
+      assert Map.has_key?(weights, "D")
+
+      assert is_list(weights["B"])
+      assert is_list(weights["D"])
+
+      assert length(weights["B"]) == 36
+      assert length(List.first(weights["B"])) == 6
+
+      assert length(weights["D"]) == 6
+      assert length(List.first(weights["D"])) == 10
+
+      temp_file = "test_weights_temp.json"
+
+      try do
+        MLP.write_weights_to_json(trained_params, temp_file)
+
+        assert File.exists?(temp_file)
+
+        file_content = File.read!(temp_file)
+        decoded = Jason.decode!(file_content)
+
+        assert Map.has_key?(decoded, "B")
+        assert Map.has_key?(decoded, "D")
+        assert is_list(decoded["B"])
+        assert is_list(decoded["D"])
+
+        IO.puts("✓ Weight extraction successful")
+        IO.puts("✓ JSON export successful")
+        IO.puts("✓ JSON structure verified")
+      after
+        if File.exists?(temp_file), do: File.rm!(temp_file)
+      end
+
+      IO.puts(String.duplicate("=", 80))
+    end
+  end
 end
