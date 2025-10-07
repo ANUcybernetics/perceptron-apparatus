@@ -113,7 +113,7 @@
           .slice(0, 18)
           .enumerate()
           .map(((i, row)) => (
-            [*#i*],
+            [*#label(str(i))*],
             ..row.map(fmt),
           ))
           .flatten(),
@@ -133,7 +133,7 @@
           .slice(18)
           .enumerate()
           .map(((i, row)) => (
-            [*#(i + 18)*],
+            [*#label(str(i + 18))*],
             ..row.map(fmt),
           ))
           .flatten(),
@@ -153,7 +153,7 @@
             .D
             .enumerate()
             .map(((i, row)) => (
-              [*#i*],
+              [*#label(str(i))*],
               ..row.slice(0, 5).map(fmt),
             ))
             .flatten(),
@@ -174,7 +174,7 @@
             .D
             .enumerate()
             .map(((i, row)) => (
-              [*#i*],
+              [*#label(str(i))*],
               ..row.slice(5).map(fmt),
             ))
             .flatten(),
