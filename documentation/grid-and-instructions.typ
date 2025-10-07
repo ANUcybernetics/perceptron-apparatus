@@ -19,25 +19,28 @@
 #let label(content) = text(font: "Alegreya", content)
 
 #grid(
-  columns: (auto, 1fr),
+  columns: (1fr, 1fr),
   gutter: 2cm,
   {
     v(4cm)
     text[Draw your input image on this grid---can be whatever you like!]
     v(1em)
-    grid(
-      columns: 6,
-      rows: 6,
-      gutter: 0pt,
-      ..range(36).map(i => rect(
-        width: 50pt,
-        height: 50pt,
-        stroke: (thickness: 0.5pt),
-      )[
-        #set text(size: 8pt, fill: gray)
-        #align(top + left)[#pad(2pt)[#label[A#i]]]
-      ])
-    )
+    layout(size => {
+      let cell-size = size.width / 6
+      grid(
+        columns: 6,
+        rows: 6,
+        gutter: 0pt,
+        ..range(36).map(i => rect(
+          width: cell-size,
+          height: cell-size,
+          stroke: (thickness: 0.5pt),
+        )[
+          #set text(size: 8pt, fill: gray)
+          #align(top + left)[#pad(2pt)[#label[A#i]]]
+        ])
+      )
+    })
   },
   [
     == Algorithm
