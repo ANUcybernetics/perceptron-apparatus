@@ -16,10 +16,10 @@
     width: 420mm, // A3 landscape width
     height: 297mm, // A3 landscape height
     margin: (
-      left: 3cm,
-      right: 3cm,
-      top: 3cm,
-      bottom: 3cm,
+      left: 3.2cm,
+      right: 1.6cm,
+      top: 2.4cm,
+      bottom: 2.4cm,
     ),
   ),
   doc,
@@ -38,7 +38,7 @@
   ),
 )
 
-#place(top + right)[
+#place(top + right, dx: -1cm)[
   #text(font: "Neon Tubes 2", fill: anu-colors.socy-yellow-print, size: 24pt)[
     Cybernetic\
     Studio
@@ -71,24 +71,26 @@
     #set text(size: 7pt)
     #v(1cm)
 
-    = Weight matrices
+    // #if "test_accuracy" in weights [
+    //   Test accuracy: #calc.round(weights.test_accuracy * 100, digits: 1)%
+    //   (#calc.round(weights.test_accuracy / 0.1, digits: 1) times better than
+    //   chance)
 
-    #if "test_accuracy" in weights [
-      Test accuracy: #calc.round(weights.test_accuracy * 100, digits: 1)%
-      (#calc.round(weights.test_accuracy / 0.1, digits: 1) times better than
-      chance)
+    //   #v(0.5cm)
+    // ]
 
-      #v(0.5cm)
-    ]
-
-    == B: Input → Hidden (36×6)
+    == Weight Matrix B: Input → Hidden Layer ($36 times 6$)
 
     #let label(txt) = text(font: "Alegreya", txt)
 
+    // Total gutter: 4em (1em + 3em = 25% + 75%)
+    // Columns need to fit: 100% - 4em
+    #let col-width = (100% - 4em) / 3
+
     #grid(
-      columns: (1fr, 1fr),
-      gutter: 1em,
-      // First half: rows 0-17
+      columns: (col-width, col-width, col-width),
+      column-gutter: (1em, 3em),
+      // B table first half: rows 0-17
       table(
         columns: 7,
         [],
@@ -108,7 +110,7 @@
           ))
           .flatten(),
       ),
-      // Second half: rows 18-35
+      // B table second half: rows 18-35
       table(
         columns: 7,
         [],
@@ -128,33 +130,50 @@
           ))
           .flatten(),
       ),
-    )
+      // D table in third column
+      [
+        == Weight Matrix D: Hidden Layer → Output ($6 times 10$)
 
-    #v(1cm)
+        // First 5 columns (D0-D4)
+        #table(
+          columns: 6,
+          [],
+          [*#label[D0]*],
+          [*#label[D1]*],
+          [*#label[D2]*],
+          [*#label[D3]*],
+          [*#label[D4]*],
+          ..weights
+            .D
+            .enumerate()
+            .map(((i, row)) => (
+              [*#i*],
+              ..row.slice(0, 5).map(fmt),
+            ))
+            .flatten(),
+        )
 
-    == D: Hidden → Output (6×10)
+        #v(0.5cm)
 
-    #table(
-      columns: 11,
-      [],
-      [*#label[D0]*],
-      [*#label[D1]*],
-      [*#label[D2]*],
-      [*#label[D3]*],
-      [*#label[D4]*],
-      [*#label[D5]*],
-      [*#label[D6]*],
-      [*#label[D7]*],
-      [*#label[D8]*],
-      [*#label[D9]*],
-      ..weights
-        .D
-        .enumerate()
-        .map(((i, row)) => (
-          [*#i*],
-          ..row.map(fmt),
-        ))
-        .flatten(),
+        // Second 5 columns (D5-D9)
+        #table(
+          columns: 6,
+          [],
+          [*#label[D5]*],
+          [*#label[D6]*],
+          [*#label[D7]*],
+          [*#label[D8]*],
+          [*#label[D9]*],
+          ..weights
+            .D
+            .enumerate()
+            .map(((i, row)) => (
+              [*#i*],
+              ..row.slice(5).map(fmt),
+            ))
+            .flatten(),
+        )
+      ],
     )
   ],
 )
