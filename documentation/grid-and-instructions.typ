@@ -11,7 +11,7 @@
   ),
   page-settings: (
     flipped: true,
-    margin: (left: 3.2cm, right: 1.5cm, top: 1.5cm, bottom: 1.5cm),
+    margin: (left: 3.2cm, right: 2cm, top: 2cm, bottom: 2cm),
   ),
   doc,
 )
