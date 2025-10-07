@@ -154,5 +154,57 @@ defmodule PerceptronApparatus.BoardGenerationTest do
           flunk("Board creation should not fail due to QR data issues: #{inspect(error)}")
       end
     end
+
+    test "generates print-ready SVG with white-on-black styling" do
+      case PerceptronApparatus.create_board(800.0, 3, 2, 1) do
+        {:ok, board} ->
+          filename = Path.join(@output_dir, "board_print_#{board.id}.svg")
+
+          case PerceptronApparatus.write_svg(board, filename, true) do
+            {:ok, _} ->
+              assert File.exists?(filename)
+
+              {:ok, content} = File.read(filename)
+
+              assert String.contains?(content, "stroke: white")
+              assert String.contains?(content, "fill: white")
+              assert String.contains?(content, "fill: black")
+
+              refute String.contains?(content, "stroke: #6ab04c")
+              refute String.contains?(content, "stroke: #f0932b")
+
+            {:error, error} ->
+              flunk("Failed to write print mode SVG: #{inspect(error)}")
+          end
+
+        {:error, error} ->
+          flunk("Failed to create board: #{inspect(error)}")
+      end
+    end
+
+    test "generates default SVG with colour styling when print mode is false" do
+      case PerceptronApparatus.create_board(800.0, 3, 2, 1) do
+        {:ok, board} ->
+          filename = Path.join(@output_dir, "board_default_#{board.id}.svg")
+
+          case PerceptronApparatus.write_svg(board, filename, false) do
+            {:ok, _} ->
+              assert File.exists?(filename)
+
+              {:ok, content} = File.read(filename)
+
+              assert String.contains?(content, "stroke: #6ab04c")
+              assert String.contains?(content, "stroke: #f0932b")
+
+              refute String.contains?(content, "stroke: white")
+
+            {:error, error} ->
+              flunk("Failed to write default SVG: #{inspect(error)}")
+          end
+
+        {:error, error} ->
+          flunk("Failed to create board: #{inspect(error)}")
+      end
+    end
   end
 end

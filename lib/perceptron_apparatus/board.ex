@@ -21,6 +21,7 @@ defmodule PerceptronApparatus.Board do
     action :write_svg, :map do
       argument :board, :map, allow_nil?: false
       argument :filename, :string, allow_nil?: false
+      argument :print_mode, :boolean, allow_nil?: true, default: false
 
       run PerceptronApparatus.Board.Actions.WriteSvg
     end
@@ -61,8 +62,9 @@ defmodule PerceptronApparatus.Board do
     end)
   end
 
-  def render(apparatus) do
+  def render(apparatus, opts \\ []) do
     %{size: size, rings: rings} = apparatus
+    print_mode = Keyword.get(opts, :print_mode, false)
 
     radius = size / 2
     radial_padding = 30
@@ -192,7 +194,7 @@ defmodule PerceptronApparatus.Board do
     all_elements =
       [board_edge] ++ ring_elements ++ qr_elements ++ fastener_elements ++ [vertical_cut_line]
 
-    render_body_as_tree(all_elements, view_box)
+    render_body_as_tree(all_elements, view_box, print_mode)
   end
 
   defp calculate_ring_widths(rings, radius, radial_padding, center_space) do
@@ -228,8 +230,8 @@ defmodule PerceptronApparatus.Board do
     end)
   end
 
-  defp render_body_as_tree(elements, view_box) do
-    style_content = build_style_content()
+  defp render_body_as_tree(elements, view_box, print_mode) do
+    style_content = build_style_content(print_mode)
     style_elem = style_element(style_content)
 
     # Add Illustrator-specific attributes for better import
@@ -243,8 +245,16 @@ defmodule PerceptronApparatus.Board do
     |> tree_to_html()
   end
 
-  defp build_style_content() do
-    base_styles = """
+  defp build_style_content(print_mode) do
+    if print_mode do
+      build_print_mode_styles()
+    else
+      build_default_styles()
+    end
+  end
+
+  defp build_default_styles() do
+    """
     text {
       font-family: "Alegreya";
       font-size: 12px;
@@ -301,8 +311,74 @@ defmodule PerceptronApparatus.Board do
       stroke: none;
     }
     """
+  end
 
-    base_styles
+  defp build_print_mode_styles() do
+    """
+    text {
+      font-family: "Alegreya";
+      font-size: 12px;
+    }
+    .full {
+      stroke-width: 1;
+      stroke: white;
+      fill: none;
+    }
+    .slider {
+      stroke: white;
+    }
+    .top.slider {
+      stroke-width: 3;
+      fill: black;
+    }
+    .bottom.slider {
+      stroke-width: 8;
+      fill: black;
+      opacity: 1;
+    }
+    .bottom.rotating {
+      stroke: white;
+      fill: none;
+      opacity: 1;
+    }
+    .etch {
+      stroke-width: 0.5;
+      stroke: white;
+      fill: none;
+    }
+    .etch.heavy {
+      stroke-width: 1.5;
+      stroke: white;
+    }
+    text {
+      fill: white;
+      stroke: none;
+      font-weight: 500;
+    }
+    text.indices{
+      font-size: 12px;
+      font-weight: 300;
+      fill: white;
+    }
+    text.indices.small{
+      font-size: 8px;
+      fill: white;
+    }
+    .debug {
+      display: none;
+      stroke: red;
+      fill: transparent;
+    }
+    .qr-code {
+      fill: white;
+      stroke: none;
+      rx: 0.75;
+    }
+    .fastener {
+      fill: white;
+      stroke: white;
+    }
+    """
   end
 
   defp next_layer_index(%RuleRing{}, idx), do: idx

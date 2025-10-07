@@ -8,13 +8,14 @@ defmodule PerceptronApparatus.Board.Actions.WriteSvg do
   def run(input, _opts, _context) do
     board = input.arguments.board
     filename = input.arguments.filename
+    print_mode = input.arguments[:print_mode] || false
 
     # Ensure parent directory exists
     output_dir = Path.dirname(filename)
     File.mkdir_p!(output_dir)
 
     # Write the SVG file
-    svg_content = PerceptronApparatus.Board.render(board)
+    svg_content = PerceptronApparatus.Board.render(board, print_mode: print_mode)
     File.write!(filename, svg_content)
 
     {:ok, %{filename: filename, board_id: board.id}}

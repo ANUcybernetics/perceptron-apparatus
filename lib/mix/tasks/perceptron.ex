@@ -14,6 +14,7 @@ defmodule Mix.Tasks.Perceptron do
     * `--output` - Number of output neurons (default: 10)
     * `--qr` - QR code data (optional)
     * `--file` - Output file path (default: svg/board.svg)
+    * `--print` - Generate print-ready SVG (white on black)
     * `--help` - Show this help message
 
   ## Examples
@@ -29,6 +30,9 @@ defmodule Mix.Tasks.Perceptron do
 
       # Include QR code data
       mix perceptron --qr "https://example.com"
+
+      # Generate print-ready version
+      mix perceptron --print
   """
 
   @shortdoc "Generate SVG files for perceptron apparatus boards"
@@ -42,6 +46,7 @@ defmodule Mix.Tasks.Perceptron do
     output: :integer,
     qr: :string,
     file: :string,
+    print: :boolean,
     help: :boolean
   ]
 
@@ -85,6 +90,7 @@ defmodule Mix.Tasks.Perceptron do
     n_output = config[:output]
     qr_data = config[:qr]
     filename = config[:file]
+    print_mode = config[:print] || false
 
     # Ensure output directory exists
     output_dir = Path.dirname(filename)
@@ -97,6 +103,7 @@ defmodule Mix.Tasks.Perceptron do
     Mix.shell().info("  Hidden neurons: #{n_hidden}")
     Mix.shell().info("  Output neurons: #{n_output}")
     if qr_data, do: Mix.shell().info("  QR data: #{qr_data}")
+    if print_mode, do: Mix.shell().info("  Print mode: enabled")
     Mix.shell().info("  Output file: #{filename}")
     Mix.shell().info("")
 
@@ -106,7 +113,7 @@ defmodule Mix.Tasks.Perceptron do
         Mix.shell().info("Board created successfully (ID: #{board.id})")
 
         # Generate SVG using domain code interface
-        case PerceptronApparatus.write_svg(board, filename) do
+        case PerceptronApparatus.write_svg(board, filename, print_mode) do
           {:ok, result} ->
             Mix.shell().info("")
             Mix.shell().info(String.duplicate("=", 60))

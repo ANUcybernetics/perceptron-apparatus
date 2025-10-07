@@ -16,6 +16,7 @@ defmodule Mix.Tasks.Perceptron.Generate do
     * `--file` - Output file path (default: svg/board.svg)
     * `--preset` - Use a preset configuration (mnist, xor, language)
     * `--separate-layers` - Generate separate files for each layer type
+    * `--print` - Generate print-ready SVG (white on black)
     * `--help` - Show this help message
 
   ## Presets
@@ -49,6 +50,7 @@ defmodule Mix.Tasks.Perceptron.Generate do
     file: :string,
     preset: :string,
     separate_layers: :boolean,
+    print: :boolean,
     help: :boolean
   ]
 
@@ -116,6 +118,7 @@ defmodule Mix.Tasks.Perceptron.Generate do
     qr_data = config[:qr]
     filename = config[:file]
     separate_layers = config[:separate_layers]
+    print_mode = config[:print] || false
 
     # Ensure output directory exists
     output_dir = Path.dirname(filename)
@@ -127,6 +130,7 @@ defmodule Mix.Tasks.Perceptron.Generate do
     Mix.shell().info("  Size: #{size}mm")
     Mix.shell().info("  Network: #{n_input}-#{n_hidden}-#{n_output}")
     if qr_data, do: Mix.shell().info("  QR data: #{qr_data}")
+    if print_mode, do: Mix.shell().info("  Print mode: enabled")
     Mix.shell().info("  Output: #{filename}")
     if separate_layers, do: Mix.shell().info("  Generating separate layer files")
     Mix.shell().info("")
@@ -138,9 +142,9 @@ defmodule Mix.Tasks.Perceptron.Generate do
 
         # Generate SVG
         if separate_layers do
-          generate_separate_layers(board, filename)
+          generate_separate_layers(board, filename, print_mode)
         else
-          generate_single_svg(board, filename)
+          generate_single_svg(board, filename, print_mode)
         end
 
       {:error, error} ->
@@ -150,8 +154,8 @@ defmodule Mix.Tasks.Perceptron.Generate do
     end
   end
 
-  defp generate_single_svg(board, filename) do
-    case PerceptronApparatus.write_svg(board, filename) do
+  defp generate_single_svg(board, filename, print_mode) do
+    case PerceptronApparatus.write_svg(board, filename, print_mode) do
       {:ok, result} ->
         Mix.shell().info("")
         Mix.shell().info(String.duplicate("=", 60))
@@ -165,10 +169,10 @@ defmodule Mix.Tasks.Perceptron.Generate do
     end
   end
 
-  defp generate_separate_layers(board, base_filename) do
+  defp generate_separate_layers(board, base_filename, print_mode) do
     # This would need to be implemented based on how the SVG generation works
     # For now, just generate the main file
     Mix.shell().info("Note: Separate layer generation not yet implemented")
-    generate_single_svg(board, base_filename)
+    generate_single_svg(board, base_filename, print_mode)
   end
 end
