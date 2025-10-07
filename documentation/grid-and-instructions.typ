@@ -72,5 +72,9 @@
     To _adjust_ by a value means to add or subtract the value from the current
     value of the slider. To _set_ the value means the slider should show that
     value (regardless of the previous value).
+
+    To multiply two values using the slide rule ring: align the first value on the
+    outer scale with 1 on the inner scale, then find the second value on the inner
+    scale and read the result on the outer scale.
   ],
 )
