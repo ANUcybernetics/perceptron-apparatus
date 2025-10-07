@@ -92,10 +92,12 @@
       row-gutter: 0.5cm,
       // Heading row
       grid.cell(colspan: 2)[
-        == Weight Matrix B: Input → Hidden Layer ($36 times 6$)
+        = Weight Matrix B
+        _Input → Hidden Layer ($36 times 6$)_
       ],
       [
-        == Weight Matrix D: Hidden Layer → Output ($6 times 10$)
+        = Weight Matrix D
+        _Hidden Layer → Output ($6 times 10$)_
       ],
       // Table content row
       // B table first half: rows 0-17
