@@ -66,7 +66,7 @@
     #v(0.5cm)
 
     #align(center)[
-      #image("apparatus1.svg", width: 100%)
+      #image("apparatus.svg", width: 100%)
     ]
   ],
   [
