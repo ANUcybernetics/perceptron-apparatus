@@ -1,17 +1,17 @@
-defmodule Mix.Tasks.Perceptron.ExportWeights do
+defmodule Mix.Tasks.Perceptron.ExportPokerWeights do
   @moduledoc """
-  Train a model and export weights to JSON.
+  Train a poker hand classification model and export weights to JSON.
 
   ## Usage
 
-      mix perceptron.export_weights [options]
+      mix perceptron.export_poker_weights [options]
 
   ## Options
 
     * `--epochs` - Number of training epochs (default: 5)
     * `--batch-size` - Batch size for training (default: 128)
     * `--learning-rate` - Learning rate for training (default: 0.005)
-    * `--output` - Output file path (default: weights.json)
+    * `--output` - Output file path (default: poker_weights.json)
     * `--scale` - Scale weights to use full apparatus range (default: true)
     * `--target-max` - Target maximum value when scaling (default: 5.0)
     * `--nonnegative-output` - Constrain output layer weights to be non-negative (default: false)
@@ -20,26 +20,26 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
   ## Examples
 
       # Train and export with defaults
-      mix perceptron.export_weights
+      mix perceptron.export_poker_weights
 
       # Custom training parameters
-      mix perceptron.export_weights --epochs 10 --batch-size 256
+      mix perceptron.export_poker_weights --epochs 10 --batch-size 256
 
       # Save to specific file without scaling
-      mix perceptron.export_weights --output weights.json --no-scale
+      mix perceptron.export_poker_weights --output poker_weights.json --no-scale
 
       # Custom scaling range
-      mix perceptron.export_weights --scale --target-max 10.0
+      mix perceptron.export_poker_weights --scale --target-max 10.0
 
       # Use non-negative output weights for iterative apparatus
-      mix perceptron.export_weights --nonnegative-output
+      mix perceptron.export_poker_weights --nonnegative-output
   """
 
-  @shortdoc "Train a model and export weights to JSON"
+  @shortdoc "Train a poker hand model and export weights to JSON"
 
   use Mix.Task
 
-  alias PerceptronApparatus.MLP
+  alias PerceptronApparatus.Poker
 
   @switches [
     epochs: :integer,
@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     epochs: 5,
     batch_size: 128,
     learning_rate: 0.005,
-    output: "mnist-weights.json",
+    output: "poker-weights.json",
     scale: true,
     target_max: 5.0,
     nonnegative_output: false
@@ -90,20 +90,20 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     target_max = config[:target_max]
     nonnegative_output = config[:nonnegative_output]
 
-    Mix.shell().info("Training MNIST model and exporting weights...\n")
+    Mix.shell().info("Training poker hand classification model and exporting weights...\n")
 
-    Mix.shell().info("Step 1: Loading MNIST data")
-    {train_data, _test_data} = MLP.load_mnist_data()
+    Mix.shell().info("Step 1: Loading poker hand data")
+    {train_data, _test_data} = Poker.load_poker_data()
 
     Mix.shell().info("Step 2: Creating model#{if nonnegative_output, do: " (with non-negative output constraint)", else: ""}")
     model = if nonnegative_output do
-      MLP.create_nonnegative_output_model()
+      Poker.create_nonnegative_output_model()
     else
-      MLP.create_model()
+      Poker.create_model()
     end
 
     Mix.shell().info("Step 3: Training model (#{epochs} epochs)#{if nonnegative_output, do: " with output weight constraint", else: ""}")
-    trained_params = MLP.train_model(model, train_data,
+    trained_params = Poker.train_model(model, train_data,
       epochs: epochs,
       batch_size: batch_size,
       learning_rate: learning_rate,
@@ -118,7 +118,7 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
       []
     end
 
-    MLP.write_weights_to_json(trained_params, output_file, write_opts)
+    Poker.write_weights_to_json(trained_params, output_file, write_opts)
 
     Mix.shell().info("\nDone! Weights exported to #{output_file}")
     Mix.shell().info("\nYou can now use these weights in Typst:")

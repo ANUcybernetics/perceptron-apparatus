@@ -24,7 +24,7 @@ defmodule PerceptronApparatus.MLP do
       PerceptronApparatus.MLP.inspect_parameters(trained_params)
 
       # Export weights to JSON
-      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json")
+      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "mnist-weights.json")
   """
 
   alias Axon.Loop
@@ -731,19 +731,19 @@ defmodule PerceptronApparatus.MLP do
   ## Example
 
       trained_params = PerceptronApparatus.MLP.train_model(model, train_data, epochs: 5)
-      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json")
+      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "mnist-weights.json")
 
       # With test accuracy
-      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json", test_accuracy: 0.85)
+      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "mnist-weights.json", test_accuracy: 0.85)
 
       # With scaling
-      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "weights.json", scale_to_range: true)
+      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "mnist-weights.json", scale_to_range: true)
 
   ## Typst Usage
 
   In Typst, you can read and use the weights like this:
 
-      #let weights = json("weights.json")
+      #let weights = json("mnist-weights.json")
       #table(
         columns: 6,
         ..weights.B.flatten()

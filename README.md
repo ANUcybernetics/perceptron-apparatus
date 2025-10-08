@@ -42,7 +42,9 @@ mix perceptron --help
 
 ### Training and exporting weights
 
-Once you've built the physical apparatus, you need to train a neural network model and export the weights to set on the radial rings B (input→hidden) and D (hidden→output):
+Once you've built the physical apparatus, you need to train a neural network model and export the weights to set on the radial rings B (input→hidden) and D (hidden→output).
+
+#### MNIST (handwritten digits)
 
 ```bash
 # Train an MNIST model (36x6x10 network) and export weights to JSON
@@ -52,7 +54,7 @@ mix perceptron.export_weights
 mix perceptron.export_weights --epochs 10 --batch-size 256
 
 # Save to specific file with scaling to apparatus range (±5.0)
-mix perceptron.export_weights --output weights.json --scale --target-max 5.0
+mix perceptron.export_weights --output mnist-weights.json --scale --target-max 5.0
 ```
 
 The MNIST implementation:
@@ -60,7 +62,28 @@ The MNIST implementation:
 - trains a 36→6→10 MLP (36 inputs, 6 hidden neurons with ReLU, 10 outputs)
 - exports weights to JSON format compatible with Typst and the physical apparatus
 
-For detailed documentation on the MNIST implementation, training options, and weight export, see [docs/mnist-mlp.md](docs/mnist-mlp.md).
+For detailed documentation, see [docs/mnist-mlp.md](docs/mnist-mlp.md).
+
+#### Poker hands
+
+```bash
+# Train a poker hand classification model and export weights
+mix perceptron.export_poker_weights
+
+# Custom training parameters
+mix perceptron.export_poker_weights --epochs 10 --batch-size 256
+
+# Save to specific file with scaling
+mix perceptron.export_poker_weights --output poker-weights.json --scale --target-max 5.0
+```
+
+The poker hand implementation:
+- encodes 5-card poker hands into 36 features (suit + rank bins per card)
+- classifies hands into 10 categories (high card, pair, two pair, etc. up to royal flush)
+- trains on the UCI Poker Hand dataset (25,010 training samples)
+- exports weights to JSON format
+
+For detailed documentation, see [docs/poker-mlp.md](docs/poker-mlp.md).
 
 ### Programmatic usage
 
