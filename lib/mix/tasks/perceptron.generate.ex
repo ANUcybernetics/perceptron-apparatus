@@ -124,11 +124,16 @@ defmodule Mix.Tasks.Perceptron.Generate do
     output_dir = Path.dirname(filename)
     File.mkdir_p!(output_dir)
 
+    # Calculate operation counts
+    ops = count_operations(n_input, n_hidden, n_output)
+
     Mix.shell().info("Creating perceptron apparatus board...")
     if opts[:preset], do: Mix.shell().info("Using preset: #{opts[:preset]}")
     Mix.shell().info("Parameters:")
     Mix.shell().info("  Size: #{size}mm")
     Mix.shell().info("  Network: #{n_input}-#{n_hidden}-#{n_output}")
+    Mix.shell().info("  Operations per inference: #{ops.total} (#{ops.mac} MAC + #{ops.relu} ReLU)")
+    Mix.shell().info("  Estimated time per inference: #{format_time(ops.time_seconds)}")
     if qr_data, do: Mix.shell().info("  QR data: #{qr_data}")
     if print_mode, do: Mix.shell().info("  Print mode: enabled")
     Mix.shell().info("  Output: #{filename}")
@@ -174,5 +179,40 @@ defmodule Mix.Tasks.Perceptron.Generate do
     # For now, just generate the main file
     Mix.shell().info("Note: Separate layer generation not yet implemented")
     generate_single_svg(board, base_filename, print_mode)
+  end
+
+  defp count_operations(n_input, n_hidden, n_output) do
+    layer1_muls = n_input * n_hidden
+    layer1_adds = n_input * n_hidden
+    layer1_relu = n_hidden * 2
+
+    layer2_muls = n_hidden * n_output
+    layer2_adds = n_hidden * n_output
+
+    mac_ops = layer1_muls + layer1_adds + layer2_muls + layer2_adds
+    relu_ops = layer1_relu
+    total_ops = mac_ops + relu_ops
+
+    time_seconds = total_ops / 0.1
+
+    %{mac: mac_ops, relu: relu_ops, total: total_ops, time_seconds: time_seconds}
+  end
+
+  defp format_time(seconds) when seconds < 60 do
+    "#{Float.round(seconds, 1)}s"
+  end
+
+  defp format_time(seconds) when seconds < 3600 do
+    minutes = div(trunc(seconds), 60)
+    remaining_seconds = rem(trunc(seconds), 60)
+    "#{minutes}m #{remaining_seconds}s"
+  end
+
+  defp format_time(seconds) do
+    hours = div(trunc(seconds), 3600)
+    remaining_seconds = rem(trunc(seconds), 3600)
+    minutes = div(remaining_seconds, 60)
+    remaining_seconds = rem(remaining_seconds, 60)
+    "#{hours}h #{minutes}m #{remaining_seconds}s"
   end
 end
