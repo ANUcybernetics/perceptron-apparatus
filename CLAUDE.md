@@ -1,42 +1,61 @@
-## Elixir & Ash/Phoenix coding principles
+## Project overview
 
-This is an Elixir app which uses the Ash framework. It doesn't have a web
-component at present (although may in future). It's primarily a command-line
-application. See @README.md for more details.
+This is an Elixir application for the Perceptron Apparatus project---a physical
+computational device that performs neural network calculations through
+mechanical manipulation. The project encompasses:
 
-For information about the MNIST MLP implementation and weight export functionality,
-see @docs/mnist-mlp.md.
+1. **Fabrication file generation**: SVG generation for laser-cutting and
+   CNC-routing using Ash resources and custom rendering logic
+2. **Machine learning infrastructure**: Axon-based neural network training for
+   MNIST and poker hand classification, with weight export to JSON
+3. **Documentation tooling**: Typst template integration for generating
+   educational posters and worksheets
 
-- use `@moduledoc` and `@doc` attributes to document your code (including
-  examples which can be doctest-ed)
-- use tidewave MCP tools when available, as they let you interrogate the running
-  application in various useful ways
-- use the `project_eval` tool to execute code in the running instance of the
-  application - eval `h Module.fun` to get documentation for a module or
-  function
-- use the `package_docs_search` and `get_docs` tools to find the documentation
-  for library code
-- prefer using LiveView instead of regular Controllers
-- once you are done with changes, run `mix compile` and fix any issues
-- write tests for your changes and run `mix test` afterwards
-- use `ExUnitProperties` for property-based testing and `use Ash.Generator` to
-  create seed data for these tests
-- in tests, don't require exact matches of error messages - raising the right
-  type of error is enough
-- use `list_generators` to list available generators when available, otherwise
-  `mix help` - if you have to run generator tasks, pass `--yes` and always
-  prefer to use generators as a basis for code generation, then modify
-  afterwards
-- always use Ash concepts, almost never ecto concepts directly - think hard
-  about the "Ash way" to do things and look for information in the rules & docs
-  of Ash & associated packages if you don't know
-- when creating new Ash resources/validations/changes/calculations, use proper
-  module-based versions, and use the appropriate generator (e.g.
-  `mix ash.gen.resource` or `mix ash.gen.change`) to create the boilerplate
-  files
-- never attempt to start or stop a phoenix application as your tidewave tools
-  work by being connected to the running application, and starting or stopping
-  it can cause issues
+The application uses the Ash framework for resource management and doesn't have
+a web component. It's primarily a command-line application with Mix tasks. See
+README.md for usage details.
+
+For detailed information about the ML implementations:
+
+- MNIST digit classification: docs/mnist-mlp.md
+- Poker hand classification: docs/poker-mlp.md
+
+## Key modules and structure
+
+### Ash resources
+
+- `PerceptronApparatus.Board`: main resource for apparatus configuration,
+  contains ring sequence
+- `PerceptronApparatus.RuleRing`: logarithmic and ReLU reference rings
+- `PerceptronApparatus.RadialRing`: weight rings (B and D)
+- `PerceptronApparatus.AzimuthalRing`: input, hidden, and output layer rings (A,
+  C, E/G)
+
+### Machine learning modules
+
+- `PerceptronApparatus.MLP`: MNIST digit classification (36→6→10 network)
+- `PerceptronApparatus.Poker`: poker hand classification (36→6→10 network)
+
+Both modules provide:
+
+- data loading and preprocessing
+- model creation with fixed architecture
+- training with Axon/Polaris
+- parameter inspection
+- weight export to JSON (with optional scaling)
+
+### Mix tasks
+
+- `mix perceptron`: generate apparatus SVG with default or custom parameters
+- `mix perceptron.generate`: generate using presets (mnist, xor, language)
+- `mix perceptron.export_weights`: train MNIST model and export weights
+- `mix perceptron.export_poker_weights`: train poker model and export weights
+
+### Rendering
+
+All rings implement the `PerceptronApparatus.Renderable` protocol, which
+provides `to_svg/2` for generating SVG output. The Board module orchestrates
+ring rendering with automatic width calculation and spacing.
 
 <!-- usage-rules-start -->
 <!-- usage-rules-header -->
@@ -54,7 +73,7 @@ correct patterns, conventions, and best practices.
 
 ## ash usage
 
-_A declarative, extensible framework for building Elixir applications. _
+_A declarative, extensible framework for building Elixir applications._
 
 @deps/ash/usage-rules.md
 
@@ -70,6 +89,8 @@ _A declarative, extensible framework for building Elixir applications. _
 - Use pattern matching over conditional logic when possible
 - Prefer to match on function heads instead of using `if`/`else` or `case` in
   function bodies
+- `%{}` matches ANY map, not just empty maps. Use `map_size(map) == 0` guard to
+  check for truly empty maps
 
 ## Error Handling
 
@@ -79,6 +100,8 @@ _A declarative, extensible framework for building Elixir applications. _
 
 ## Common Mistakes to Avoid
 
+- Elixir has no `return` statement, nor early returns. The last expression in a
+  block is always returned.
 - Don't use `Enum` functions on large collections when `Stream` is more
   appropriate
 - Avoid nested `case` statements - refactor to a single `case`, `with` or
@@ -125,6 +148,12 @@ _A declarative, extensible framework for building Elixir applications. _
   tests
 - Use `assert_raise` for testing expected exceptions:
   `assert_raise ArgumentError, fn -> invalid_function() end`
+- Use `mix help test` to for full documentation on running tests
+
+## Debugging
+
+- Use `dbg/1` to print values while debugging. This will display the formatted
+  value and other relevant information in the console.
 
 <!-- usage_rules:elixir-end -->
 <!-- usage_rules:otp-start -->
@@ -144,7 +173,7 @@ _A declarative, extensible framework for building Elixir applications. _
 
 - Use `GenServer.call/3` for synchronous requests expecting replies
 - Use `GenServer.cast/2` for fire-and-forget messages.
-- When in doubt, us `call` over `cast`, to ensure back-pressure
+- When in doubt, use `call` over `cast`, to ensure back-pressure
 - Set appropriate timeouts for `call/3` operations
 
 ## Fault Tolerance
@@ -165,9 +194,60 @@ _A declarative, extensible framework for building Elixir applications. _
 
 ## igniter usage
 
-_A code generation and project patching framework _
+_A code generation and project patching framework_
 
 @deps/igniter/usage-rules.md
 
 <!-- igniter-end -->
+<!-- usage_rules-start -->
+
+## usage_rules usage
+
+_A dev tool for Elixir projects to gather LLM usage rules from dependencies_
+
+## Using Usage Rules
+
+Many packages have usage rules, which you should _thoroughly_ consult before
+taking any action. These usage rules contain guidelines and rules _directly from
+the package authors_. They are your best source of knowledge for making
+decisions.
+
+## Modules & functions in the current app and dependencies
+
+When looking for docs for modules & functions that are dependencies of the
+current project, or for Elixir itself, use `mix usage_rules.docs`
+
+```
+# Search a whole module
+mix usage_rules.docs Enum
+
+# Search a specific function
+mix usage_rules.docs Enum.zip
+
+# Search a specific function & arity
+mix usage_rules.docs Enum.zip/1
+```
+
+## Searching Documentation
+
+You should also consult the documentation of any tools you are using, early and
+often. The best way to accomplish this is to use the `usage_rules.search_docs`
+mix task. Once you have found what you are looking for, use the links in the
+search results to get more detail. For example:
+
+```
+# Search docs for all packages in the current application, including Elixir
+mix usage_rules.search_docs Enum.zip
+
+# Search docs for specific packages
+mix usage_rules.search_docs Req.get -p req
+
+# Search docs for multi-word queries
+mix usage_rules.search_docs "making requests" -p req
+
+# Search only in titles (useful for finding specific functions/modules)
+mix usage_rules.search_docs "Enum.zip" --query-by title
+```
+
+<!-- usage_rules-end -->
 <!-- usage-rules-end -->

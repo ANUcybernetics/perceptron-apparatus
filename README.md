@@ -1,11 +1,30 @@
 # Perceptron Apparatus
 
-Elixir lib for creating the laser-cutting & cnc-routing files for a fully-analog
-calculation apparatus (think "abacus for deep learning").
+A physical computational device that performs Artificial Neural Network
+calculations through mechanical manipulation---think "abacus for deep learning".
+This project combines digital tools for fabrication, machine learning
+infrastructure for weight generation, and educational documentation to create a
+tangible interface for understanding AI.
 
 A [Cybernetic Studio](https://github.com/ANUcybernetics/) project by
-[Ben Swift](https://benswift.me), with fabrication by Sam Shellard at UC's
+[Ben Swift](https://benswift.me), with fabrication support from Sam Shellard at
+UC's
 [Workshop7](https://www.canberra.edu.au/future-students/study-at-uc/study-areas/design/workshop7).
+
+## Project scope
+
+This project encompasses three integrated components:
+
+1. **Fabrication file generation**: programmatic creation of SVG files for
+   laser-cutting and CNC-routing the physical apparatus
+2. **Weight training and export**: machine learning infrastructure for training
+   neural networks and exporting weights in formats compatible with both the
+   physical apparatus and documentation
+3. **Educational documentation**: Typst templates for generating instructional
+   posters and user guides
+
+Together, these tools bridge the gap between digital neural networks and
+physical computation.
 
 ## Installation
 
@@ -122,6 +141,22 @@ The ring dimensions automatically match the neural network topology:
 - Weight2 ring has `n_output` groups × `n_hidden` sliders per group
 - Output ring has `n_output` sliders
 
+## Architecture
+
+The physical apparatus consists of concentric rings representing different
+layers and operations in a neural network:
+
+- **Log ring**: logarithmic scale ruler for slide rule calculations
+- **ReLU ring**: ReLU activation function reference
+- **Input azimuthal ring** (A): input sliders (0-1 range)
+- **Weight1 radial ring** (B): input-to-hidden weight sliders (-10 to 10 range)
+- **Hidden azimuthal ring** (C): hidden layer sliders (0-10 range)
+- **Weight2 radial ring** (D): hidden-to-output weight sliders (-10 to 10 range)
+- **Output azimuthal ring** (E/G): output sliders (0-1 range)
+
+The apparatus performs matrix multiplication and ReLU activation through manual
+manipulation of these rings, making the computation physically tangible.
+
 ## Nomenclature
 
 A **board** contains a number of **rings**, each of which represents a layer in
@@ -144,23 +179,19 @@ bottom plate class selectors
 - `bottom rotating` partial-depth routed void for bottom rotating ring
 - `bottom hole` full-depth holes (for screws)
 
-## TODO
+## Documentation
 
-- add `Utils.write_files` which writes out all the necessary svgs (baseboard +
-  topboard, plus individual files for each cut type)
-- design a 400x400 prototype (same radius, inc markings, arc + couple of
-  sliders)
-- check no quirks in the final svg output which will trip up the CNC machine
-  (e.g. empty text nodes)
-- replace the "interp and concat strings" approach with proper HEEX templates
-- add drill holes, etc
-- add Axon support
+The project includes Typst templates for generating educational materials:
 
-  - see what the param ranges are (inc. negative?)
-  - training model based on inputs
-  - auto-generating the SVG based on the model (i.e. `%Axon{}` ->
-    `%PerceptronApparatus.Board{}`)
-  - examples (5x5 MNIST digits, maybe something with language?)
+- **Apparatus posters**: display trained weights alongside usage instructions
+  (see `docs/mnist-poster.typ` and `docs/poker-poster.typ`)
+- **Interactive worksheets**: blank grids for drawing inputs with step-by-step
+  algorithm guides (see `docs/grid-and-instructions.typ`)
+- **Technical documentation**: detailed explanations of the MNIST and poker
+  implementations (see `docs/mnist-mlp.md` and `docs/poker-mlp.md`)
+
+These materials make the apparatus accessible for educational demonstrations and
+public engagement.
 
 ## Author
 
