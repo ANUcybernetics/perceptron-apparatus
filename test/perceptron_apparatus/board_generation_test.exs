@@ -102,7 +102,7 @@ defmodule PerceptronApparatus.BoardGenerationTest do
       end
     end
 
-    test "creates a board without QR code data and renders without QR elements" do
+    test "creates a board without QR code data and renders Cybernetic Studio logo" do
       case PerceptronApparatus.create_board(800.0, 2, 3, 1) do
         {:ok, board} ->
           # Verify no QR data is stored
@@ -115,21 +115,37 @@ defmodule PerceptronApparatus.BoardGenerationTest do
           refute String.contains?(svg_content, "class=\"qr-code\""),
                  "SVG content should not contain QR code elements when no qr_data is provided"
 
+          # Verify SVG content contains logo elements
+          assert String.contains?(svg_content, "class=\"logo\""),
+                 "SVG content should contain logo elements when no qr_data is provided"
+
+          assert String.contains?(svg_content, "Cybernetic"),
+                 "SVG content should contain 'Cybernetic' text"
+
+          assert String.contains?(svg_content, "Studio"),
+                 "SVG content should contain 'Studio' text"
+
+          assert String.contains?(svg_content, "Neon Tubes 2"),
+                 "SVG content should use 'Neon Tubes 2' font"
+
           # Write to file for comparison
-          filename = Path.join(@output_dir, "board_no_qr_#{board.id}.svg")
+          filename = Path.join(@output_dir, "board_with_logo_#{board.id}.svg")
 
           case PerceptronApparatus.write_svg(board, filename) do
             {:ok, _} ->
               assert File.exists?(filename),
-                     "SVG file without QR should be created"
+                     "SVG file with logo should be created"
 
               {:ok, file_content} = File.read(filename)
 
               refute String.contains?(file_content, "class=\"qr-code\""),
                      "Written SVG file should not contain QR code elements"
 
+              assert String.contains?(file_content, "class=\"logo\""),
+                     "Written SVG file should contain logo elements"
+
             {:error, error} ->
-              flunk("Failed to write SVG without QR: #{inspect(error)}")
+              flunk("Failed to write SVG with logo: #{inspect(error)}")
           end
 
         {:error, error} ->

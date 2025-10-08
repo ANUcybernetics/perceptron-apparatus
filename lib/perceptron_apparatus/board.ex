@@ -51,6 +51,38 @@ defmodule PerceptronApparatus.Board do
 
   # Ring sequence creation logic moved to PerceptronApparatus.Board.Changes.CreateRingSequence
 
+  defp get_neon_tubes_font_data do
+    # Try multiple possible font locations
+    font_paths = [
+      "/Users/ben/Library/Fonts/neontubes2.otf",
+      "#{System.user_home()}/Library/Fonts/neontubes2.otf",
+      "/Library/Fonts/neontubes2.otf",
+      "/System/Library/Fonts/neontubes2.otf"
+    ]
+
+    font_path = Enum.find(font_paths, &File.exists?/1)
+
+    if font_path do
+      font_binary = File.read!(font_path)
+      base64_font = Base.encode64(font_binary)
+
+      """
+      @font-face {
+        font-family: "Neon Tubes 2";
+        src: url(data:font/otf;base64,#{base64_font}) format("opentype");
+      }
+      """
+    else
+      # Fallback if font file not found - use local() as before
+      """
+      @font-face {
+        font-family: "Neon Tubes 2";
+        src: local("Neon Tubes 2");
+      }
+      """
+    end
+  end
+
   def validate!(apparatus) do
     Enum.each(apparatus.rings, fn ring ->
       case ring do
@@ -168,12 +200,12 @@ defmodule PerceptronApparatus.Board do
         end
       )
 
-    # Add QR code in center if qr_data is present
-    qr_elements =
+    # Add QR code in center if qr_data is present, otherwise show logo
+    center_elements =
       if apparatus.qr_data do
         render_qr_code(apparatus.qr_data, center_space)
       else
-        []
+        render_cybernetic_studio_logo(center_space)
       end
 
     # Add fastener rings
@@ -198,7 +230,7 @@ defmodule PerceptronApparatus.Board do
       end
 
     all_elements =
-      [board_edge] ++ ring_elements ++ qr_elements ++ fastener_elements ++ vertical_cut_line
+      [board_edge] ++ ring_elements ++ center_elements ++ fastener_elements ++ vertical_cut_line
 
     render_body_as_tree(all_elements, view_box, print_mode)
   end
@@ -260,8 +292,10 @@ defmodule PerceptronApparatus.Board do
   end
 
   defp build_default_styles() do
+    font_data = get_neon_tubes_font_data()
+
     """
-    text {
+    #{font_data}text {
       font-family: "Alegreya";
       font-size: 12px;
     }
@@ -316,12 +350,18 @@ defmodule PerceptronApparatus.Board do
       fill: red;
       stroke: none;
     }
+    text.logo {
+      fill: black;
+      stroke: none;
+    }
     """
   end
 
   defp build_print_mode_styles() do
+    font_data = get_neon_tubes_font_data()
+
     """
-    text {
+    #{font_data}text {
       font-family: "Alegreya";
       font-size: 12px;
     }
@@ -378,6 +418,10 @@ defmodule PerceptronApparatus.Board do
     }
     .fastener {
       display: none;
+    }
+    text.logo {
+      fill: white;
+      stroke: none;
     }
     """
   end
@@ -438,6 +482,80 @@ defmodule PerceptronApparatus.Board do
       {:error, _} ->
         []
     end
+  end
+
+  defp render_cybernetic_studio_logo(center_space) do
+    # Calculate bounding box with padding (same as QR code)
+    padding = center_space * 0.05
+    box_size = center_space * 0.4 + padding * 2
+    box_offset = -box_size / 2
+    corner_radius = box_size * 0.1
+
+    # Create path for rectangle with three rounded corners (bottom-right non-rounded)
+    x1 = box_offset
+    y1 = box_offset
+    x2 = box_offset + box_size
+    y2 = box_offset + box_size
+    r = corner_radius
+
+    path_data =
+      "M #{x1 + r},#{y1} " <>
+        "L #{x2 - r},#{y1} " <>
+        "Q #{x2},#{y1} #{x2},#{y1 + r} " <>
+        "L #{x2},#{y2} " <>
+        "L #{x1 + r},#{y2} " <>
+        "Q #{x1},#{y2} #{x1},#{y2 - r} " <>
+        "L #{x1},#{y1 + r} " <>
+        "Q #{x1},#{y1} #{x1 + r},#{y1} " <>
+        "Z"
+
+    bounding_box =
+      Utils.path_element([
+        {"class", "full"},
+        {"d", path_data},
+        {"fill", "transparent"},
+        {"stroke-width", "2"}
+      ])
+
+    # Calculate text positioning
+    # Center the text within the bounding box
+    text_size = box_size * 0.13
+    line_height = text_size * 1.2
+
+    # Position for two-line text
+    # "Cybernetic" centered, "Studio" aligned to right edge of "Cybernetic"
+    # Approximate character width ratio for "Cybernetic" (10 chars) vs "Studio" (6 chars)
+    # "Cybernetic" width ≈ 10 chars, so half-width ≈ 5 chars from center
+    text_x_center = box_offset + box_size * 0.5
+    # Align "Studio" to the right edge of centered "Cybernetic"
+    # Approximate: "Cybernetic" extends about 0.6 * text_size per character
+    cybernetic_half_width = 10 * text_size * 0.3
+    text_x_right = text_x_center + cybernetic_half_width
+    # Center vertically within the box
+    text_y_first = box_offset + box_size * 0.5 - line_height / 2
+    text_y_second = text_y_first + line_height
+
+    cybernetic_text =
+      Utils.text_element("Cybernetic", [
+        {"class", "logo"},
+        {"x", to_string(text_x_center)},
+        {"y", to_string(text_y_first)},
+        {"style", "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
+        {"text-anchor", "middle"},
+        {"dominant-baseline", "middle"}
+      ])
+
+    studio_text =
+      Utils.text_element("Studio", [
+        {"class", "logo"},
+        {"x", to_string(text_x_right)},
+        {"y", to_string(text_y_second)},
+        {"style", "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
+        {"text-anchor", "end"},
+        {"dominant-baseline", "middle"}
+      ])
+
+    [bounding_box, cybernetic_text, studio_text]
   end
 
   defp create_fastener_rings(rings_with_widths, radius, radial_padding, center_space) do
