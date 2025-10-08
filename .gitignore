@@ -24,5 +24,4 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 perceptron_apparatus-*.tar
 
-/docs/grid-and-instructions.pdf
-/docs/poster.pdf
+/docs/*.pdf
