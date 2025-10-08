@@ -36,10 +36,15 @@
 // Helper function to format weight values
 #let fmt(x) = {
   let val = calc.round(x, digits: 1)
-  if val == 0 {
-    text(fill: gray.darken(20%), "0.0")
+  let formatted = if calc.abs(val - calc.round(val)) < 0.01 {
+    str(int(val)) + ".0"
   } else {
     str(val)
+  }
+  if val == 0 {
+    text(fill: gray.darken(20%), formatted)
+  } else {
+    formatted
   }
 }
 
