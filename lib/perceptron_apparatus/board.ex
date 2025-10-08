@@ -344,7 +344,6 @@ defmodule PerceptronApparatus.Board do
     .qr-code {
       fill: #000000;
       stroke: none;
-      rx: 0.75;
     }
     .fastener {
       fill: red;
@@ -414,7 +413,6 @@ defmodule PerceptronApparatus.Board do
     .qr-code {
       fill: white;
       stroke: none;
-      rx: 0.75;
     }
     .fastener {
       display: none;
