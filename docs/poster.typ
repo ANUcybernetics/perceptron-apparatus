@@ -31,7 +31,8 @@
 // ]
 
 // Load weights
-#let weights = json("weights.json")
+#let weights = json("mnist-weights.json")
+#let model_name = [MNIST]
 
 // Helper function to format weight values
 #let fmt(x) = {
@@ -90,11 +91,11 @@
       row-gutter: 0.5cm,
       // Heading row
       grid.cell(colspan: 2)[
-        == Weight matrix #label("B")
+        == #model_name weights (#label("B"))
         _Input → Hidden ($36 times 6$)_
       ],
       [
-        == Weight matrix #label("D")
+        == #model_name weights (#label("D"))
         _Hidden → Output ($6 times 10$)_
       ],
       // Table content row
