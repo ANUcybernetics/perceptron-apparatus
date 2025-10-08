@@ -177,6 +177,45 @@ defmodule PerceptronApparatus.MLPTest do
     end
   end
 
+  describe "Non-negative output weights" do
+    @tag timeout: 300_000
+    @tag :nonnegative_output
+    test "trains model with non-negative output layer weights" do
+      IO.puts("\n" <> String.duplicate("=", 80))
+      IO.puts("NON-NEGATIVE OUTPUT WEIGHTS")
+      IO.puts("Ensures output layer weights stay ≥0 for iterative apparatus calculations")
+      IO.puts(String.duplicate("=", 80))
+
+      result = MLP.analyze_nonnegative_output(epochs: 3)
+
+      output_weights = result.params.data["output"]["kernel"]
+      min_weight = Nx.reduce_min(output_weights) |> Nx.to_number()
+      max_weight = Nx.reduce_max(output_weights) |> Nx.to_number()
+
+      IO.puts("\nOutput layer weight range: [#{Float.round(min_weight, 6)}, #{Float.round(max_weight, 6)}]")
+
+      assert min_weight >= 0, "Output weights must be non-negative, found min=#{min_weight}"
+
+      hidden_weights = result.params.data["hidden"]["kernel"]
+      hidden_min = Nx.reduce_min(hidden_weights) |> Nx.to_number()
+
+      assert hidden_min < 0, "Hidden weights should be unconstrained (can be negative)"
+
+      assert result.test_accuracy > 0.1, "Should achieve better than random accuracy"
+
+      output_activations = result.activations["output"]
+      min_activation = Enum.min(output_activations.min)
+
+      assert min_activation >= 0, "Output activations should be non-negative"
+
+      IO.puts("✓ All output weights are non-negative")
+      IO.puts("✓ Hidden weights remain unconstrained")
+      IO.puts("✓ Output activations are non-negative")
+      IO.puts("✓ Model achieves #{Float.round(result.test_accuracy * 100, 1)}% accuracy")
+      IO.puts("\n" <> String.duplicate("=", 80))
+    end
+  end
+
   describe "Weight scaling" do
     test "scale_weight_matrix scales all values by factor" do
       matrix = [[1.0, 2.0], [3.0, 4.0]]

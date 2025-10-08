@@ -14,6 +14,7 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     * `--output` - Output file path (default: weights.json)
     * `--scale` - Scale weights to use full apparatus range (default: true)
     * `--target-max` - Target maximum value when scaling (default: 5.0)
+    * `--nonnegative-output` - Constrain output layer weights to be non-negative (default: false)
     * `--help` - Show this help message
 
   ## Examples
@@ -29,6 +30,9 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
 
       # Custom scaling range
       mix perceptron.export_weights --scale --target-max 10.0
+
+      # Use non-negative output weights for iterative apparatus
+      mix perceptron.export_weights --nonnegative-output
   """
 
   @shortdoc "Train a model and export weights to JSON"
@@ -44,6 +48,7 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     output: :string,
     scale: :boolean,
     target_max: :float,
+    nonnegative_output: :boolean,
     help: :boolean
   ]
 
@@ -60,7 +65,8 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     learning_rate: 0.005,
     output: "weights.json",
     scale: true,
-    target_max: 5.0
+    target_max: 5.0,
+    nonnegative_output: false
   ]
 
   @impl Mix.Task
@@ -82,20 +88,26 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     output_file = config[:output]
     scale_to_range = config[:scale]
     target_max = config[:target_max]
+    nonnegative_output = config[:nonnegative_output]
 
     Mix.shell().info("Training MNIST model and exporting weights...\n")
 
     Mix.shell().info("Step 1: Loading MNIST data")
     {train_data, _test_data} = MLP.load_mnist_data()
 
-    Mix.shell().info("Step 2: Creating model")
-    model = MLP.create_model()
+    Mix.shell().info("Step 2: Creating model#{if nonnegative_output, do: " (with non-negative output constraint)", else: ""}")
+    model = if nonnegative_output do
+      MLP.create_nonnegative_output_model()
+    else
+      MLP.create_model()
+    end
 
-    Mix.shell().info("Step 3: Training model (#{epochs} epochs)")
+    Mix.shell().info("Step 3: Training model (#{epochs} epochs)#{if nonnegative_output, do: " with output weight constraint", else: ""}")
     trained_params = MLP.train_model(model, train_data,
       epochs: epochs,
       batch_size: batch_size,
-      learning_rate: learning_rate
+      learning_rate: learning_rate,
+      nonnegative_output: nonnegative_output
     )
 
     Mix.shell().info("\nStep 4: Exporting weights to JSON#{if scale_to_range, do: " (with scaling)", else: ""}")

@@ -78,6 +78,33 @@ defmodule PerceptronApparatus.MLP do
   end
 
   @doc """
+  Custom initializer for non-negative output layer weights.
+  Designed for 6 hidden units each in [0,1.5] to keep outputs in [0,3].
+  All weights will be uniformly distributed in [0, +bound].
+  """
+  def nonnegative_output_initializer(opts \\ []) do
+    # With 6 hidden units each in [0,1.5], we want sums in [0,3]
+    # So individual weights should be around (1.5/6) = 0.25, doubled for range
+    bound = Keyword.get(opts, :bound, 0.5)
+
+    fn shape, type, _key ->
+      total_elements = Tuple.product(shape)
+
+      uniform_values =
+        0..(total_elements - 1)
+        |> Enum.map(fn i ->
+          # Create a pseudo-random but deterministic pattern in [0, 1]
+          base = rem(i * 23 + 47, 1000) / 1000.0
+          base * bound  # Scale to [0, +bound]
+        end)
+        |> Nx.tensor(type: type)
+        |> Nx.reshape(shape)
+
+      uniform_values
+    end
+  end
+
+  @doc """
   Creates a 36x6x10 MLP model with ReLU activation for MNIST classification.
   """
   def create_model do
@@ -104,10 +131,31 @@ defmodule PerceptronApparatus.MLP do
       name: "hidden",
       kernel_initializer: hidden_bounded_initializer()
     )
-    |> Axon.dense(10, 
-      use_bias: false, 
-      name: "output", 
+    |> Axon.dense(10,
+      use_bias: false,
+      name: "output",
       kernel_initializer: output_bounded_initializer()
+    )
+  end
+
+  @doc """
+  Creates a model with non-negative output layer weights.
+  Hidden layer weights: unconstrained (ReLU handles negatives)
+  Output layer weights: constrained to [0, +bound]
+  This ensures all output accumulations are non-negative when computed iteratively.
+  """
+  def create_nonnegative_output_model do
+    Axon.input("input", shape: {nil, 36})
+    |> Axon.dense(6,
+      activation: :relu,
+      use_bias: false,
+      name: "hidden",
+      kernel_initializer: :glorot_uniform
+    )
+    |> Axon.dense(10,
+      use_bias: false,
+      name: "output",
+      kernel_initializer: nonnegative_output_initializer()
     )
   end
 
@@ -168,6 +216,37 @@ defmodule PerceptronApparatus.MLP do
         use_bias: false,
         name: "output",
         kernel_initializer: output_bounded_initializer()
+      )
+
+    Axon.attach_hook(output, &capture_activation(&1, "output"), on: :forward)
+  end
+
+  @doc """
+  Creates a model with non-negative output weights and hooks for activation tracking.
+  """
+  def create_nonnegative_output_model_with_hooks do
+    input = Axon.input("input", shape: {nil, 36})
+
+    # Attach hook to capture input values
+    input_with_hook = Axon.attach_hook(input, &capture_activation(&1, "input"), on: :forward)
+
+    # Hidden layer with standard weights and hook
+    hidden =
+      Axon.dense(input_with_hook, 6,
+        activation: :relu,
+        use_bias: false,
+        name: "hidden",
+        kernel_initializer: :glorot_uniform
+      )
+
+    hidden_with_hook = Axon.attach_hook(hidden, &capture_activation(&1, "hidden"), on: :forward)
+
+    # Output layer with non-negative weights and hook
+    output =
+      Axon.dense(hidden_with_hook, 10,
+        use_bias: false,
+        name: "output",
+        kernel_initializer: nonnegative_output_initializer()
       )
 
     Axon.attach_hook(output, &capture_activation(&1, "output"), on: :forward)
@@ -244,6 +323,13 @@ defmodule PerceptronApparatus.MLP do
 
   @doc """
   Trains the model on MNIST data with minimal logging.
+
+  ## Options
+
+    * `:epochs` - Number of training epochs (default: 10)
+    * `:batch_size` - Batch size for training (default: 128)
+    * `:learning_rate` - Learning rate for optimizer (default: 0.005)
+    * `:nonnegative_output` - If true, constrains output layer weights to be non-negative (default: false)
   """
   def train_model(model, train_data, opts \\ []) do
     # Reduced default epochs
@@ -251,6 +337,7 @@ defmodule PerceptronApparatus.MLP do
     # Larger batch size for faster training
     batch_size = Keyword.get(opts, :batch_size, 128)
     learning_rate = Keyword.get(opts, :learning_rate, 0.005)
+    nonnegative_output = Keyword.get(opts, :nonnegative_output, false)
 
     {train_images, train_labels} = train_data
 
@@ -261,13 +348,43 @@ defmodule PerceptronApparatus.MLP do
       |> Stream.zip(Nx.to_batched(train_labels, batch_size))
 
     # Create training loop with MSE loss to avoid numerical issues
-    model
-    |> Loop.trainer(
-      :mean_squared_error,
-      Polaris.Optimizers.adam(learning_rate: learning_rate)
-    )
-    |> Loop.metric(:accuracy)
-    |> Loop.run(batched_data, %{}, epochs: epochs)
+    loop =
+      model
+      |> Loop.trainer(
+        :mean_squared_error,
+        Polaris.Optimizers.adam(learning_rate: learning_rate)
+      )
+      |> Loop.metric(:accuracy)
+
+    # Add weight projection if needed
+    loop =
+      if nonnegative_output do
+        Loop.handle_event(loop, :iteration_completed, &project_output_weights_nonnegative/1)
+      else
+        loop
+      end
+
+    Loop.run(loop, batched_data, %{}, epochs: epochs)
+  end
+
+  # Project output layer weights to be non-negative after each update
+  defp project_output_weights_nonnegative(state) do
+    # Access the model parameters from step_state.model_state
+    model_state = state.step_state.model_state
+
+    # Get current parameters
+    params = model_state.data
+
+    # Project output layer weights to [0, +inf)
+    updated_params =
+      update_in(params, ["output", "kernel"], fn weights ->
+        Nx.max(weights, 0)
+      end)
+
+    # Update the model state with projected weights
+    updated_model_state = %{model_state | data: updated_params}
+    updated_step_state = %{state.step_state | model_state: updated_model_state}
+    {:continue, %{state | step_state: updated_step_state}}
   end
 
   @doc """
@@ -653,6 +770,61 @@ defmodule PerceptronApparatus.MLP do
     json = Jason.encode!(data, pretty: true)
     File.write!(filename, json)
     IO.puts("Weights written to #{filename}")
+  end
+
+  @doc """
+  Complete workflow using non-negative output layer weights.
+  Loads MNIST data, creates model with non-negative output constraints,
+  trains it, and analyzes both parameters and activations.
+  """
+  def analyze_nonnegative_output(opts \\ []) do
+    IO.puts("Loading and preprocessing MNIST data...")
+    {train_data, test_data} = load_mnist_data()
+
+    IO.puts("Creating 36x6x10 MLP model with non-negative output weights")
+
+    # Create model with non-negative output initialization
+    model = create_nonnegative_output_model()
+
+    IO.puts("Training model with non-negative output weight constraint...")
+    default_opts = [epochs: 8, batch_size: 128, learning_rate: 0.005, nonnegative_output: true]
+    merged_opts = Keyword.merge(default_opts, opts)
+    trained_params = train_model(model, train_data, merged_opts)
+
+    # Inspect trained parameters
+    inspect_parameters(trained_params)
+
+    # Verify output weights are all non-negative
+    output_weights = trained_params.data["output"]["kernel"]
+    min_output_weight = Nx.reduce_min(output_weights) |> Nx.to_number()
+    IO.puts("\nMinimum output weight (should be ≥0): #{Float.round(min_output_weight, 6)}")
+
+    # Create model with hooks for activation tracking
+    model_with_hooks = create_nonnegative_output_model_with_hooks()
+
+    IO.puts("Running inference with activation tracking...")
+
+    {predictions, activations} =
+      run_inference_with_tracking(model_with_hooks, trained_params, test_data)
+
+    # Calculate test accuracy
+    {test_images, test_labels} = test_data
+    _test_inputs = Nx.slice_along_axis(test_images, 0, 100, axis: 0)
+    test_targets = Nx.slice_along_axis(test_labels, 0, 100, axis: 0)
+
+    predicted_classes = Nx.argmax(predictions, axis: 1)
+    actual_classes = Nx.argmax(test_targets, axis: 1)
+    accuracy = Nx.mean(Nx.equal(predicted_classes, actual_classes)) |> Nx.to_number()
+
+    IO.puts("Test accuracy: #{Float.round(accuracy * 100, 2)}%")
+
+    %{
+      model: model,
+      params: trained_params,
+      predictions: predictions,
+      activations: activations,
+      test_accuracy: accuracy
+    }
   end
 
   @doc """
