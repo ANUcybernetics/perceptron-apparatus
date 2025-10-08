@@ -7,7 +7,6 @@ A [Cybernetic Studio](https://github.com/ANUcybernetics/) project by
 [Ben Swift](https://benswift.me), with fabrication by Sam Shellard at UC's
 [Workshop7](https://www.canberra.edu.au/future-students/study-at-uc/study-areas/design/workshop7).
 
-
 ## Installation
 
 This package is not (currently) on hex. You can clone the repo and import it via
@@ -42,7 +41,9 @@ mix perceptron --help
 
 ### Training and exporting weights
 
-Once you've built the physical apparatus, you need to train a neural network model and export the weights to set on the radial rings B (input→hidden) and D (hidden→output).
+Once you've built the physical apparatus, you need to train a neural network
+model and export the weights to set on the radial rings B (input→hidden) and D
+(hidden→output).
 
 #### MNIST (handwritten digits)
 
@@ -58,9 +59,11 @@ mix perceptron.export_weights --output mnist-weights.json --scale --target-max 5
 ```
 
 The MNIST implementation:
+
 - resizes 28×28 MNIST digit images to 6×6 (36 input features)
 - trains a 36→6→10 MLP (36 inputs, 6 hidden neurons with ReLU, 10 outputs)
-- exports weights to JSON format compatible with Typst and the physical apparatus
+- exports weights to JSON format compatible with Typst and the physical
+  apparatus
 
 For detailed documentation, see [docs/mnist-mlp.md](docs/mnist-mlp.md).
 
@@ -78,8 +81,10 @@ mix perceptron.export_poker_weights --output poker-weights.json --scale --target
 ```
 
 The poker hand implementation:
+
 - encodes 5-card poker hands into 36 features (suit + rank bins per card)
-- classifies hands into 10 categories (high card, pair, two pair, etc. up to royal flush)
+- classifies hands into 10 categories (high card, pair, two pair, etc. up to
+  royal flush)
 - trains on the UCI Poker Hand dataset (25,010 training samples)
 - exports weights to JSON format
 
