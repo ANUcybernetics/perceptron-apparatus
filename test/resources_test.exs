@@ -1,6 +1,8 @@
 defmodule PerceptronApparatus.ResourcesTest do
   use ExUnit.Case
 
+  @moduletag :svg
+
   alias PerceptronApparatus.{Board, RuleRing, AzimuthalRing, RadialRing}
   alias Decimal, as: D
 

@@ -2,6 +2,8 @@ defmodule PerceptronApparatus.MLPTest do
   use ExUnit.Case
   alias PerceptronApparatus.MLP
 
+  @moduletag :model
+
   describe "Bounded Initialization Analysis" do
     @tag timeout: 300_000
     @tag :bounded_init

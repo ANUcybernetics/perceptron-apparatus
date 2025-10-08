@@ -2,6 +2,8 @@ defmodule PerceptronApparatus.BoardGenerationTest do
   # File system operations, use async: false
   use ExUnit.Case, async: false
 
+  @moduletag :svg
+
   alias PerceptronApparatus.Board
 
   # Define at module level for clarity

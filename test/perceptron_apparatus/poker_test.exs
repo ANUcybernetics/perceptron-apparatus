@@ -2,6 +2,8 @@ defmodule PerceptronApparatus.PokerTest do
   use ExUnit.Case
   alias PerceptronApparatus.Poker
 
+  @moduletag :model
+
   describe "Poker hand encoding" do
     test "encode_card creates 7-dimensional vector" do
       # Test Hearts (suit=1), King (rank=13, high)
