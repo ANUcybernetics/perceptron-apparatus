@@ -2,7 +2,10 @@
 
 This is an Elixir app which uses the Ash framework. It doesn't have a web
 component at present (although may in future). It's primarily a command-line
-application. See @README.md for mroe details.
+application. See @README.md for more details.
+
+For information about the MNIST MLP implementation and weight export functionality,
+see @docs/mnist-mlp.md.
 
 - use `@moduledoc` and `@doc` attributes to document your code (including
   examples which can be doctest-ed)

@@ -7,6 +7,7 @@ A [Cybernetic Studio](https://github.com/ANUcybernetics/) project by
 [Ben Swift](https://benswift.me), with fabrication by Sam Shellard at UC's
 [Workshop7](https://www.canberra.edu.au/future-students/study-at-uc/study-areas/design/workshop7).
 
+
 ## Installation
 
 This package is not (currently) on hex. You can clone the repo and import it via
@@ -37,17 +38,31 @@ mix perceptron.generate --preset mnist
 # Show help
 mix perceptron --help
 
-# Train a model and export weights to JSON
+```
+
+### Training and exporting weights
+
+Once you've built the physical apparatus, you need to train a neural network model and export the weights to set on the radial rings B (input→hidden) and D (hidden→output):
+
+```bash
+# Train an MNIST model (36x6x10 network) and export weights to JSON
 mix perceptron.export_weights
 
 # Custom training parameters
 mix perceptron.export_weights --epochs 10 --batch-size 256
 
-# Save to specific file without scaling
-mix perceptron.export_weights --output weights.json --no-scale
+# Save to specific file with scaling to apparatus range (±5.0)
+mix perceptron.export_weights --output weights.json --scale --target-max 5.0
 ```
 
-### Programmatic Usage
+The MNIST implementation:
+- resizes 28×28 MNIST digit images to 6×6 (36 input features)
+- trains a 36→6→10 MLP (36 inputs, 6 hidden neurons with ReLU, 10 outputs)
+- exports weights to JSON format compatible with Typst and the physical apparatus
+
+For detailed documentation on the MNIST implementation, training options, and weight export, see [docs/mnist-mlp.md](docs/mnist-mlp.md).
+
+### Programmatic usage
 
 You can also use the library programmatically:
 
