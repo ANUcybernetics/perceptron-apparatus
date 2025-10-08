@@ -1,6 +1,6 @@
 defmodule Mix.Tasks.Perceptron.Qr do
   @moduledoc """
-  Generate standalone SVG file for the central QR code piece.
+  Generate standalone SVG file for the central piece (QR code or logo).
 
   ## Usage
 
@@ -8,13 +8,16 @@ defmodule Mix.Tasks.Perceptron.Qr do
 
   ## Options
 
-    * `--qr` - QR code data (required)
+    * `--qr` - QR code data (optional, defaults to Cybernetic Studio logo)
     * `--size` - Board size in mm (default: 1200.0, used to match apparatus dimensions)
     * `--file` - Output file path (default: svg/qr.svg)
     * `--print` - Generate print-ready SVG (white on black)
     * `--help` - Show this help message
 
   ## Examples
+
+      # Create logo piece (default)
+      mix perceptron.qr
 
       # Create QR code piece with data
       mix perceptron.qr --qr "https://example.com"
@@ -26,7 +29,7 @@ defmodule Mix.Tasks.Perceptron.Qr do
       mix perceptron.qr --qr "https://example.com" --print
   """
 
-  @shortdoc "Generate standalone SVG for central QR code piece"
+  @shortdoc "Generate standalone SVG for central piece"
 
   use Mix.Task
 
@@ -65,12 +68,6 @@ defmodule Mix.Tasks.Perceptron.Qr do
 
     qr_data = opts[:qr]
 
-    if is_nil(qr_data) do
-      Mix.shell().error("Error: --qr option is required")
-      Mix.shell().error("Usage: mix perceptron.qr --qr \"https://example.com\"")
-      System.halt(1)
-    end
-
     config = Keyword.merge(@defaults, opts)
 
     size = config[:size]
@@ -80,16 +77,24 @@ defmodule Mix.Tasks.Perceptron.Qr do
     output_dir = Path.dirname(filename)
     File.mkdir_p!(output_dir)
 
-    Mix.shell().info("Creating central QR code piece...")
+    Mix.shell().info("Creating central piece...")
     Mix.shell().info("Parameters:")
-    Mix.shell().info("  QR data: #{qr_data}")
+    if qr_data do
+      Mix.shell().info("  QR data: #{qr_data}")
+    else
+      Mix.shell().info("  Content: Cybernetic Studio logo")
+    end
     Mix.shell().info("  Board size: #{size}mm")
     if print_mode, do: Mix.shell().info("  Print mode: enabled")
     Mix.shell().info("  Output file: #{filename}")
     Mix.shell().info("")
 
     center_space = 150
-    elements = render_qr_code(qr_data, center_space)
+    elements = if qr_data do
+      render_qr_code(qr_data, center_space)
+    else
+      render_cybernetic_studio_logo(center_space)
+    end
 
     padding = center_space * 0.05
     box_size = center_space * 0.4 + padding * 2
@@ -212,6 +217,69 @@ defmodule Mix.Tasks.Perceptron.Qr do
     end)
   end
 
+  defp render_cybernetic_studio_logo(center_space) do
+    padding = center_space * 0.05
+    box_size = center_space * 0.4 + padding * 2
+    box_offset = -box_size / 2
+    corner_radius = box_size * 0.1
+
+    x1 = box_offset
+    y1 = box_offset
+    x2 = box_offset + box_size
+    y2 = box_offset + box_size
+    r = corner_radius
+
+    path_data =
+      "M #{x1 + r},#{y1} " <>
+        "L #{x2 - r},#{y1} " <>
+        "Q #{x2},#{y1} #{x2},#{y1 + r} " <>
+        "L #{x2},#{y2} " <>
+        "L #{x1 + r},#{y2} " <>
+        "Q #{x1},#{y2} #{x1},#{y2 - r} " <>
+        "L #{x1},#{y1 + r} " <>
+        "Q #{x1},#{y1} #{x1 + r},#{y1} " <>
+        "Z"
+
+    bounding_box =
+      Utils.path_element([
+        {"class", "full"},
+        {"d", path_data},
+        {"fill", "transparent"},
+        {"stroke-width", "2"}
+      ])
+
+    text_size = box_size * 0.13
+    line_height = text_size * 1.2
+
+    text_x_center = box_offset + box_size * 0.5
+    cybernetic_half_width = 10 * text_size * 0.3
+    text_x_right = text_x_center + cybernetic_half_width
+    text_y_first = box_offset + box_size * 0.5 - line_height / 2
+    text_y_second = text_y_first + line_height
+
+    cybernetic_text =
+      Utils.text_element("Cybernetic", [
+        {"class", "logo"},
+        {"x", to_string(text_x_center)},
+        {"y", to_string(text_y_first)},
+        {"style", "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
+        {"text-anchor", "middle"},
+        {"dominant-baseline", "middle"}
+      ])
+
+    studio_text =
+      Utils.text_element("Studio", [
+        {"class", "logo"},
+        {"x", to_string(text_x_right)},
+        {"y", to_string(text_y_second)},
+        {"style", "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
+        {"text-anchor", "end"},
+        {"dominant-baseline", "middle"}
+      ])
+
+    [bounding_box, cybernetic_text, studio_text]
+  end
+
   defp render_body_as_tree(elements, view_box, print_mode) do
     style_content = build_style_content(print_mode)
     style_elem = style_element(style_content)
@@ -250,6 +318,10 @@ defmodule Mix.Tasks.Perceptron.Qr do
       fill: #000000;
       stroke: none;
     }
+    text.logo {
+      fill: black;
+      stroke: none;
+    }
     """
   end
 
@@ -267,6 +339,10 @@ defmodule Mix.Tasks.Perceptron.Qr do
       fill: none;
     }
     .qr-code {
+      fill: white;
+      stroke: none;
+    }
+    text.logo {
       fill: white;
       stroke: none;
     }
