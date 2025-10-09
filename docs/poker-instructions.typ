@@ -6,8 +6,12 @@
   title: "",
   config: (
     theme: "light",
-    logos: ("studio",),
+    logos: ("studio", "socy"),
     hide: ("page-numbers", "title-block"),
+  ),
+  footer_text: text(
+    font: "Neon Tubes 2",
+    "CC BY-NC-SA 4.0",
   ),
   page-settings: (
     flipped: true,

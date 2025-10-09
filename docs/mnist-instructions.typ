@@ -9,6 +9,10 @@
     logos: ("studio",),
     hide: ("page-numbers", "title-block"),
   ),
+  footer_text: text(
+    font: "Neon Tubes 2",
+    "CC BY-NC-SA 4.0",
+  ),
   page-settings: (
     flipped: true,
     margin: (left: 3.2cm, right: 1.6cm, top: 1.6cm, bottom: 1.6cm),
@@ -67,7 +71,8 @@
         output layer (#label[E]) as the result
 
     + the slider in the output layer (#label[E]) with the highest value is the
-      network's prediction
+      network's prediction (i.e. #label[E7] largest value $=>$ digit "reads as"
+      7)
 
     == Slide rule instructions
     To multiply two values using the slide rule ring: align the first value on
