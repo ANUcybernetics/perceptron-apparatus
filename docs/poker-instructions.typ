@@ -23,20 +23,7 @@
   gutter: 2cm,
   {
     v(4cm)
-    text[Deal 5 playing cards and encode them in the grid below. For example if
-      your first card was a 7 of spades, you'd put a 1 in the ♠ column and a 1
-      in the M row.]
-    v(1em)
-
-    text(size: 9pt)[
-      *Encoding scheme (7 features per card):*
-      - Suit: 4 one-hot (♥, ♠, ♦, ♣)
-      - Rank: 3 bins
-        - Low (A-4): \[1, 0, 0\]
-        - Mid (5-9): \[0, 1, 0\]
-        - High (10-K): \[0, 0, 1\]
-    ]
-
+    text[Deal 5 playing cards and encode them in the grid below.]
     v(1em)
 
     // 5 cards × 7 features grid
@@ -46,7 +33,7 @@
       row-gutter: 3pt,
       // Header row
       [],
-      ..("♥", "♠", "♦", "♣", "L", "M", "H").map(label => {
+      ..("♥", "♠", "♦", "♣", "L\n(2-5)", "M\n(6-9)", "H\n(10-A)").map(label => {
         align(center)[#text(size: 10pt, weight: "bold")[#label]]
       }),
       // Card rows

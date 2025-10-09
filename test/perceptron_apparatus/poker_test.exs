@@ -30,14 +30,16 @@ defmodule PerceptronApparatus.PokerTest do
     end
 
     test "encode_card handles rank bins" do
-      # Low: 1-4, Mid: 5-9, High: 10-13
+      # Low: 2-5, Mid: 6-9, High: 10-14 (Ace remapped from 1 to 14)
       low_rank = Poker.encode_card(1, 3)
       mid_rank = Poker.encode_card(1, 7)
       high_rank = Poker.encode_card(1, 11)
+      ace_high = Poker.encode_card(1, 1)
 
       assert Enum.slice(low_rank, 4, 3) == [1.0, 0.0, 0.0]
       assert Enum.slice(mid_rank, 4, 3) == [0.0, 1.0, 0.0]
       assert Enum.slice(high_rank, 4, 3) == [0.0, 0.0, 1.0]
+      assert Enum.slice(ace_high, 4, 3) == [0.0, 0.0, 1.0]
     end
 
     test "encode_poker_hand creates 36-dimensional vector" do
@@ -56,15 +58,15 @@ defmodule PerceptronApparatus.PokerTest do
       features = [1, 2, 2, 6, 3, 10, 4, 1, 1, 13]
       encoded = Poker.encode_poker_hand(features)
 
-      # Card 1: suit=1, rank=2 (low)
+      # Card 1: suit=1, rank=2 (low: 2-5)
       assert Enum.slice(encoded, 0, 7) == [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0]
-      # Card 2: suit=2, rank=6 (mid)
+      # Card 2: suit=2, rank=6 (mid: 6-9)
       assert Enum.slice(encoded, 7, 7) == [0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
-      # Card 3: suit=3, rank=10 (high)
+      # Card 3: suit=3, rank=10 (high: 10-14)
       assert Enum.slice(encoded, 14, 7) == [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
-      # Card 4: suit=4, rank=1 (low)
-      assert Enum.slice(encoded, 21, 7) == [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0]
-      # Card 5: suit=1, rank=13 (high)
+      # Card 4: suit=4, rank=1 (Ace, remapped to 14, high: 10-14)
+      assert Enum.slice(encoded, 21, 7) == [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0]
+      # Card 5: suit=1, rank=13 (high: 10-14)
       assert Enum.slice(encoded, 28, 7) == [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
       # Padding
       assert Enum.at(encoded, 35) == 0.0

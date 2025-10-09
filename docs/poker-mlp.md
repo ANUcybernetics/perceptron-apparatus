@@ -151,8 +151,11 @@ Each instance contains 10 features:
 - Card 4: suit (1-4), rank (1-13)
 - Card 5: suit (1-4), rank (1-13)
 
-Suits: 1=Hearts, 2=Spades, 3=Diamonds, 4=Clubs Ranks: 1=Ace, 2-10=numeric,
-11=Jack, 12=Queen, 13=King
+Suits: 1=Hearts, 2=Spades, 3=Diamonds, 4=Clubs
+
+Ranks: 1=Ace, 2-10=numeric, 11=Jack, 12=Queen, 13=King
+
+Note: In the encoding process, Ace (rank 1) is remapped to 14 to be treated as the highest card.
 
 ## Feature encoding
 
@@ -163,10 +166,10 @@ To fit the 36-input architecture, each poker hand is encoded as follows:
 **Per card (7 features)**:
 
 - Suit: 4 one-hot indicators (1.0 for the card's suit, 0.0 for others)
-- Rank: 3 binned indicators based on rank ranges:
-  - Low (ranks 1-4): [1.0, 0.0, 0.0]
-  - Mid (ranks 5-9): [0.0, 1.0, 0.0]
-  - High (ranks 10-13): [0.0, 0.0, 1.0]
+- Rank: 3 binned indicators based on rank ranges (after remapping Ace to 14):
+  - Low (ranks 2-5): [1.0, 0.0, 0.0]
+  - Mid (ranks 6-9): [0.0, 1.0, 0.0]
+  - High (ranks 10-14): [0.0, 0.0, 1.0]
 
 **Total encoding**:
 
@@ -198,8 +201,8 @@ For the hand: King of Hearts (suit=1, rank=13), 3 of Spades (suit=2, rank=3),
 ...
 
 ```
-Card 1 (K♥): [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]  // Hearts, High rank
-Card 2 (3♠): [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0]  // Spades, Low rank
+Card 1 (K♥): [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]  // Hearts, High rank (13->10-14)
+Card 2 (3♠): [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0]  // Spades, Low rank (3->2-5)
 ... (3 more cards)
 Padding: [0.0]
 ```
@@ -254,11 +257,11 @@ Hand: K♥, 3♠, 7♦, J♣, 2♥
 
 **Ring A (inputs)**:
 
-- Sliders 1-7 (Card 1, K♥): [1, 0, 0, 0, 0, 0, 1] (Hearts, High)
-- Sliders 8-14 (Card 2, 3♠): [0, 1, 0, 0, 1, 0, 0] (Spades, Low)
-- Sliders 15-21 (Card 3, 7♦): [0, 0, 1, 0, 0, 1, 0] (Diamonds, Mid)
-- Sliders 22-28 (Card 4, J♣): [0, 0, 0, 1, 0, 0, 1] (Clubs, High)
-- Sliders 29-35 (Card 5, 2♥): [1, 0, 0, 0, 1, 0, 0] (Hearts, Low)
+- Sliders 1-7 (Card 1, K♥): [1, 0, 0, 0, 0, 0, 1] (Hearts, High: rank 13)
+- Sliders 8-14 (Card 2, 3♠): [0, 1, 0, 0, 1, 0, 0] (Spades, Low: rank 3)
+- Sliders 15-21 (Card 3, 7♦): [0, 0, 1, 0, 0, 1, 0] (Diamonds, Mid: rank 7)
+- Sliders 22-28 (Card 4, J♣): [0, 0, 0, 1, 0, 0, 1] (Clubs, High: rank 11)
+- Sliders 29-35 (Card 5, 2♥): [1, 0, 0, 0, 1, 0, 0] (Hearts, Low: rank 2)
 - Slider 36: [0] (padding)
 
 **Ring B (input→hidden weights)**: Set according to exported B matrix **Ring D

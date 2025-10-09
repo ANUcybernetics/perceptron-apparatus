@@ -112,7 +112,7 @@ defmodule PerceptronApparatus.Poker do
 
   Encoding scheme per card (7 features × 5 cards = 35, pad to 36):
   - Suit: 4 one-hot indicators (diamonds=1, hearts=2, spades=3, clubs=4)
-  - Rank: 3 binned indicators (low=1-4, mid=5-9, high=10-13)
+  - Rank: 3 binned indicators (low=2-5, mid=6-9, high=10-A where Ace is treated as 14)
 
   ## Example
 
@@ -135,21 +135,29 @@ defmodule PerceptronApparatus.Poker do
   ## Parameters
 
     * `suit` - Suit value (1=Hearts, 2=Spades, 3=Diamonds, 4=Clubs)
-    * `rank` - Rank value (1-13, where 1=Ace, 11=Jack, 12=Queen, 13=King)
+    * `rank` - Rank value (1-13 from dataset, where 1=Ace, 11=Jack, 12=Queen, 13=King)
 
   ## Returns
 
   7-element list: [suit_1, suit_2, suit_3, suit_4, rank_low, rank_mid, rank_high]
+
+  Rank encoding (after remapping Ace from 1 to 14):
+  - Low (2-5): [1, 0, 0]
+  - Mid (6-9): [0, 1, 0]
+  - High (10-14): [0, 0, 1]
   """
   def encode_card(suit, rank) do
+    # Remap Ace from 1 to 14 to make it the highest rank
+    rank = if rank == 1, do: 14, else: rank
+
     # One-hot encode suit (4 dimensions)
     suit_encoding = for s <- 1..4, do: if(s == suit, do: 1.0, else: 0.0)
 
     # Bin rank into 3 categories (3 dimensions)
     rank_encoding = cond do
-      rank <= 4 -> [1.0, 0.0, 0.0]   # Low
-      rank <= 9 -> [0.0, 1.0, 0.0]   # Mid
-      true -> [0.0, 0.0, 1.0]        # High
+      rank >= 2 and rank <= 5 -> [1.0, 0.0, 0.0]   # Low (2-5)
+      rank >= 6 and rank <= 9 -> [0.0, 1.0, 0.0]   # Mid (6-9)
+      rank >= 10 -> [0.0, 0.0, 1.0]                # High (10-A)
     end
 
     suit_encoding ++ rank_encoding
