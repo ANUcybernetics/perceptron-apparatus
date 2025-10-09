@@ -110,10 +110,14 @@
 
     // Padding cell
     align(center)[
-      rect( width: 60pt, height: 25pt, stroke: (thickness: 0.5pt) )[
-      #set text(size: 7pt, fill: gray)
-      #align(top + left)[#pad(2pt)[#label[A35]]]
-      #align(center + horizon)[#text(size: 8pt)[Pad]]
+      #rect(
+        width: 60pt,
+        height: 25pt,
+        stroke: (thickness: 0.5pt),
+      )[
+        #set text(size: 7pt, fill: gray)
+        #align(top + left)[#pad(2pt)[#label[A35]]]
+        #align(center + horizon)[#text(size: 8pt)[Pad]]
       ]
     ]
   },
