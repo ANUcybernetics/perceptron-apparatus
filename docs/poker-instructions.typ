@@ -37,59 +37,34 @@
 
     v(1em)
 
-    // 5 cards laid out horizontally
+    // 5 cards × 7 features grid
     grid(
-      columns: (1fr, 1fr, 1fr, 1fr, 1fr),
-      gutter: 8pt,
+      columns: (auto,) + (1fr,) * 7,
+      gutter: 3pt,
+      row-gutter: 3pt,
+      // Header row
+      [],
+      ..("♥", "♠", "♦", "♣", "L", "M", "H").map(label => {
+        align(center)[#text(size: 10pt, weight: "bold")[#label]]
+      }),
+      // Card rows
       ..range(5).map(card => {
         let start = card * 7
-        [
-          #align(center)[
-            // Two-column checkbox layout (4 rows x 2 cols)
-            #grid(
-              columns: (1fr, 1fr),
-              gutter: 3pt,
-              row-gutter: 3pt,
-              // Suit checkboxes (4 rows, left column)
-              ..("♥", "♠", "♦", "♣")
-                .enumerate()
-                .map(((i, suit)) => {
-                  rect(
-                    width: 100%,
-                    height: 48pt,
-                    stroke: (thickness: 0.5pt),
-                  )[
-                    #set text(size: 7pt, fill: gray)
-                    #align(top + left)[#pad(2pt)[#label[A#(start + i)]]]
-                    #align(center + horizon)[#text(size: 10pt)[#suit]]
-                  ]
-                }),
-              // Card label box + rank checkboxes (4 rows, right column)
-              rect(
-                width: 100%,
-                height: 48pt,
-                stroke: (thickness: 0.5pt),
-                fill: rgb(245, 245, 245),
-              )[
-                #align(center + horizon)[#text(size: 10pt, weight: "bold")[Card #(card + 1)]]
-              ],
-              ..("L", "M", "H")
-                .enumerate()
-                .map(((i, bin)) => {
-                  rect(
-                    width: 100%,
-                    height: 48pt,
-                    stroke: (thickness: 0.5pt),
-                  )[
-                    #set text(size: 7pt, fill: gray)
-                    #align(top + left)[#pad(2pt)[#label[A#(start + 4 + i)]]]
-                    #align(center + horizon)[#text(size: 9pt)[#bin]]
-                  ]
-                })
-            )
-          ]
-        ]
-      })
+        (
+          // Row header
+          align(center + horizon)[#text(size: 10pt, weight: "bold")[Card #(card + 1)]],
+          // Feature cells
+          ..range(7).map(i => {
+            rect(
+              width: 100%,
+              height: 32pt,
+              stroke: (thickness: 0.5pt),
+            )[
+              #align(center + horizon)[#text(size: 9pt, fill: gray)[#label[A#(start + i)]]]
+            ]
+          })
+        )
+      }).flatten()
     )
   },
   [
