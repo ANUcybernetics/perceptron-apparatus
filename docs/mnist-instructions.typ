@@ -62,11 +62,9 @@
         hidden layer (#label[C]) to 0
 
     + calculate the output layer (#label[E]) values:
-      - repeat the same process, but using the hidden layer (#label[C]) as
-        inputs, the weight layer (#label[D]) as weights, and the output layer
-        (#label[E]) as the destination
-      - once all weights have been processed, set any negative values in the
-        output layer (#label[E]) to 0
+      - repeat the same process as in step 2, but using the hidden layer
+        (#label[C]) as inputs, the weight layer (#label[D]) as weights, and the
+        output layer (#label[E]) as the result
 
     + the slider in the output layer (#label[E]) with the highest value is the
       network's prediction

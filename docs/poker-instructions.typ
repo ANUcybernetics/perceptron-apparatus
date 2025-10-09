@@ -22,8 +22,11 @@
   columns: (1fr, 1fr),
   gutter: 2cm,
   {
-    v(4cm)
-    text[Deal 5 playing cards and encode them in the grid below.]
+    v(3.6cm)
+    text[Deal 5 playing cards and fill out the whole grid below. For example, if
+      *Card 1* is a 7♥ then the first row will be 1-0-0-0-0-1-0; 1s for the *♥*
+      and *6-9* columns, 0s for all other columns.
+    ]
     v(1em)
 
     // 5 cards × 7 features grid
@@ -49,10 +52,13 @@
             ..range(7).map(i => {
               rect(
                 width: 100%,
-                height: 64pt,
+                height: 40pt,
                 stroke: (thickness: 0.5pt),
               )[
-                #align(top + left)[#pad(left: 2pt, top: 2pt)[#text(size: 9pt, fill: gray)[#label[A#(
+                #align(top + left)[#pad(left: 2pt, top: 2pt)[#text(
+                  size: 9pt,
+                  fill: gray,
+                )[#label[A#(
                     start + i
                   )]]]]
               ]
@@ -61,17 +67,24 @@
         })
         .flatten(),
     )
+
+    v(1em)
+
+    text[
+      === Slide rule instructions
+
+      To multiply two values using the slide rule ring: align the first value on
+      the outer scale with 1 on the inner scale, then find the second value on
+      the inner scale and read the result on the outer scale.
+    ]
   },
   [
+    #v(3cm)
+
     == Algorithm
 
-    + for each of the 5 cards in your hand, encode it in the input layer
-      (#label[A]):
-      - Card 1: sliders A0--A6
-      - Card 2: sliders A7--A13
-      - Card 3: sliders A14--A20
-      - Card 4: sliders A21--A27
-      - Card 5: sliders A28--A34
+    + set the input layer sliders (#label[A0]-#label[A34]) as per your grid
+      (left)
 
     + calculate the hidden layer (#label[C]) values:
       - for each slider in the input layer (#label[A]) and each weight bank
@@ -86,28 +99,21 @@
         hidden layer (#label[C]) to 0
 
     + calculate the output layer (#label[E]) values:
-      - repeat the same process, but using the hidden layer (#label[C]) as
-        inputs, the weight layer (#label[D]) as weights, and the output layer
-        (#label[E]) as the destination
-      - once all weights have been processed, set any negative values in the
-        output layer (#label[E]) to 0
+      - repeat the same process as in step 2, but using the hidden layer
+        (#label[C]) as inputs, the weight layer (#label[D]) as weights, and the
+        output layer (#label[E]) as the result
 
     + the slider in the output layer (#label[E]) with the highest value is the
-      network's prediction:
-      - 0: High card
-      - 1: One pair
-      - 2: Two pairs
-      - 3: Three of a kind
-      - 4: Straight
-      - 5: Flush
-      - 6: Full house
-      - 7: Four of a kind
-      - 8: Straight flush
-      - 9: Royal flush
+      network's prediction according to the following table:
 
-    == Slide rule instructions
-    To multiply two values using the slide rule ring: align the first value on
-    the outer scale with 1 on the inner scale, then find the second value on the
-    inner scale and read the result on the outer scale.
+      #grid(
+        columns: (1fr, 1fr),
+        gutter: 1em,
+        [#label[E0]: high card], [#label[E1]: pair],
+        [#label[E2]: two pair], [#label[E3]: three of a kind],
+        [#label[E4]: straight], [#label[E5]: flush],
+        [#label[E6]: full house], [#label[E7]: four of a kind],
+        [#label[E8]: straight flush], [#label[E9]: royal flush],
+      )
   ],
 )
