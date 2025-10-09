@@ -23,55 +23,105 @@
   gutter: 2cm,
   {
     v(4cm)
-    text[Deal 5 playing cards and encode them on this grid using the encoding scheme below.]
+    text[Deal 5 playing cards and encode them below using the encoding scheme.]
     v(1em)
 
-    text(size: 10pt)[
+    text(size: 9pt)[
       *Encoding scheme (7 features per card):*
-      - Suit: 4 one-hot indicators (Hearts, Spades, Diamonds, Clubs)
-      - Rank bins: 3 indicators
+      - Suit: 4 one-hot (♥, ♠, ♦, ♣)
+      - Rank: 3 bins
         - Low (A-4): \[1, 0, 0\]
         - Mid (5-9): \[0, 1, 0\]
         - High (10-K): \[0, 0, 1\]
     ]
 
     v(1em)
-    layout(size => {
-      let cell-size = size.width / 6
-      grid(
-        columns: 6,
-        rows: 6,
-        gutter: 0pt,
-        ..range(36).map(i => {
-          let card-num = calc.quo(i, 7) + 1
-          let feature = calc.rem(i, 7)
-          let feature-label = if feature == 0 {"♥"}
-            else if feature == 1 {"♠"}
-            else if feature == 2 {"♦"}
-            else if feature == 3 {"♣"}
-            else if feature == 4 {"L"}
-            else if feature == 5 {"M"}
-            else {"H"}
 
-          rect(
-            width: cell-size,
-            height: cell-size,
-            stroke: (thickness: 0.5pt),
-          )[
-            #set text(size: 8pt, fill: gray)
-            #align(top + left)[#pad(2pt)[#label[A#i]]]
-            #if i < 35 [
-              #align(bottom + right)[#pad(2pt)[#text(size: 6pt)[C#card-num#feature-label]]]
+    // 5 cards laid out horizontally
+    grid(
+      columns: (1fr, 1fr, 1fr, 1fr, 1fr),
+      gutter: 8pt,
+      ..range(5).map(card => {
+        let start = card * 7
+        [
+          #align(center)[
+            #text(size: 11pt, weight: "bold")[Card #(card + 1)]
+
+            #v(0.5em)
+
+            // Card placeholder box
+            #rect(
+              width: 100%,
+              height: 80pt,
+              stroke: (thickness: 1pt, dash: "dashed"),
+              fill: rgb(245, 245, 245),
+            )[
+              #align(center + horizon)[
+                #text(size: 24pt, fill: gray.darken(30%))[?]
+              ]
             ]
+
+            #v(0.5em)
+
+            // Encoding boxes
+            #grid(
+              columns: (1fr, 1fr, 1fr, 1fr),
+              gutter: 3pt,
+              ..("♥", "♠", "♦", "♣")
+                .enumerate()
+                .map(((i, suit)) => {
+                  rect(
+                    width: 100%,
+                    height: 25pt,
+                    stroke: (thickness: 0.5pt),
+                  )[
+                    #set text(size: 7pt, fill: gray)
+                    #align(top + left)[#pad(2pt)[#label[A#(start + i)]]]
+                    #align(center + horizon)[#text(size: 10pt)[#suit]]
+                  ]
+                })
+            )
+
+            #v(3pt)
+
+            #grid(
+              columns: (1fr, 1fr, 1fr),
+              gutter: 3pt,
+              ..("L", "M", "H")
+                .enumerate()
+                .map(((i, bin)) => {
+                  rect(
+                    width: 100%,
+                    height: 25pt,
+                    stroke: (thickness: 0.5pt),
+                  )[
+                    #set text(size: 7pt, fill: gray)
+                    #align(top + left)[#pad(2pt)[#label[A#(start + 4 + i)]]]
+                    #align(center + horizon)[#text(size: 9pt)[#bin]]
+                  ]
+                })
+            )
           ]
-        })
-      )
-    })
+        ]
+      })
+    )
+
+    v(0.5em)
+
+    // Padding cell
+    align(center)[
+      rect( width: 60pt, height: 25pt, stroke: (thickness: 0.5pt) )[
+      #set text(size: 7pt, fill: gray)
+      #align(top + left)[#pad(2pt)[#label[A35]]]
+      #align(center + horizon)[#text(size: 8pt)[Pad]]
+      ]
+    ]
   },
   [
     == Algorithm
 
-    + for each of the 5 cards in your hand, encode it in the input layer (#label[A]):
+    + for each of the 5 cards in your hand, encode it in the input layer
+      (#label[A]):
       - Card 1: sliders A0--A6
       - Card 2: sliders A7--A13
       - Card 3: sliders A14--A20
