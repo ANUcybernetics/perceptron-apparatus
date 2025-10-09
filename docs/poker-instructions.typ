@@ -45,54 +45,40 @@
         let start = card * 7
         [
           #align(center)[
-            #text(size: 11pt, weight: "bold")[Card #(card + 1)]
-
-            #v(0.5em)
-
-            // Card placeholder box
-            #rect(
-              width: 100%,
-              height: 80pt,
-              stroke: (thickness: 1pt, dash: "dashed"),
-              fill: rgb(245, 245, 245),
-            )[
-              #align(center + horizon)[
-                #text(size: 24pt, fill: gray.darken(30%))[?]
-              ]
-            ]
-
-            #v(0.5em)
-
-            // Encoding boxes
+            // Two-column checkbox layout (4 rows x 2 cols)
             #grid(
-              columns: (1fr, 1fr, 1fr, 1fr),
+              columns: (1fr, 1fr),
               gutter: 3pt,
+              row-gutter: 3pt,
+              // Suit checkboxes (4 rows, left column)
               ..("♥", "♠", "♦", "♣")
                 .enumerate()
                 .map(((i, suit)) => {
                   rect(
                     width: 100%,
-                    height: 25pt,
+                    height: 48pt,
                     stroke: (thickness: 0.5pt),
                   )[
                     #set text(size: 7pt, fill: gray)
                     #align(top + left)[#pad(2pt)[#label[A#(start + i)]]]
                     #align(center + horizon)[#text(size: 10pt)[#suit]]
                   ]
-                })
-            )
-
-            #v(3pt)
-
-            #grid(
-              columns: (1fr, 1fr, 1fr),
-              gutter: 3pt,
+                }),
+              // Card label box + rank checkboxes (4 rows, right column)
+              rect(
+                width: 100%,
+                height: 48pt,
+                stroke: (thickness: 0.5pt),
+                fill: rgb(245, 245, 245),
+              )[
+                #align(center + horizon)[#text(size: 10pt, weight: "bold")[Card #(card + 1)]]
+              ],
               ..("L", "M", "H")
                 .enumerate()
                 .map(((i, bin)) => {
                   rect(
                     width: 100%,
-                    height: 25pt,
+                    height: 48pt,
                     stroke: (thickness: 0.5pt),
                   )[
                     #set text(size: 7pt, fill: gray)
@@ -105,21 +91,6 @@
         ]
       })
     )
-
-    v(0.5em)
-
-    // Padding cell
-    align(center)[
-      #rect(
-        width: 60pt,
-        height: 25pt,
-        stroke: (thickness: 0.5pt),
-      )[
-        #set text(size: 7pt, fill: gray)
-        #align(top + left)[#pad(2pt)[#label[A35]]]
-        #align(center + horizon)[#text(size: 8pt)[Pad]]
-      ]
-    ]
   },
   [
     == Algorithm
@@ -131,7 +102,6 @@
       - Card 3: sliders A14--A20
       - Card 4: sliders A21--A27
       - Card 5: sliders A28--A34
-      - Slider A35: set to 0 (padding)
 
     + calculate the hidden layer (#label[C]) values:
       - for each slider in the input layer (#label[A]) and each weight bank
