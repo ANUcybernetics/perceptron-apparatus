@@ -23,7 +23,9 @@
   gutter: 2cm,
   {
     v(4cm)
-    text[Deal 5 playing cards and encode them below using the encoding scheme.]
+    text[Deal 5 playing cards and encode them in the grid below. For example if
+      your first card was a 7 of spades, you'd put a 1 in the ♠ column and a 1
+      in the M row.]
     v(1em)
 
     text(size: 9pt)[
@@ -48,23 +50,29 @@
         align(center)[#text(size: 10pt, weight: "bold")[#label]]
       }),
       // Card rows
-      ..range(5).map(card => {
-        let start = card * 7
-        (
-          // Row header
-          align(center + horizon)[#text(size: 10pt, weight: "bold")[Card #(card + 1)]],
-          // Feature cells
-          ..range(7).map(i => {
-            rect(
-              width: 100%,
-              height: 32pt,
-              stroke: (thickness: 0.5pt),
-            )[
-              #align(center + horizon)[#text(size: 9pt, fill: gray)[#label[A#(start + i)]]]
-            ]
-          })
-        )
-      }).flatten()
+      ..range(5)
+        .map(card => {
+          let start = card * 7
+          (
+            // Row header
+            align(center + horizon)[#text(size: 10pt, weight: "bold")[Card #(
+                card + 1
+              )]],
+            // Feature cells
+            ..range(7).map(i => {
+              rect(
+                width: 100%,
+                height: 32pt,
+                stroke: (thickness: 0.5pt),
+              )[
+                #align(center + horizon)[#text(size: 9pt, fill: gray)[#label[A#(
+                    start + i
+                  )]]]
+              ]
+            }),
+          )
+        })
+        .flatten(),
     )
   },
   [
