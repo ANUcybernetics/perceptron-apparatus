@@ -34,7 +34,7 @@
       // Header row
       [],
       ..("♥", "♠", "♦", "♣", "2-5", "6-9", "10-A").map(label => {
-        align(center)[#text(size: 10pt, weight: "bold")[#label]]
+        align(center)[#text(size: 12pt, weight: "bold")[#label]]
       }),
       // Card rows
       ..range(5)
@@ -42,19 +42,19 @@
           let start = card * 7
           (
             // Row header
-            align(center + horizon)[#text(size: 10pt, weight: "bold")[Card #(
+            align(center + horizon)[#text(size: 12pt, weight: "bold")[Card #(
                 card + 1
               )]],
             // Feature cells
             ..range(7).map(i => {
               rect(
                 width: 100%,
-                height: 32pt,
+                height: 64pt,
                 stroke: (thickness: 0.5pt),
               )[
-                #align(center + horizon)[#text(size: 9pt, fill: gray)[#label[A#(
+                #align(top + left)[#pad(left: 2pt, top: 2pt)[#text(size: 9pt, fill: gray)[#label[A#(
                     start + i
-                  )]]]
+                  )]]]]
               ]
             }),
           )
