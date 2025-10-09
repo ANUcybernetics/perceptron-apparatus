@@ -33,7 +33,7 @@
       row-gutter: 3pt,
       // Header row
       [],
-      ..("♥", "♠", "♦", "♣", "L\n(2-5)", "M\n(6-9)", "H\n(10-A)").map(label => {
+      ..("♥", "♠", "♦", "♣", "2-5", "6-9", "10-A").map(label => {
         align(center)[#text(size: 10pt, weight: "bold")[#label]]
       }),
       // Card rows
