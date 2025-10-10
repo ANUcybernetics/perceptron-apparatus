@@ -36,8 +36,8 @@
     // 5 cards × 7 features grid
     grid(
       columns: (auto,) + (1fr,) * 7,
-      gutter: 3pt,
-      row-gutter: 3pt,
+      column-gutter: (8pt,) + (3pt,) * 6,
+      row-gutter: (8pt,) + (3pt,) * 4,
       // Header row
       [],
       ..("♥", "♠", "♦", "♣", "2-5", "6-9", "10-A").map(label => {
