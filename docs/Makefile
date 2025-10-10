@@ -11,5 +11,8 @@ all: $(PDF_FILES)
 %.pdf: %.typ
 	typst compile $<
 
+instructions.pdf: mnist-instructions.pdf poker-instructions.pdf
+	pdfjam --fitpaper true --outfile instructions.pdf mnist-instructions.pdf poker-instructions.pdf
+
 clean:
 	rm -f *.pdf
