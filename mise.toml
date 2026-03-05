@@ -1,6 +1,8 @@
 [tools]
 elixir = "latest"
 erlang = "latest"
+node = "latest"
+pnpm = "latest"
 
 [tasks.board]
 run = "mix run create_board.exs"

@@ -1,0 +1,37 @@
+{
+  "name": "perceptron-apparatus",
+  "version": "0.1.0",
+  "description": "SVG generation and animation for the Perceptron Apparatus digital twin",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "check": "tsgo --noEmit",
+    "lint": "oxlint --ignore-pattern node_modules --ignore-pattern dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "latest",
+    "happy-dom": "latest",
+    "oxlint": "latest",
+    "tsdown": "latest",
+    "typescript": "^5.9.3",
+    "vitest": "latest"
+  }
+}

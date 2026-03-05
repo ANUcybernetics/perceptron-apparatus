@@ -25,3 +25,7 @@ erl_crash.dump
 perceptron_apparatus-*.tar
 
 /docs/*.pdf
+
+# JS package
+js/node_modules/
+js/dist/
