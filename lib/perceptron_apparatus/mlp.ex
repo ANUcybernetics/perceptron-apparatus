@@ -364,7 +364,7 @@ defmodule PerceptronApparatus.MLP do
         loop
       end
 
-    Loop.run(loop, batched_data, %{}, epochs: epochs)
+    Loop.run(loop, batched_data, Axon.ModelState.empty(), epochs: epochs)
   end
 
   # Project output layer weights to be non-negative after each update
@@ -842,7 +842,7 @@ defmodule PerceptronApparatus.MLP do
     
     # Initialize the model to see initial parameter ranges
     {init_fn, _predict_fn} = Axon.build(model)
-    initial_params = init_fn.(Nx.template({1, 36}, :f32), %{})
+    initial_params = init_fn.(Nx.template({1, 36}, :f32), Axon.ModelState.empty())
 
     IO.puts("\n=== INITIAL BOUNDED PARAMETER RANGES ===")
     initial_param_stats = collect_parameter_stats(initial_params)

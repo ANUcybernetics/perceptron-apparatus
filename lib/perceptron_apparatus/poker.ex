@@ -294,7 +294,7 @@ defmodule PerceptronApparatus.Poker do
         loop
       end
 
-    Loop.run(loop, batched_data, %{}, epochs: epochs)
+    Loop.run(loop, batched_data, Axon.ModelState.empty(), epochs: epochs)
   end
 
   # Project output layer weights to be non-negative after each update
