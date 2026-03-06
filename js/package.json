@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "description": "SVG generation and animation for the Perceptron Apparatus digital twin",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/index.mjs",
+  "types": "dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./training": {
+      "import": "./dist/training/index.mjs",
+      "types": "./dist/training/index.d.mts"
     }
   },
   "files": [

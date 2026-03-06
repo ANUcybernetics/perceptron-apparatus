@@ -72,6 +72,23 @@ ring rendering with automatic width calculation and spacing.
 - `js/src/board.ts`: ring layout orchestration, full SVG composition
 - `js/src/index.ts`: `PerceptronApparatus` class with animation API
 
+### JS/TS training module (`js/src/training/`)
+
+Zero-dependency MNIST training that mirrors the Elixir MLP module. Architecture:
+36 → 6 (ReLU, no bias) → 10 (linear, no bias). Implements matmul, ReLU, MSE
+loss, Adam optimiser, and weight clamping from scratch.
+
+- `js/src/training/math.ts`: matrix operations, Adam optimiser
+- `js/src/training/model.ts`: MLP class with forward/backward/step
+- `js/src/training/data.ts`: MNIST loading (fetch + gunzip IDX), downsampling,
+  normalisation
+- `js/src/training/weights.ts`: weight extraction and balanced geometric scaling
+- `js/src/training/index.ts`: `trainMnist()` orchestrator, re-exports
+
+Import via `perceptron-apparatus/training`. Training tests use
+`// @vitest-environment node` (need node:zlib). Test fixture at
+`js/test/fixtures/mnist-sample.json` (100 pre-downsampled samples).
+
 Run tests: `cd js && mise exec -- pnpm test`
 Build: `cd js && mise exec -- pnpm build`
 
