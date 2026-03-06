@@ -13,6 +13,10 @@
     "./training": {
       "import": "./dist/training/index.mjs",
       "types": "./dist/training/index.d.mts"
+    },
+    "./widgets": {
+      "import": "./dist/widgets/index.mjs",
+      "types": "./dist/widgets/index.d.mts"
     }
   },
   "files": [

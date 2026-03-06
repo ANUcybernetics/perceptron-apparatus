@@ -89,6 +89,25 @@ Import via `perceptron-apparatus/training`. Training tests use
 `// @vitest-environment node` (need node:zlib). Test fixture at
 `js/test/fixtures/mnist-sample.json` (100 pre-downsampled samples).
 
+### JS/TS interactive widgets (`js/src/widgets/`)
+
+Interactive input widgets and computation animator for the digital twin. Import
+via `perceptron-apparatus/widgets`. Designed as library components for use in
+external sites (e.g. Astro).
+
+- `js/src/widgets/animator.ts`: `ComputationAnimator` --- step-by-step or fast
+  forward pass animation through the apparatus SVG. Step mode animates every
+  individual multiply-accumulate with log ring rotation; speed controlled via
+  `stepDuration`. Supports `AbortSignal` for cancellation.
+- `js/src/widgets/mnist-input.ts`: `MnistInputWidget` --- drawable 6x6 grid,
+  click/drag to paint, returns 36 normalised values
+- `js/src/widgets/poker-input.ts`: `PokerInputWidget` --- 5-card selector with
+  suit/rank dropdowns, encodes to 36 values matching the poker MLP encoding
+  scheme. Also exports `encodeHand()` and `POKER_HAND_NAMES`.
+- `js/src/widgets/weights.ts`: bundled pre-trained weights (`mnistWeights`,
+  `pokerWeights`) from `docs/*.json`
+- `js/src/widgets/index.ts`: re-exports all widgets and weights
+
 Run tests: `cd js && mise exec -- pnpm test`
 Build: `cd js && mise exec -- pnpm build`
 
