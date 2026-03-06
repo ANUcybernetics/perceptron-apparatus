@@ -11,9 +11,15 @@ mechanical manipulation. The project encompasses:
 3. **Documentation tooling**: Typst template integration for generating
    educational posters and worksheets
 
-The application uses the Ash framework for resource management and doesn't have
-a web component. It's primarily a command-line application with Mix tasks. See
-README.md for usage details.
+The Elixir application uses the Ash framework for resource management and is
+primarily a command-line application with Mix tasks. See README.md for usage
+details.
+
+There is also a **TypeScript package** in `js/` that replicates the SVG
+generation for use on the web, acting as a digital twin of the physical
+apparatus. It provides an animation API for the log ring and individual sliders.
+See `js/src/index.ts` for the public API (`PerceptronApparatus` class). The JS
+package uses pnpm, tsdown, vitest, oxlint, and tsgo.
 
 For detailed information about the ML implementations:
 
@@ -56,6 +62,18 @@ Both modules provide:
 All rings implement the `PerceptronApparatus.Renderable` protocol, which
 provides `to_svg/2` for generating SVG output. The Board module orchestrates
 ring rendering with automatic width calculation and spacing.
+
+### JS/TS package (`js/`)
+
+- `js/src/utils.ts`: deg2rad, rule generation, SVG DOM helpers
+- `js/src/rule-ring.ts`: log and ReLU rule generation + rendering
+- `js/src/azimuthal-ring.ts`: arc slider rendering (layers A, C, E)
+- `js/src/radial-ring.ts`: radial slider rendering (layers B, D)
+- `js/src/board.ts`: ring layout orchestration, full SVG composition
+- `js/src/index.ts`: `PerceptronApparatus` class with animation API
+
+Run tests: `cd js && mise exec -- pnpm test`
+Build: `cd js && mise exec -- pnpm build`
 
 <!-- usage-rules-start -->
 <!-- usage-rules-header -->
