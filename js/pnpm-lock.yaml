@@ -8,23 +8,26 @@ importers:
 
   .:
     devDependencies:
+      '@types/node':
+        specifier: ^25.3.3
+        version: 25.3.3
       '@typescript/native-preview':
         specifier: latest
         version: 7.0.0-dev.20260305.1
       happy-dom:
-        specifier: latest
+        specifier: ^20.8.3
         version: 20.8.3
       oxlint:
-        specifier: latest
+        specifier: ^1.51.0
         version: 1.51.0
       tsdown:
-        specifier: latest
+        specifier: ^0.21.0
         version: 0.21.0(@typescript/native-preview@7.0.0-dev.20260305.1)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
       vitest:
-        specifier: latest
+        specifier: ^4.0.18
         version: 4.0.18(@types/node@25.3.3)(happy-dom@20.8.3)
 
 packages:
