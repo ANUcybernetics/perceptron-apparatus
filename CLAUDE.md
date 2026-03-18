@@ -1,25 +1,30 @@
 ## Project overview
 
-This is an Elixir application for the Perceptron Apparatus project---a physical
-computational device that performs neural network calculations through
-mechanical manipulation. The project encompasses:
+The Perceptron Apparatus is a physical computational device that performs neural
+network calculations through mechanical manipulation---think "abacus for deep
+learning". This monorepo has two peer components:
 
-1. **Fabrication file generation**: SVG generation for laser-cutting and
-   CNC-routing using Ash resources and custom rendering logic
-2. **Machine learning infrastructure**: Axon-based neural network training for
-   MNIST and poker hand classification, with weight export to JSON
-3. **Documentation tooling**: Typst template integration for generating
-   educational posters and worksheets
+### Elixir (root)
 
-The Elixir application uses the Ash framework for resource management and is
-primarily a command-line application with Mix tasks. See README.md for usage
-details.
+Ash-based CLI application for fabrication file generation (SVG for laser-cutting
+and CNC-routing), ML training (Axon/MNIST/poker), and weight export. Run via Mix
+tasks---see README.md for usage.
 
-There is also a **TypeScript package** in `js/` that replicates the SVG
-generation for use on the web, acting as a digital twin of the physical
-apparatus. It provides an animation API for the log ring and individual sliders.
-See `js/src/index.ts` for the public API (`PerceptronApparatus` class). The JS
-package uses pnpm, tsdown, vitest, oxlint, and tsgo.
+### TypeScript (`js/`)
+
+NPM package providing a digital twin of the physical apparatus. Generates SVGs
+in the browser, provides an animation API for the log ring and sliders, and
+includes interactive widgets (MNIST input grid, poker hand selector,
+computation animator). Uses pnpm, tsdown, vitest, oxlint, and tsgo. See
+`js/src/index.ts` for the public API (`PerceptronApparatus` class).
+
+### Shared resources
+
+- `docs/`: Typst templates for educational posters and worksheets, ML
+  documentation, exported weight JSON files
+- `svg/`: generated SVG output
+- `mise.toml`: unified task runner for both components (`mise run test`,
+  `mise run build`)
 
 For detailed information about the ML implementations:
 
@@ -108,8 +113,19 @@ external sites (e.g. Astro).
   `pokerWeights`) from `docs/*.json`
 - `js/src/widgets/index.ts`: re-exports all widgets and weights
 
-Run tests: `cd js && mise exec -- pnpm test`
-Build: `cd js && mise exec -- pnpm build`
+### Development
+
+Use mise tasks from the project root to run both components:
+
+- `mise run test` --- run all tests (Elixir + TS)
+- `mise run build` --- build all packages
+- `mise run lint` --- lint TS package
+- `mise run check` --- type-check TS package
+
+Or run each side individually:
+
+- Elixir: `mix test`, `mix compile`
+- TS: `cd js && pnpm test`, `cd js && pnpm build`
 
 <!-- usage-rules-start -->
 <!-- usage-rules-header -->

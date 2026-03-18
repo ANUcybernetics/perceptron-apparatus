@@ -13,27 +13,42 @@ UC's
 
 ## Project scope
 
-This project encompasses three integrated components:
+This monorepo has two peer components:
 
-1. **Fabrication file generation**: programmatic creation of SVG files for
-   laser-cutting and CNC-routing the physical apparatus
-2. **Weight training and export**: machine learning infrastructure for training
-   neural networks and exporting weights in formats compatible with both the
-   physical apparatus and documentation
-3. **Educational documentation**: Typst templates for generating instructional
-   posters and user guides
+- **Elixir** (root): fabrication SVG generation via Ash resources, ML training
+  (Axon/MNIST/poker), and weight export to JSON
+- **TypeScript** (`js/`): NPM package providing a digital twin---browser SVG
+  generation, computation animation, and interactive input widgets
 
-Together, these tools bridge the gap between digital neural networks and
-physical computation.
+Shared resources live at the root: `docs/` for Typst templates and ML
+documentation, `svg/` for generated output, and `mise.toml` as a unified task
+runner.
 
-## Installation
+## Prerequisites
 
-This package is not (currently) on hex. You can clone the repo and import it via
-a [`:path`](https://hexdocs.pm/mix/Mix.Tasks.Deps.html).
+This project uses [mise](https://mise.jdx.dev/) to manage runtimes (Elixir,
+Erlang, Node, pnpm). Install mise, then:
 
-## Quick Start
+```bash
+mise install          # install runtimes
+mix deps.get          # fetch Elixir dependencies
+cd js && pnpm install # install TS dependencies
+```
 
-### CLI Usage
+## Development
+
+Unified tasks from the project root:
+
+```bash
+mise run test   # run all tests (Elixir + TS)
+mise run build  # build all packages
+mise run lint   # lint TS package
+mise run check  # type-check TS package
+```
+
+## Quick start
+
+### Elixir CLI
 
 The easiest way to generate apparatus SVG files is using the Mix tasks:
 
@@ -109,18 +124,31 @@ The poker hand implementation:
 
 For detailed documentation, see [docs/poker-mlp.md](docs/poker-mlp.md).
 
-### Programmatic usage
-
-You can also use the library programmatically:
+### Elixir programmatic usage
 
 ```elixir
 # Create a neural network apparatus for a 25-5-10 network
-# Parameters: size, n_input, n_hidden, n_output
 {:ok, apparatus} = PerceptronApparatus.Board.create(1200.0, 25, 5, 10)
 
 # Render to SVG
 svg_output = PerceptronApparatus.Board.render(apparatus)
 File.write!("apparatus.svg", svg_output)
+```
+
+### TypeScript package
+
+The `js/` package is published as `perceptron-apparatus` and provides three
+entry points:
+
+```ts
+// SVG generation and animation
+import { PerceptronApparatus } from "perceptron-apparatus";
+
+// In-browser MNIST training
+import { trainMnist } from "perceptron-apparatus/training";
+
+// Interactive widgets (MNIST input grid, poker hand selector, animator)
+import { MnistInputWidget, ComputationAnimator } from "perceptron-apparatus/widgets";
 ```
 
 This automatically creates the complete ring sequence:

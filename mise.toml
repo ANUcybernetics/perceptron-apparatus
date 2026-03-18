@@ -6,3 +6,19 @@ pnpm = "latest"
 
 [tasks.board]
 run = "mix run create_board.exs"
+
+[tasks.test]
+description = "Run all tests (Elixir + TS)"
+run = ["mix test", "cd js && pnpm test"]
+
+[tasks.build]
+description = "Build all packages"
+run = ["mix compile", "cd js && pnpm build"]
+
+[tasks.lint]
+description = "Lint TS package"
+run = "cd js && pnpm lint"
+
+[tasks.check]
+description = "Type-check TS package"
+run = "cd js && pnpm check"
