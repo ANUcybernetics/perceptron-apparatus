@@ -2,7 +2,7 @@ import type { PerceptronApparatus, AnimationOptions } from "../index.js";
 import type { Weights } from "./weights.js";
 
 export interface ComputeOptions {
-  mode?: "step" | "fast";
+  mode?: "step" | "neuron" | "fast";
   stepDuration?: number;
   signal?: AbortSignal;
   onStep?: (info: StepInfo) => void;
@@ -46,20 +46,22 @@ export class ComputationAnimator {
       onStep,
     } = opts;
 
-    const isStep = mode === "step";
+    const animate = mode !== "fast";
+    const perMultiply = mode === "step";
     const animOpts: AnimationOptions = {
-      duration: isStep ? stepDuration : 0,
+      duration: animate ? stepDuration : 0,
     };
 
-    const totalMultiplies =
-      this.nInput * this.nHidden + this.nHidden * this.nOutput;
+    const totalSteps = perMultiply
+      ? this.nInput * this.nHidden + this.nHidden * this.nOutput
+      : this.nHidden + this.nOutput;
     let currentStep = 0;
 
     const emit = (phase: StepInfo["phase"], description: string) => {
       onStep?.({
         phase,
         description,
-        progress: currentStep / totalMultiplies,
+        progress: currentStep / totalSteps,
       });
     };
 
@@ -79,11 +81,11 @@ export class ComputationAnimator {
         signal?.throwIfAborted();
         const product = inputs[i] * this.weights.B[i][j];
         acc += product;
-        currentStep++;
 
-        if (isStep) {
-          emit("hidden", `C${j} += A${i} * B${i},${j}`);
-          const logAngle = (currentStep / totalMultiplies) * 360;
+        if (perMultiply) {
+          currentStep++;
+          emit("hidden", `C${j} += A${i} × B${i},${j}`);
+          const logAngle = (currentStep / totalSteps) * 360;
           await Promise.all([
             this.apparatus.setLogRingRotation(logAngle, animOpts),
             this.apparatus.setSlider(
@@ -96,8 +98,14 @@ export class ComputationAnimator {
       }
       hidden[j] = Math.max(0, acc);
 
-      if (!isStep) {
-        await this.apparatus.setSlider(`C${j}`, hidden[j], { duration: 0 });
+      if (!perMultiply) {
+        currentStep++;
+        if (animate) {
+          emit("hidden", `Hidden neuron ${j}: ${hidden[j].toFixed(2)}`);
+          await this.apparatus.setSlider(`C${j}`, hidden[j], animOpts);
+        } else {
+          await this.apparatus.setSlider(`C${j}`, hidden[j], { duration: 0 });
+        }
       }
     }
 
@@ -109,11 +117,11 @@ export class ComputationAnimator {
         signal?.throwIfAborted();
         const product = hidden[j] * this.weights.D[j][k];
         acc += product;
-        currentStep++;
 
-        if (isStep) {
-          emit("output", `E${k} += C${j} * D${j},${k}`);
-          const logAngle = (currentStep / totalMultiplies) * 360;
+        if (perMultiply) {
+          currentStep++;
+          emit("output", `E${k} += C${j} × D${j},${k}`);
+          const logAngle = (currentStep / totalSteps) * 360;
           await Promise.all([
             this.apparatus.setLogRingRotation(logAngle, animOpts),
             this.apparatus.setSlider(`E${k}`, acc, animOpts),
@@ -122,8 +130,14 @@ export class ComputationAnimator {
       }
       output[k] = acc;
 
-      if (!isStep) {
-        await this.apparatus.setSlider(`E${k}`, output[k], { duration: 0 });
+      if (!perMultiply) {
+        currentStep++;
+        if (animate) {
+          emit("output", `Output ${k}: ${output[k].toFixed(2)}`);
+          await this.apparatus.setSlider(`E${k}`, output[k], animOpts);
+        } else {
+          await this.apparatus.setSlider(`E${k}`, output[k], { duration: 0 });
+        }
       }
     }
 

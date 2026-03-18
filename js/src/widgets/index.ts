@@ -11,4 +11,5 @@ export {
   POKER_HAND_NAMES,
   type Card,
 } from "./poker-input.js";
+export { sampleDigits, type SampleDigit } from "./sample-digits.js";
 export { mnistWeights, pokerWeights, type Weights } from "./weights.js";
