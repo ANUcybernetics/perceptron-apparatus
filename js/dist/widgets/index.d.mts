@@ -10,7 +10,7 @@ declare const pokerWeights: Weights;
 //#endregion
 //#region src/widgets/animator.d.ts
 interface ComputeOptions {
-  mode?: "step" | "fast";
+  mode?: "step" | "neuron" | "fast";
   stepDuration?: number;
   signal?: AbortSignal;
   onStep?: (info: StepInfo) => void;
@@ -85,4 +85,11 @@ declare class PokerInputWidget {
 }
 declare const POKER_HAND_NAMES: string[];
 //#endregion
-export { type Card, ComputationAnimator, type ComputeOptions, type ComputeResult, MnistInputWidget, POKER_HAND_NAMES, PokerInputWidget, type StepInfo, type Weights, encodeHand, mnistWeights, pokerWeights };
+//#region src/widgets/sample-digits.d.ts
+interface SampleDigit {
+  label: number;
+  pixels: number[];
+}
+declare const sampleDigits: SampleDigit[];
+//#endregion
+export { type Card, ComputationAnimator, type ComputeOptions, type ComputeResult, MnistInputWidget, POKER_HAND_NAMES, PokerInputWidget, type SampleDigit, type StepInfo, type Weights, encodeHand, mnistWeights, pokerWeights, sampleDigits };

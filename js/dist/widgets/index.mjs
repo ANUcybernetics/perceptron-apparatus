@@ -14,15 +14,16 @@ var ComputationAnimator = class {
 	}
 	async compute(inputs, opts = {}) {
 		const { mode = "step", stepDuration = 100, signal, onStep } = opts;
-		const isStep = mode === "step";
-		const animOpts = { duration: isStep ? stepDuration : 0 };
-		const totalMultiplies = this.nInput * this.nHidden + this.nHidden * this.nOutput;
+		const animate = mode !== "fast";
+		const perMultiply = mode === "step";
+		const animOpts = { duration: animate ? stepDuration : 0 };
+		const totalSteps = perMultiply ? this.nInput * this.nHidden + this.nHidden * this.nOutput : this.nHidden + this.nOutput;
 		let currentStep = 0;
 		const emit = (phase, description) => {
 			onStep?.({
 				phase,
 				description,
-				progress: currentStep / totalMultiplies
+				progress: currentStep / totalSteps
 			});
 		};
 		signal?.throwIfAborted();
@@ -37,15 +38,21 @@ var ComputationAnimator = class {
 				signal?.throwIfAborted();
 				const product = inputs[i] * this.weights.B[i][j];
 				acc += product;
-				currentStep++;
-				if (isStep) {
-					emit("hidden", `C${j} += A${i} * B${i},${j}`);
-					const logAngle = currentStep / totalMultiplies * 360;
+				if (perMultiply) {
+					currentStep++;
+					emit("hidden", `C${j} += A${i} × B${i},${j}`);
+					const logAngle = currentStep / totalSteps * 360;
 					await Promise.all([this.apparatus.setLogRingRotation(logAngle, animOpts), this.apparatus.setSlider(`C${j}`, Math.max(0, acc), animOpts)]);
 				}
 			}
 			hidden[j] = Math.max(0, acc);
-			if (!isStep) await this.apparatus.setSlider(`C${j}`, hidden[j], { duration: 0 });
+			if (!perMultiply) {
+				currentStep++;
+				if (animate) {
+					emit("hidden", `Hidden neuron ${j}: ${hidden[j].toFixed(2)}`);
+					await this.apparatus.setSlider(`C${j}`, hidden[j], animOpts);
+				} else await this.apparatus.setSlider(`C${j}`, hidden[j], { duration: 0 });
+			}
 		}
 		const output = Array.from({ length: this.nOutput }, () => 0);
 		for (let k = 0; k < this.nOutput; k++) {
@@ -54,15 +61,21 @@ var ComputationAnimator = class {
 				signal?.throwIfAborted();
 				const product = hidden[j] * this.weights.D[j][k];
 				acc += product;
-				currentStep++;
-				if (isStep) {
-					emit("output", `E${k} += C${j} * D${j},${k}`);
-					const logAngle = currentStep / totalMultiplies * 360;
+				if (perMultiply) {
+					currentStep++;
+					emit("output", `E${k} += C${j} × D${j},${k}`);
+					const logAngle = currentStep / totalSteps * 360;
 					await Promise.all([this.apparatus.setLogRingRotation(logAngle, animOpts), this.apparatus.setSlider(`E${k}`, acc, animOpts)]);
 				}
 			}
 			output[k] = acc;
-			if (!isStep) await this.apparatus.setSlider(`E${k}`, output[k], { duration: 0 });
+			if (!perMultiply) {
+				currentStep++;
+				if (animate) {
+					emit("output", `Output ${k}: ${output[k].toFixed(2)}`);
+					await this.apparatus.setSlider(`E${k}`, output[k], animOpts);
+				} else await this.apparatus.setSlider(`E${k}`, output[k], { duration: 0 });
+			}
 		}
 		let prediction = 0;
 		for (let k = 1; k < this.nOutput; k++) if (output[k] > output[prediction]) prediction = k;
@@ -380,6 +393,215 @@ const POKER_HAND_NAMES = [
 	"Four of a kind",
 	"Straight flush",
 	"Royal flush"
+];
+//#endregion
+//#region src/widgets/sample-digits.ts
+const sampleDigits = [
+	{
+		label: 0,
+		pixels: [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			.361,
+			.984,
+			.984,
+			.984,
+			0,
+			0,
+			0,
+			.992,
+			.992,
+			.992,
+			.122,
+			0,
+			1,
+			.992,
+			.992,
+			.992,
+			.992,
+			0,
+			0,
+			.984,
+			.984,
+			.984,
+			.984,
+			0,
+			0,
+			0,
+			.984,
+			.443,
+			0
+		]
+	},
+	{
+		label: 1,
+		pixels: [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			.333,
+			.11,
+			0,
+			0,
+			0,
+			.141,
+			.988,
+			0,
+			0,
+			0,
+			0,
+			.988,
+			0,
+			0,
+			0,
+			0,
+			.98,
+			.161,
+			0,
+			0,
+			0,
+			0,
+			.98,
+			0,
+			0,
+			0
+		]
+	},
+	{
+		label: 4,
+		pixels: [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			.996,
+			0,
+			0,
+			0,
+			0,
+			.2,
+			.996,
+			.671,
+			.988,
+			0,
+			0,
+			.122,
+			.988,
+			.98,
+			.98,
+			0,
+			0,
+			0,
+			.988,
+			.98,
+			.98,
+			0,
+			0,
+			0,
+			0,
+			0,
+			.157,
+			.624
+		]
+	},
+	{
+		label: 6,
+		pixels: [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			.314,
+			.992,
+			.384,
+			0,
+			0,
+			.992,
+			.992,
+			.22,
+			0,
+			0,
+			.922,
+			.992,
+			.992,
+			.992,
+			.941,
+			0,
+			.667,
+			.992,
+			.447,
+			.992,
+			.51,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		]
+	},
+	{
+		label: 7,
+		pixels: [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			.98,
+			.98,
+			.98,
+			.867,
+			0,
+			0,
+			.871,
+			0,
+			.2,
+			.988,
+			.353,
+			0,
+			0,
+			0,
+			.91,
+			.988,
+			.157,
+			0,
+			0,
+			0,
+			0,
+			.824,
+			0
+		]
+	}
 ];
 //#endregion
 //#region src/widgets/weights.ts
@@ -1116,4 +1338,4 @@ const pokerWeights = {
 	]
 };
 //#endregion
-export { ComputationAnimator, MnistInputWidget, POKER_HAND_NAMES, PokerInputWidget, encodeHand, mnistWeights, pokerWeights };
+export { ComputationAnimator, MnistInputWidget, POKER_HAND_NAMES, PokerInputWidget, encodeHand, mnistWeights, pokerWeights, sampleDigits };
