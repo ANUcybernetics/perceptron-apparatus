@@ -1,0 +1,2 @@
+import { a as BoardConfig, i as reluRule, n as PerceptronApparatus, o as renderBoard, r as logRule, t as AnimationOptions } from "./index-Bb8Zwht9.mjs";
+export { AnimationOptions, BoardConfig, PerceptronApparatus, logRule, reluRule, renderBoard };

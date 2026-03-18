@@ -127,6 +127,11 @@ Or run each side individually:
 - Elixir: `mix test`, `mix compile`
 - TS: `cd js && pnpm test`, `cd js && pnpm build`
 
+`js/dist/` is committed to git so the package can be installed directly from
+GitHub (e.g. `pnpm add github:benswift/perceptron_apparatus?path=js`). Rebuild
+with `cd js && pnpm build` and commit the updated `dist/` whenever the TS
+source changes.
+
 <!-- usage-rules-start -->
 <!-- usage-rules-header -->
 
