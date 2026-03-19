@@ -1,3 +1,95 @@
+//#region src/widgets/trace.ts
+function slideRuleAngle(absValue) {
+	if (absValue <= 0) return 0;
+	const mantissa = absValue / 10 ** Math.floor(Math.log10(absValue));
+	return Math.log10(mantissa) / Math.log10(10) * 360;
+}
+function computeTrace(inputs, weights) {
+	const nInput = weights.B.length;
+	const nHidden = weights.B[0].length;
+	const nOutput = weights.D[0].length;
+	const steps = [];
+	for (let i = 0; i < inputs.length; i++) steps.push({
+		type: "set-input",
+		slider: `A${i}`,
+		value: inputs[i]
+	});
+	const hidden = Array.from({ length: nHidden }, () => 0);
+	for (let j = 0; j < nHidden; j++) {
+		let acc = 0;
+		for (let i = 0; i < nInput; i++) {
+			const inputValue = inputs[i];
+			const weightValue = weights.B[i][j];
+			const product = inputValue * weightValue;
+			acc += product;
+			const absInput = Math.abs(inputValue);
+			const productSign = Math.sign(inputValue) * Math.sign(weightValue) >= 0 ? 1 : -1;
+			steps.push({
+				type: "multiply-accumulate",
+				target: `C${j}`,
+				inputSlider: `A${i}`,
+				inputValue,
+				weightSlider: `B${j}-${i}`,
+				weightValue,
+				product,
+				accumulator: acc,
+				logRingAngle: slideRuleAngle(absInput),
+				productSign
+			});
+		}
+		const post = Math.max(0, acc);
+		steps.push({
+			type: "relu",
+			neuron: `C${j}`,
+			pre: acc,
+			post
+		});
+		hidden[j] = post;
+	}
+	const output = Array.from({ length: nOutput }, () => 0);
+	for (let k = 0; k < nOutput; k++) {
+		let acc = 0;
+		for (let j = 0; j < nHidden; j++) {
+			const inputValue = hidden[j];
+			const weightValue = weights.D[j][k];
+			const product = inputValue * weightValue;
+			acc += product;
+			const absInput = Math.abs(inputValue);
+			const productSign = Math.sign(inputValue) * Math.sign(weightValue) >= 0 ? 1 : -1;
+			steps.push({
+				type: "multiply-accumulate",
+				target: `E${k}`,
+				inputSlider: `C${j}`,
+				inputValue,
+				weightSlider: `D${k}-${j}`,
+				weightValue,
+				product,
+				accumulator: acc,
+				logRingAngle: slideRuleAngle(absInput),
+				productSign
+			});
+		}
+		output[k] = acc;
+	}
+	let prediction = 0;
+	for (let k = 1; k < nOutput; k++) if (output[k] > output[prediction]) prediction = k;
+	steps.push({
+		type: "argmax",
+		prediction,
+		values: [...output]
+	});
+	return steps;
+}
+function traceResult(steps) {
+	const last = steps[steps.length - 1];
+	if (!last || last.type !== "argmax") throw new Error("Trace does not end with argmax step");
+	return {
+		hidden: steps.filter((s) => s.type === "relu").map((s) => s.post),
+		output: last.values,
+		prediction: last.prediction
+	};
+}
+//#endregion
 //#region src/widgets/animator.ts
 var ComputationAnimator = class {
 	apparatus;
@@ -17,13 +109,16 @@ var ComputationAnimator = class {
 		const animate = mode !== "fast";
 		const perMultiply = mode === "step";
 		const animOpts = { duration: animate ? stepDuration : 0 };
+		const trace = computeTrace(inputs, this.weights);
+		const macSteps = trace.filter((s) => s.type === "multiply-accumulate");
 		const totalSteps = perMultiply ? this.nInput * this.nHidden + this.nHidden * this.nOutput : this.nHidden + this.nOutput;
 		let currentStep = 0;
-		const emit = (phase, description) => {
+		const emit = (phase, description, step) => {
 			onStep?.({
 				phase,
 				description,
-				progress: currentStep / totalSteps
+				progress: currentStep / totalSteps,
+				step
 			});
 		};
 		signal?.throwIfAborted();
@@ -32,17 +127,21 @@ var ComputationAnimator = class {
 		emit("input", "Setting input sliders");
 		await this.setInputs(inputs, animOpts, signal);
 		const hidden = Array.from({ length: this.nHidden }, () => 0);
+		let macIndex = 0;
 		for (let j = 0; j < this.nHidden; j++) {
 			let acc = 0;
 			for (let i = 0; i < this.nInput; i++) {
 				signal?.throwIfAborted();
-				const product = inputs[i] * this.weights.B[i][j];
-				acc += product;
+				const mac = macSteps[macIndex++];
+				acc = mac.accumulator;
 				if (perMultiply) {
 					currentStep++;
-					emit("hidden", `C${j} += A${i} × B${i},${j}`);
-					const logAngle = currentStep / totalSteps * 360;
-					await Promise.all([this.apparatus.setLogRingRotation(logAngle, animOpts), this.apparatus.setSlider(`C${j}`, Math.max(0, acc), animOpts)]);
+					emit("hidden", `C${j} += A${i} × B${i},${j}`, mac);
+					await Promise.all([
+						this.apparatus.setLogRingRotation(mac.logRingAngle, animOpts),
+						this.apparatus.setSlider(`C${j}`, Math.max(0, acc), animOpts),
+						this.apparatus.setSlideRuleMarkers?.(mac, animOpts)
+					]);
 				}
 			}
 			hidden[j] = Math.max(0, acc);
@@ -59,13 +158,16 @@ var ComputationAnimator = class {
 			let acc = 0;
 			for (let j = 0; j < this.nHidden; j++) {
 				signal?.throwIfAborted();
-				const product = hidden[j] * this.weights.D[j][k];
-				acc += product;
+				const mac = macSteps[macIndex++];
+				acc = mac.accumulator;
 				if (perMultiply) {
 					currentStep++;
-					emit("output", `E${k} += C${j} × D${j},${k}`);
-					const logAngle = currentStep / totalSteps * 360;
-					await Promise.all([this.apparatus.setLogRingRotation(logAngle, animOpts), this.apparatus.setSlider(`E${k}`, acc, animOpts)]);
+					emit("output", `E${k} += C${j} × D${j},${k}`, mac);
+					await Promise.all([
+						this.apparatus.setLogRingRotation(mac.logRingAngle, animOpts),
+						this.apparatus.setSlider(`E${k}`, acc, animOpts),
+						this.apparatus.setSlideRuleMarkers?.(mac, animOpts)
+					]);
 				}
 			}
 			output[k] = acc;
@@ -79,7 +181,9 @@ var ComputationAnimator = class {
 		}
 		let prediction = 0;
 		for (let k = 1; k < this.nOutput; k++) if (output[k] > output[prediction]) prediction = k;
-		emit("output", `Prediction: ${prediction}`);
+		const argmaxStep = trace[trace.length - 1];
+		emit("output", `Prediction: ${prediction}`, argmaxStep);
+		this.apparatus.clearSlideRuleMarkers?.();
 		return {
 			hidden,
 			output,
@@ -1338,4 +1442,4 @@ const pokerWeights = {
 	]
 };
 //#endregion
-export { ComputationAnimator, MnistInputWidget, POKER_HAND_NAMES, PokerInputWidget, encodeHand, mnistWeights, pokerWeights, sampleDigits };
+export { ComputationAnimator, MnistInputWidget, POKER_HAND_NAMES, PokerInputWidget, computeTrace, encodeHand, mnistWeights, pokerWeights, sampleDigits, traceResult };

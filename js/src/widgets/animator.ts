@@ -1,5 +1,11 @@
 import type { PerceptronApparatus, AnimationOptions } from "../index.js";
 import type { Weights } from "./weights.js";
+import {
+  computeTrace,
+  traceResult,
+  type ComputationStep,
+  type MultiplyAccumulateStep,
+} from "./trace.js";
 
 export interface ComputeOptions {
   mode?: "step" | "neuron" | "fast";
@@ -12,6 +18,7 @@ export interface StepInfo {
   phase: "weights" | "input" | "hidden" | "output";
   progress: number;
   description: string;
+  step?: ComputationStep;
 }
 
 export interface ComputeResult {
@@ -52,16 +59,26 @@ export class ComputationAnimator {
       duration: animate ? stepDuration : 0,
     };
 
+    const trace = computeTrace(inputs, this.weights);
+    const macSteps = trace.filter(
+      (s): s is MultiplyAccumulateStep => s.type === "multiply-accumulate",
+    );
+
     const totalSteps = perMultiply
       ? this.nInput * this.nHidden + this.nHidden * this.nOutput
       : this.nHidden + this.nOutput;
     let currentStep = 0;
 
-    const emit = (phase: StepInfo["phase"], description: string) => {
+    const emit = (
+      phase: StepInfo["phase"],
+      description: string,
+      step?: ComputationStep,
+    ) => {
       onStep?.({
         phase,
         description,
         progress: currentStep / totalSteps,
+        step,
       });
     };
 
@@ -74,25 +91,26 @@ export class ComputationAnimator {
     await this.setInputs(inputs, animOpts, signal);
 
     const hidden = Array.from({ length: this.nHidden }, () => 0);
+    let macIndex = 0;
 
     for (let j = 0; j < this.nHidden; j++) {
       let acc = 0;
       for (let i = 0; i < this.nInput; i++) {
         signal?.throwIfAborted();
-        const product = inputs[i] * this.weights.B[i][j];
-        acc += product;
+        const mac = macSteps[macIndex++];
+        acc = mac.accumulator;
 
         if (perMultiply) {
           currentStep++;
-          emit("hidden", `C${j} += A${i} × B${i},${j}`);
-          const logAngle = (currentStep / totalSteps) * 360;
+          emit("hidden", `C${j} += A${i} × B${i},${j}`, mac);
           await Promise.all([
-            this.apparatus.setLogRingRotation(logAngle, animOpts),
+            this.apparatus.setLogRingRotation(mac.logRingAngle, animOpts),
             this.apparatus.setSlider(
               `C${j}`,
               Math.max(0, acc),
               animOpts,
             ),
+            this.apparatus.setSlideRuleMarkers?.(mac, animOpts),
           ]);
         }
       }
@@ -115,16 +133,16 @@ export class ComputationAnimator {
       let acc = 0;
       for (let j = 0; j < this.nHidden; j++) {
         signal?.throwIfAborted();
-        const product = hidden[j] * this.weights.D[j][k];
-        acc += product;
+        const mac = macSteps[macIndex++];
+        acc = mac.accumulator;
 
         if (perMultiply) {
           currentStep++;
-          emit("output", `E${k} += C${j} × D${j},${k}`);
-          const logAngle = (currentStep / totalSteps) * 360;
+          emit("output", `E${k} += C${j} × D${j},${k}`, mac);
           await Promise.all([
-            this.apparatus.setLogRingRotation(logAngle, animOpts),
+            this.apparatus.setLogRingRotation(mac.logRingAngle, animOpts),
             this.apparatus.setSlider(`E${k}`, acc, animOpts),
+            this.apparatus.setSlideRuleMarkers?.(mac, animOpts),
           ]);
         }
       }
@@ -146,7 +164,10 @@ export class ComputationAnimator {
       if (output[k] > output[prediction]) prediction = k;
     }
 
-    emit("output", `Prediction: ${prediction}`);
+    const argmaxStep = trace[trace.length - 1];
+    emit("output", `Prediction: ${prediction}`, argmaxStep);
+
+    this.apparatus.clearSlideRuleMarkers?.();
 
     return { hidden, output, prediction };
   }

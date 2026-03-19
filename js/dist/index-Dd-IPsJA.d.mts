@@ -21,6 +21,51 @@ interface BoardConfig {
 declare function buildBoard(config: BoardConfig): VNode;
 declare function renderBoard(config: BoardConfig, parent: SVGElement | Element): SVGSVGElement;
 //#endregion
+//#region src/widgets/weights.d.ts
+interface Weights {
+  B: number[][];
+  D: number[][];
+}
+declare const mnistWeights: Weights;
+declare const pokerWeights: Weights;
+//#endregion
+//#region src/widgets/trace.d.ts
+type ComputationStep = SetInputStep | MultiplyAccumulateStep | ReluStep | ArgmaxStep;
+interface SetInputStep {
+  type: "set-input";
+  slider: string;
+  value: number;
+}
+interface MultiplyAccumulateStep {
+  type: "multiply-accumulate";
+  target: string;
+  inputSlider: string;
+  inputValue: number;
+  weightSlider: string;
+  weightValue: number;
+  product: number;
+  accumulator: number;
+  logRingAngle: number;
+  productSign: 1 | -1;
+}
+interface ReluStep {
+  type: "relu";
+  neuron: string;
+  pre: number;
+  post: number;
+}
+interface ArgmaxStep {
+  type: "argmax";
+  prediction: number;
+  values: number[];
+}
+declare function computeTrace(inputs: number[], weights: Weights): ComputationStep[];
+declare function traceResult(steps: ComputationStep[]): {
+  hidden: number[];
+  output: number[];
+  prediction: number;
+};
+//#endregion
 //#region src/rule-ring.d.ts
 interface LogRuleTick {
   outerLabel: string | null;
@@ -46,6 +91,10 @@ declare class PerceptronApparatus {
   private findAzimuthalRing;
   private findRadialRing;
   private getRadiusForLayer;
+  private getRuleRingRadius;
+  private valueToRuleAngle;
+  setSlideRuleMarkers(mac: MultiplyAccumulateStep, opts?: AnimationOptions): Promise<void>;
+  clearSlideRuleMarkers(): void;
 }
 //#endregion
-export { BoardConfig as a, VNode as c, findAll as d, render as f, reluRule as i, el as l, PerceptronApparatus as n, buildBoard as o, textEl as p, logRule as r, renderBoard as s, AnimationOptions as t, find as u };
+export { textEl as C, render as S, renderBoard as _, ArgmaxStep as a, find as b, ReluStep as c, traceResult as d, Weights as f, buildBoard as g, BoardConfig as h, reluRule as i, SetInputStep as l, pokerWeights as m, PerceptronApparatus as n, ComputationStep as o, mnistWeights as p, logRule as r, MultiplyAccumulateStep as s, AnimationOptions as t, computeTrace as u, VNode as v, findAll as x, el as y };

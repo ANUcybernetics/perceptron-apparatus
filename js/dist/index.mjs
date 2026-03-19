@@ -50,9 +50,9 @@ function find(node, predicate) {
 		if (found) return found;
 	}
 }
-const SVG_NS = "http://www.w3.org/2000/svg";
+const SVG_NS$1 = "http://www.w3.org/2000/svg";
 function render(node, parent) {
-	const element = document.createElementNS(SVG_NS, node.tag);
+	const element = document.createElementNS(SVG_NS$1, node.tag);
 	for (const [key, value] of Object.entries(node.attrs)) element.setAttribute(key, value);
 	if (node.text !== void 0) element.textContent = node.text;
 	for (const child of node.children) render(child, element);
@@ -520,6 +520,7 @@ text.logo {
 }
 //#endregion
 //#region src/index.ts
+const SVG_NS = "http://www.w3.org/2000/svg";
 var PerceptronApparatus = class {
 	svg;
 	config;
@@ -643,6 +644,88 @@ var PerceptronApparatus = class {
 			r -= w + radialPadding;
 		}
 		return r;
+	}
+	getRuleRingRadius() {
+		return this.config.size / 2 - 30 - 15;
+	}
+	valueToRuleAngle(absValue) {
+		if (absValue <= 0) return 0;
+		const mantissa = absValue / 10 ** Math.floor(Math.log10(absValue));
+		return Math.log10(mantissa) / Math.log10(10) * 360;
+	}
+	setSlideRuleMarkers(mac, opts = {}) {
+		this.clearSlideRuleMarkers();
+		const ruleRing = this.svg.querySelector("[data-ring='log']");
+		if (!ruleRing) return Promise.resolve();
+		const r = this.getRuleRingRadius();
+		const tickLen = 18;
+		const absInput = Math.abs(mac.inputValue);
+		const absWeight = Math.abs(mac.weightValue);
+		const absProduct = Math.abs(mac.product);
+		const g = document.createElementNS(SVG_NS, "g");
+		g.setAttribute("data-markers", "slide-rule");
+		const rotMatch = (ruleRing.getAttribute("style") ?? "").match(/rotate\(([-\d.]+)deg\)/);
+		const ringRotation = rotMatch ? parseFloat(rotMatch[1]) : 0;
+		const markers = [];
+		if (absInput > 0) markers.push({
+			value: absInput,
+			color: "var(--pa-marker-input, #4a9eff)",
+			label: `|${mac.inputValue.toFixed(2)}|`,
+			inner: false
+		});
+		if (absWeight > 0) markers.push({
+			value: absWeight,
+			color: "var(--pa-marker-weight, #ff6b4a)",
+			label: `|${mac.weightValue.toFixed(2)}|`,
+			inner: true
+		});
+		if (absProduct > 0) markers.push({
+			value: absProduct,
+			color: "var(--pa-marker-product, #4aff6b)",
+			label: `=${mac.product.toFixed(2)}`,
+			inner: false
+		});
+		for (const m of markers) {
+			const theta = this.valueToRuleAngle(m.value);
+			const adjustedTheta = m.inner ? theta : theta + ringRotation;
+			const markerG = document.createElementNS(SVG_NS, "g");
+			markerG.setAttribute("transform", `rotate(${-adjustedTheta})`);
+			const y1 = m.inner ? r - tickLen : r + tickLen;
+			const y2 = m.inner ? r - tickLen * 2.2 : r + tickLen * 2.2;
+			const line = document.createElementNS(SVG_NS, "line");
+			line.setAttribute("x1", "0");
+			line.setAttribute("y1", String(y1));
+			line.setAttribute("x2", "0");
+			line.setAttribute("y2", String(y2));
+			line.setAttribute("stroke", m.color);
+			line.setAttribute("stroke-width", "2.5");
+			const text = document.createElementNS(SVG_NS, "text");
+			const textY = m.inner ? y2 - 6 : y2 + 12;
+			text.setAttribute("x", "0");
+			text.setAttribute("y", String(textY));
+			text.setAttribute("text-anchor", "middle");
+			text.setAttribute("dominant-baseline", "middle");
+			text.setAttribute("fill", m.color);
+			text.setAttribute("stroke", "none");
+			text.setAttribute("font-size", "9px");
+			text.setAttribute("font-weight", "600");
+			text.textContent = m.label;
+			markerG.appendChild(line);
+			markerG.appendChild(text);
+			g.appendChild(markerG);
+		}
+		const duration = opts.duration ?? 0;
+		g.style.opacity = "0";
+		this.svg.appendChild(g);
+		if (duration > 0) g.style.transition = `opacity ${Math.min(duration, 200)}ms ease-in`;
+		requestAnimationFrame(() => {
+			g.style.opacity = "1";
+		});
+		return Promise.resolve();
+	}
+	clearSlideRuleMarkers() {
+		const existing = this.svg.querySelectorAll("[data-markers='slide-rule']");
+		for (const el of existing) el.remove();
 	}
 };
 function parseAzimuthalId(id) {

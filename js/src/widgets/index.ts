@@ -4,6 +4,15 @@ export {
   type ComputeResult,
   type StepInfo,
 } from "./animator.js";
+export {
+  computeTrace,
+  traceResult,
+  type ComputationStep,
+  type SetInputStep,
+  type MultiplyAccumulateStep,
+  type ReluStep,
+  type ArgmaxStep,
+} from "./trace.js";
 export { MnistInputWidget } from "./mnist-input.js";
 export {
   PokerInputWidget,

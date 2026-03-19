@@ -1,13 +1,5 @@
-import { n as PerceptronApparatus } from "../index-CM197qY1.mjs";
+import { a as ArgmaxStep, c as ReluStep, d as traceResult, f as Weights, l as SetInputStep, m as pokerWeights, n as PerceptronApparatus, o as ComputationStep, p as mnistWeights, s as MultiplyAccumulateStep, u as computeTrace } from "../index-Dd-IPsJA.mjs";
 
-//#region src/widgets/weights.d.ts
-interface Weights {
-  B: number[][];
-  D: number[][];
-}
-declare const mnistWeights: Weights;
-declare const pokerWeights: Weights;
-//#endregion
 //#region src/widgets/animator.d.ts
 interface ComputeOptions {
   mode?: "step" | "neuron" | "fast";
@@ -19,6 +11,7 @@ interface StepInfo {
   phase: "weights" | "input" | "hidden" | "output";
   progress: number;
   description: string;
+  step?: ComputationStep;
 }
 interface ComputeResult {
   hidden: number[];
@@ -92,4 +85,4 @@ interface SampleDigit {
 }
 declare const sampleDigits: SampleDigit[];
 //#endregion
-export { type Card, ComputationAnimator, type ComputeOptions, type ComputeResult, MnistInputWidget, POKER_HAND_NAMES, PokerInputWidget, type SampleDigit, type StepInfo, type Weights, encodeHand, mnistWeights, pokerWeights, sampleDigits };
+export { type ArgmaxStep, type Card, ComputationAnimator, type ComputationStep, type ComputeOptions, type ComputeResult, MnistInputWidget, type MultiplyAccumulateStep, POKER_HAND_NAMES, PokerInputWidget, type ReluStep, type SampleDigit, type SetInputStep, type StepInfo, type Weights, computeTrace, encodeHand, mnistWeights, pokerWeights, sampleDigits, traceResult };
