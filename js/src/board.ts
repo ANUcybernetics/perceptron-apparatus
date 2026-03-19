@@ -1,7 +1,8 @@
-import { newRule, svgElement } from "./utils.js";
-import { logRule, renderRuleRing, type LogRuleTick } from "./rule-ring.js";
-import { renderAzimuthalRing } from "./azimuthal-ring.js";
-import { renderRadialRing } from "./radial-ring.js";
+import { newRule } from "./utils.js";
+import { logRule, buildRuleRing, type LogRuleTick } from "./rule-ring.js";
+import { buildAzimuthalRing } from "./azimuthal-ring.js";
+import { buildRadialRing } from "./radial-ring.js";
+import { el, textEl, render, type VNode } from "./vnode.js";
 import type { RuleTick } from "./utils.js";
 
 export interface BoardConfig {
@@ -84,10 +85,7 @@ function calculateRingWidths(
   );
 }
 
-export function renderBoard(
-  config: BoardConfig,
-  parent: SVGElement | Element,
-): SVGSVGElement {
+export function buildBoard(config: BoardConfig): VNode {
   const size = config.size ?? 1200;
   const radius = size / 2;
   const radialPadding = 30;
@@ -96,25 +94,16 @@ export function renderBoard(
 
   const viewBox = `${-(size / 2 + svgPadding)} ${-(size / 2 + svgPadding)} ${size + 2 * svgPadding} ${size + 2 * svgPadding}`;
 
-  const svg = svgElement("svg", {
-    viewBox,
-    stroke: "currentColor",
-    fill: "transparent",
-    "stroke-width": "1",
-    xmlns: "http://www.w3.org/2000/svg",
-  }) as SVGSVGElement;
-
-  const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
-  style.textContent = buildStyles();
-  svg.appendChild(style);
-
-  svgElement("circle", {
-    class: "full",
-    cx: "0",
-    cy: "0",
-    r: String(radius),
-    "stroke-width": "2",
-  }, svg);
+  const children: VNode[] = [
+    textEl("style", buildStyles()),
+    el("circle", {
+      class: "full",
+      cx: "0",
+      cy: "0",
+      r: String(radius),
+      "stroke-width": "2",
+    }),
+  ];
 
   const rings = createRingSequence(config.nInput, config.nHidden, config.nOutput);
   const widths = calculateRingWidths(rings, radius, radialPadding, centerSpace);
@@ -126,32 +115,33 @@ export function renderBoard(
     const ringWidth = widths[ringIndex];
 
     if (ring.type === "rule") {
-      const logG = svgElement(
-        "g",
-        { "data-ring": "log" },
-        svg,
-      );
-      (logG as HTMLElement).style.transform = "rotate(4.2deg)";
-      renderRuleRing(
-        ring.rule as LogRuleTick[],
-        { radius: currentRadius, ringWidth },
-        logG,
+      children.push(
+        el("g", {
+          "data-ring": "log",
+          style: "transform: rotate(4.2deg)",
+        }, [
+          buildRuleRing(ring.rule as LogRuleTick[], {
+            radius: currentRadius,
+            ringWidth,
+          }),
+        ]),
       );
     } else if (ring.type === "azimuthal") {
-      renderAzimuthalRing(
-        ring.sliders!,
-        ring.rule as RuleTick[],
-        { radius: currentRadius, layerIndex, ringWidth },
-        svg,
+      children.push(
+        buildAzimuthalRing(ring.sliders!, ring.rule as RuleTick[], {
+          radius: currentRadius,
+          layerIndex,
+          ringWidth,
+        }),
       );
       layerIndex++;
     } else if (ring.type === "radial") {
-      renderRadialRing(
-        ring.groups!,
-        ring.slidersPerGroup!,
-        ring.rule as RuleTick[],
-        { radius: currentRadius, layerIndex, ringWidth },
-        svg,
+      children.push(
+        buildRadialRing(ring.groups!, ring.slidersPerGroup!, ring.rule as RuleTick[], {
+          radius: currentRadius,
+          layerIndex,
+          ringWidth,
+        }),
       );
       layerIndex++;
     }
@@ -159,16 +149,26 @@ export function renderBoard(
     currentRadius -= ringWidth + radialPadding;
   });
 
-  renderCenterLogo(centerSpace, svg);
+  children.push(...buildCenterLogo(centerSpace));
 
-  parent.appendChild(svg);
-  return svg;
+  return el("svg", {
+    viewBox,
+    stroke: "currentColor",
+    fill: "transparent",
+    "stroke-width": "1",
+    xmlns: "http://www.w3.org/2000/svg",
+  }, children);
 }
 
-function renderCenterLogo(
-  centerSpace: number,
+export function renderBoard(
+  config: BoardConfig,
   parent: SVGElement | Element,
-): void {
+): SVGSVGElement {
+  const tree = buildBoard(config);
+  return render(tree, parent) as SVGSVGElement;
+}
+
+function buildCenterLogo(centerSpace: number): VNode[] {
   const padding = centerSpace * 0.05;
   const boxSize = centerSpace * 0.4 + padding * 2;
   const boxOffset = -boxSize / 2;
@@ -191,17 +191,6 @@ function renderCenterLogo(
     "Z",
   ].join(" ");
 
-  svgElement(
-    "path",
-    {
-      class: "full",
-      d: pathData,
-      fill: "transparent",
-      "stroke-width": "2",
-    },
-    parent,
-  );
-
   const textSize = boxSize * 0.13;
   const lineHeight = textSize * 1.2;
   const textXCenter = boxOffset + boxSize * 0.5;
@@ -210,25 +199,30 @@ function renderCenterLogo(
   const textYFirst = boxOffset + boxSize * 0.5 - lineHeight / 2;
   const textYSecond = textYFirst + lineHeight;
 
-  const el1 = svgElement("text", {
-    class: "logo",
-    x: String(textXCenter),
-    y: String(textYFirst),
-    style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
-    "text-anchor": "middle",
-    "dominant-baseline": "middle",
-  }, parent);
-  el1.textContent = "Cybernetic";
-
-  const el2 = svgElement("text", {
-    class: "logo",
-    x: String(textXRight),
-    y: String(textYSecond),
-    style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
-    "text-anchor": "end",
-    "dominant-baseline": "middle",
-  }, parent);
-  el2.textContent = "Studio";
+  return [
+    el("path", {
+      class: "full",
+      d: pathData,
+      fill: "transparent",
+      "stroke-width": "2",
+    }),
+    textEl("text", "Cybernetic", {
+      class: "logo",
+      x: String(textXCenter),
+      y: String(textYFirst),
+      style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+    }),
+    textEl("text", "Studio", {
+      class: "logo",
+      x: String(textXRight),
+      y: String(textYSecond),
+      style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
+      "text-anchor": "end",
+      "dominant-baseline": "middle",
+    }),
+  ];
 }
 
 function buildStyles(): string {

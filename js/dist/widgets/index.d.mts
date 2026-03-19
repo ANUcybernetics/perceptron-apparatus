@@ -1,4 +1,4 @@
-import { n as PerceptronApparatus } from "../index-Bb8Zwht9.mjs";
+import { n as PerceptronApparatus } from "../index-CM197qY1.mjs";
 
 //#region src/widgets/weights.d.ts
 interface Weights {

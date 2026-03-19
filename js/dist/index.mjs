@@ -1,5 +1,4 @@
 //#region src/utils.ts
-const SVG_NS = "http://www.w3.org/2000/svg";
 const RAD_IN_DEG = 180 / Math.PI;
 function deg2rad(degrees) {
 	return degrees / RAD_IN_DEG;
@@ -21,16 +20,44 @@ function formatNumber(n) {
 	if (s === "-0") return "0";
 	return s;
 }
-function svgElement(tag, attributes = {}, parent) {
-	const el = document.createElementNS(SVG_NS, tag);
-	for (const [key, value] of Object.entries(attributes)) el.setAttribute(key, value);
-	if (parent) parent.appendChild(el);
-	return el;
+//#endregion
+//#region src/vnode.ts
+function el(tag, attrs = {}, children = []) {
+	return {
+		tag,
+		attrs,
+		children
+	};
 }
-function svgText(content, attributes = {}, parent) {
-	const el = svgElement("text", attributes, parent);
-	el.textContent = content;
-	return el;
+function textEl(tag, content, attrs = {}) {
+	return {
+		tag,
+		attrs,
+		children: [],
+		text: content
+	};
+}
+function findAll(node, predicate) {
+	const results = [];
+	if (predicate(node)) results.push(node);
+	for (const child of node.children) results.push(...findAll(child, predicate));
+	return results;
+}
+function find(node, predicate) {
+	if (predicate(node)) return node;
+	for (const child of node.children) {
+		const found = find(child, predicate);
+		if (found) return found;
+	}
+}
+const SVG_NS = "http://www.w3.org/2000/svg";
+function render(node, parent) {
+	const element = document.createElementNS(SVG_NS, node.tag);
+	for (const [key, value] of Object.entries(node.attrs)) element.setAttribute(key, value);
+	if (node.text !== void 0) element.textContent = node.text;
+	for (const child of node.children) render(child, element);
+	if (parent) parent.appendChild(element);
+	return element;
 }
 //#endregion
 //#region src/rule-ring.ts
@@ -88,149 +115,147 @@ function reluRule(maxValue, deltaValue) {
 		};
 	});
 }
-function renderRuleRing(rule, ctx, parent) {
+function buildRuleRing(rule, ctx) {
 	const radius = ctx.radius - ctx.ringWidth / 2;
 	const tickLength = 10;
-	const g = svgElement("g", {}, parent);
-	for (const { outerLabel, theta, innerLabel } of rule) {
+	return el("g", {}, [...rule.map(({ outerLabel, theta, innerLabel }) => {
 		const lineClass = outerLabel != null || innerLabel != null ? "top etch heavy" : "top etch";
-		const tickG = svgElement("g", { transform: `rotate(${-theta})` }, g);
-		svgElement("line", {
-			class: lineClass,
-			x1: "0",
-			y1: String(radius - tickLength),
-			x2: "0",
-			y2: String(radius + tickLength)
-		}, tickG);
-		svgText(outerLabel ?? "", {
-			class: "top etch",
-			x: "0",
-			y: String(radius + 2 * tickLength),
-			"text-anchor": "middle",
-			"dominant-baseline": "auto"
-		}, tickG);
-		svgText(innerLabel ?? "", {
-			class: "top etch",
-			x: "0",
-			y: String(radius - 1.3 * tickLength),
-			"text-anchor": "middle",
-			"dominant-baseline": "auto"
-		}, tickG);
-	}
-	svgElement("circle", {
+		return el("g", { transform: `rotate(${-theta})` }, [
+			el("line", {
+				class: lineClass,
+				x1: "0",
+				y1: String(radius - tickLength),
+				x2: "0",
+				y2: String(radius + tickLength)
+			}),
+			textEl("text", outerLabel ?? "", {
+				class: "top etch",
+				x: "0",
+				y: String(radius + 2 * tickLength),
+				"text-anchor": "middle",
+				"dominant-baseline": "auto"
+			}),
+			textEl("text", innerLabel ?? "", {
+				class: "top etch",
+				x: "0",
+				y: String(radius - 1.3 * tickLength),
+				"text-anchor": "middle",
+				"dominant-baseline": "auto"
+			})
+		]);
+	}), el("circle", {
 		class: "top full",
 		cx: "0",
 		cy: "0",
 		r: String(radius)
-	}, g);
-	return g;
+	})]);
 }
 //#endregion
 //#region src/azimuthal-ring.ts
 function layerLetter$1(layerIndex) {
 	return String.fromCharCode(64 + layerIndex);
 }
-function renderSlider$1(radius, thetaSweep, rule, layerIndex, sliderNumber, parent) {
+function buildSlider$1(radius, thetaSweep, rule, layerIndex, sliderNumber) {
 	const tickLength = 14;
 	const rangeMin = rule[0].value;
 	const dynamicRange = rule[rule.length - 1].value - rangeMin;
 	const thetaOffset = thetaSweep * sliderNumber;
 	const azPadding = 700 / radius + thetaSweep / 36;
-	const trackG = svgElement("g", { transform: `rotate(${-thetaOffset})` }, parent);
-	const firstLabel = rule[0].label;
-	svgText(firstLabel ?? "", {
+	const trackChildren = [];
+	trackChildren.push(textEl("text", rule[0].label ?? "", {
 		transform: `rotate(${-(.7 * azPadding)})`,
 		class: "top etch",
 		x: "0",
 		y: String(radius),
 		"text-anchor": "end",
 		"dominant-baseline": "middle"
-	}, trackG);
+	}));
 	for (const { label, value } of rule) {
 		const theta = azPadding + (thetaSweep - 2 * azPadding) * (value - rangeMin) / dynamicRange;
 		const lineClass = label ? "top etch heavy" : "top etch";
-		svgElement("line", {
+		trackChildren.push(el("line", {
 			transform: `rotate(${-theta})`,
 			class: lineClass,
 			x1: "0",
 			x2: "0",
 			y1: String(radius - tickLength / 2),
 			y2: String(radius + tickLength / 2)
-		}, trackG);
+		}));
 	}
-	const lastLabel = rule[rule.length - 1].label;
-	svgText(lastLabel ?? "", {
+	trackChildren.push(textEl("text", rule[rule.length - 1].label ?? "", {
 		transform: `rotate(${-(thetaSweep - .7 * azPadding)})`,
 		class: "top etch",
 		x: "0",
 		y: String(radius),
 		"text-anchor": "start",
 		"dominant-baseline": "middle"
-	}, trackG);
-	svgText(`${layerLetter$1(layerIndex)}${sliderNumber}`, {
+	}));
+	trackChildren.push(textEl("text", `${layerLetter$1(layerIndex)}${sliderNumber}`, {
 		transform: `rotate(${-.5 * thetaSweep})`,
 		class: "top etch indices",
 		x: "0",
 		y: String(radius - tickLength),
 		"text-anchor": "middle",
 		"dominant-baseline": "middle"
-	}, trackG);
+	}));
+	const trackG = el("g", { transform: `rotate(${-thetaOffset})` }, trackChildren);
 	const midTheta = .5 * thetaSweep;
 	const cx = radius * Math.sin(deg2rad(midTheta));
 	const cy = radius * Math.cos(deg2rad(midTheta));
-	const sliderG = svgElement("g", {
+	return [trackG, el("g", {
 		"data-slider": `${layerLetter$1(layerIndex)}${sliderNumber}`,
-		"data-slider-type": "azimuthal"
-	}, parent);
-	sliderG.style.transform = `rotate(${-thetaOffset}deg)`;
-	svgElement("circle", {
+		"data-slider-type": "azimuthal",
+		style: `transform: rotate(${-thetaOffset}deg)`
+	}, [el("circle", {
 		class: "top slider",
 		cx: String(cx),
 		cy: String(cy),
 		r: "5"
-	}, sliderG);
-	return sliderG;
+	})])];
 }
-function renderAzimuthalRing(sliderCount, rule, ctx, parent) {
+function buildAzimuthalRing(sliderCount, rule, ctx) {
 	const thetaSweep = 360 / sliderCount;
-	const g = svgElement("g", { "data-ring-type": "azimuthal" }, parent);
-	for (let i = 0; i < sliderCount; i++) renderSlider$1(ctx.radius, thetaSweep, rule, ctx.layerIndex, i, g);
-	return g;
+	const children = [];
+	for (let i = 0; i < sliderCount; i++) children.push(...buildSlider$1(ctx.radius, thetaSweep, rule, ctx.layerIndex, i));
+	return el("g", { "data-ring-type": "azimuthal" }, children);
 }
 //#endregion
 //#region src/radial-ring.ts
 function layerLetter(layerIndex) {
 	return String.fromCharCode(64 + layerIndex);
 }
-function renderSlider(radius, width, theta, layerIndex, groupIndex, sliderIndex, parent) {
+function buildSlider(radius, width, theta, layerIndex, groupIndex, sliderIndex) {
 	const midRadius = radius - width / 2;
 	const cx = midRadius * Math.sin(deg2rad(theta));
 	const cy = midRadius * Math.cos(deg2rad(theta));
-	const g = svgElement("g", {
+	return el("g", {
 		"data-slider": `${layerLetter(layerIndex)}${groupIndex}-${sliderIndex}`,
 		"data-slider-type": "radial"
-	}, parent);
-	svgElement("circle", {
+	}, [el("circle", {
 		class: "top slider",
 		cx: String(cx),
 		cy: String(cy),
 		r: "5"
-	}, g);
-	return g;
+	})]);
 }
-function renderGroup(radius, width, slidersPerGroup, thetaSweep, groupIndex, layerIndex, parent) {
+function buildGroup(radius, width, slidersPerGroup, thetaSweep, groupIndex, layerIndex) {
 	const thetaOffset = thetaSweep * groupIndex;
-	for (let i = 1; i <= slidersPerGroup; i++) renderSlider(radius, width, thetaOffset + i * (thetaSweep / (slidersPerGroup + 1)), layerIndex, groupIndex, i - 1, parent);
-	svgText(`${layerLetter(layerIndex)}${groupIndex}`, {
+	const nodes = [];
+	for (let i = 1; i <= slidersPerGroup; i++) {
+		const theta = thetaOffset + i * (thetaSweep / (slidersPerGroup + 1));
+		nodes.push(buildSlider(radius, width, theta, layerIndex, groupIndex, i - 1));
+	}
+	nodes.push(textEl("text", `${layerLetter(layerIndex)}${groupIndex}`, {
 		transform: `rotate(${-(thetaOffset + .5 * thetaSweep)})`,
 		class: "top etch indices",
 		x: "0",
 		y: String(radius - width - 10),
 		"text-anchor": "middle",
 		"dominant-baseline": "middle"
-	}, parent);
+	}));
+	return nodes;
 }
-function renderGuides(radius, width, groups, rule, parent) {
+function buildGuides(radius, width, groups, rule) {
 	const rangeMin = rule[0].value;
 	const dynamicRange = rule[rule.length - 1].value - rangeMin;
 	const thetaSweep = 360 / groups;
@@ -238,6 +263,7 @@ function renderGuides(radius, width, groups, rule, parent) {
 		label,
 		r: radius - width * (value - rangeMin) / dynamicRange
 	}));
+	const nodes = [];
 	for (const { label, r } of radii) {
 		const azPadding = r > .1 ? 700 / r : 0;
 		const arcComponents = [];
@@ -248,34 +274,36 @@ function renderGuides(radius, width, groups, rule, parent) {
 			const y2 = r * Math.cos(deg2rad((i + 1) * thetaSweep - azPadding));
 			arcComponents.push(`M ${x1} ${y1} A ${r} ${r} 0 0 0 ${x2} ${y2}`);
 		}
-		svgElement("path", {
-			class: label ? "top etch heavy" : "top etch",
+		const pathClass = label ? "top etch heavy" : "top etch";
+		nodes.push(el("path", {
+			class: pathClass,
 			d: arcComponents.join(" ")
-		}, parent);
+		}));
 	}
 	const labelledRadii = radii.filter(({ label }) => label != null);
 	for (let i = 0; i < groups; i++) {
-		const labelG = svgElement("g", {
-			class: "top etch",
-			transform: `rotate(${-(360 * i / groups)})`
-		}, parent);
-		for (const { label, r } of labelledRadii) svgText(label, {
+		const theta = 360 * i / groups;
+		const labelChildren = labelledRadii.map(({ label, r }) => textEl("text", label, {
 			class: "top etch",
 			x: "0",
 			y: String(r + 1),
 			"text-anchor": "middle",
 			"dominant-baseline": "middle"
-		}, labelG);
+		}));
+		nodes.push(el("g", {
+			class: "top etch",
+			transform: `rotate(${-theta})`
+		}, labelChildren));
 	}
+	return nodes;
 }
-function renderRadialRing(groups, slidersPerGroup, rule, ctx, parent) {
+function buildRadialRing(groups, slidersPerGroup, rule, ctx) {
 	const radius = ctx.radius - 5;
 	const width = ctx.ringWidth - 10;
 	const thetaSweep = 360 / groups;
-	const g = svgElement("g", { "data-ring-type": "radial" }, parent);
-	renderGuides(radius, width, groups, rule, g);
-	for (let i = 0; i < groups; i++) renderGroup(radius, width, slidersPerGroup, thetaSweep, i, ctx.layerIndex, g);
-	return g;
+	const children = [...buildGuides(radius, width, groups, rule)];
+	for (let i = 0; i < groups; i++) children.push(...buildGroup(radius, width, slidersPerGroup, thetaSweep, i, ctx.layerIndex));
+	return el("g", { "data-ring-type": "radial" }, children);
 }
 //#endregion
 //#region src/board.ts
@@ -328,64 +356,63 @@ function calculateRingWidths(rings, radius, radialPadding, centerSpace) {
 	const radialWidth = radialRings.length > 0 ? availableForRadial / radialRings.length : 0;
 	return rings.map((ring) => ring.type === "radial" ? radialWidth : ring.fixedWidth);
 }
-function renderBoard(config, parent) {
+function buildBoard(config) {
 	const size = config.size ?? 1200;
 	const radius = size / 2;
 	const radialPadding = 30;
 	const centerSpace = 150;
 	const svgPadding = 10;
-	const svg = svgElement("svg", {
-		viewBox: `${-(size / 2 + svgPadding)} ${-(size / 2 + svgPadding)} ${size + 2 * svgPadding} ${size + 2 * svgPadding}`,
-		stroke: "currentColor",
-		fill: "transparent",
-		"stroke-width": "1",
-		xmlns: "http://www.w3.org/2000/svg"
-	});
-	const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
-	style.textContent = buildStyles();
-	svg.appendChild(style);
-	svgElement("circle", {
+	const viewBox = `${-(size / 2 + svgPadding)} ${-(size / 2 + svgPadding)} ${size + 2 * svgPadding} ${size + 2 * svgPadding}`;
+	const children = [textEl("style", buildStyles()), el("circle", {
 		class: "full",
 		cx: "0",
 		cy: "0",
 		r: String(radius),
 		"stroke-width": "2"
-	}, svg);
+	})];
 	const rings = createRingSequence(config.nInput, config.nHidden, config.nOutput);
 	const widths = calculateRingWidths(rings, radius, radialPadding, centerSpace);
 	let currentRadius = radius - radialPadding;
 	let layerIndex = 1;
 	rings.forEach((ring, ringIndex) => {
 		const ringWidth = widths[ringIndex];
-		if (ring.type === "rule") {
-			const logG = svgElement("g", { "data-ring": "log" }, svg);
-			logG.style.transform = "rotate(4.2deg)";
-			renderRuleRing(ring.rule, {
-				radius: currentRadius,
-				ringWidth
-			}, logG);
-		} else if (ring.type === "azimuthal") {
-			renderAzimuthalRing(ring.sliders, ring.rule, {
+		if (ring.type === "rule") children.push(el("g", {
+			"data-ring": "log",
+			style: "transform: rotate(4.2deg)"
+		}, [buildRuleRing(ring.rule, {
+			radius: currentRadius,
+			ringWidth
+		})]));
+		else if (ring.type === "azimuthal") {
+			children.push(buildAzimuthalRing(ring.sliders, ring.rule, {
 				radius: currentRadius,
 				layerIndex,
 				ringWidth
-			}, svg);
+			}));
 			layerIndex++;
 		} else if (ring.type === "radial") {
-			renderRadialRing(ring.groups, ring.slidersPerGroup, ring.rule, {
+			children.push(buildRadialRing(ring.groups, ring.slidersPerGroup, ring.rule, {
 				radius: currentRadius,
 				layerIndex,
 				ringWidth
-			}, svg);
+			}));
 			layerIndex++;
 		}
 		currentRadius -= ringWidth + radialPadding;
 	});
-	renderCenterLogo(centerSpace, svg);
-	parent.appendChild(svg);
-	return svg;
+	children.push(...buildCenterLogo(centerSpace));
+	return el("svg", {
+		viewBox,
+		stroke: "currentColor",
+		fill: "transparent",
+		"stroke-width": "1",
+		xmlns: "http://www.w3.org/2000/svg"
+	}, children);
 }
-function renderCenterLogo(centerSpace, parent) {
+function renderBoard(config, parent) {
+	return render(buildBoard(config), parent);
+}
+function buildCenterLogo(centerSpace) {
 	const padding = centerSpace * .05;
 	const boxSize = centerSpace * .4 + padding * 2;
 	const boxOffset = -boxSize / 2;
@@ -394,46 +421,47 @@ function renderCenterLogo(centerSpace, parent) {
 	const y1 = boxOffset;
 	const x2 = boxOffset + boxSize;
 	const y2 = boxOffset + boxSize;
-	svgElement("path", {
-		class: "full",
-		d: [
-			`M ${x1 + r},${y1}`,
-			`L ${x2 - r},${y1}`,
-			`Q ${x2},${y1} ${x2},${y1 + r}`,
-			`L ${x2},${y2}`,
-			`L ${x1 + r},${y2}`,
-			`Q ${x1},${y2} ${x1},${y2 - r}`,
-			`L ${x1},${y1 + r}`,
-			`Q ${x1},${y1} ${x1 + r},${y1}`,
-			"Z"
-		].join(" "),
-		fill: "transparent",
-		"stroke-width": "2"
-	}, parent);
+	const pathData = [
+		`M ${x1 + r},${y1}`,
+		`L ${x2 - r},${y1}`,
+		`Q ${x2},${y1} ${x2},${y1 + r}`,
+		`L ${x2},${y2}`,
+		`L ${x1 + r},${y2}`,
+		`Q ${x1},${y2} ${x1},${y2 - r}`,
+		`L ${x1},${y1 + r}`,
+		`Q ${x1},${y1} ${x1 + r},${y1}`,
+		"Z"
+	].join(" ");
 	const textSize = boxSize * .13;
 	const lineHeight = textSize * 1.2;
 	const textXCenter = boxOffset + boxSize * .5;
 	const textXRight = textXCenter + 10 * textSize * .3;
 	const textYFirst = boxOffset + boxSize * .5 - lineHeight / 2;
 	const textYSecond = textYFirst + lineHeight;
-	const el1 = svgElement("text", {
-		class: "logo",
-		x: String(textXCenter),
-		y: String(textYFirst),
-		style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
-		"text-anchor": "middle",
-		"dominant-baseline": "middle"
-	}, parent);
-	el1.textContent = "Cybernetic";
-	const el2 = svgElement("text", {
-		class: "logo",
-		x: String(textXRight),
-		y: String(textYSecond),
-		style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
-		"text-anchor": "end",
-		"dominant-baseline": "middle"
-	}, parent);
-	el2.textContent = "Studio";
+	return [
+		el("path", {
+			class: "full",
+			d: pathData,
+			fill: "transparent",
+			"stroke-width": "2"
+		}),
+		textEl("text", "Cybernetic", {
+			class: "logo",
+			x: String(textXCenter),
+			y: String(textYFirst),
+			style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
+			"text-anchor": "middle",
+			"dominant-baseline": "middle"
+		}),
+		textEl("text", "Studio", {
+			class: "logo",
+			x: String(textXRight),
+			y: String(textYSecond),
+			style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
+			"text-anchor": "end",
+			"dominant-baseline": "middle"
+		})
+	];
 }
 function buildStyles() {
 	return `
@@ -654,4 +682,4 @@ function applyTransform(el, transform, opts) {
 	});
 }
 //#endregion
-export { PerceptronApparatus, logRule, reluRule, renderBoard };
+export { PerceptronApparatus, buildBoard, el, find, findAll, logRule, reluRule, render, renderBoard, textEl };

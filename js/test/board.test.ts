@@ -1,127 +1,96 @@
+// @vitest-environment node
 import { describe, it, expect } from "vitest";
-import { renderBoard } from "../src/board.js";
+import { buildBoard } from "../src/board.js";
+import { findAll, find } from "../src/vnode.js";
 
-function makeContainer(): HTMLDivElement {
-  return document.createElement("div");
-}
-
-describe("renderBoard", () => {
-  it("creates an SVG element", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { nInput: 6, nHidden: 4, nOutput: 3 },
-      container,
-    );
-    expect(svg.tagName).toBe("svg");
-  });
-
-  it("appends the SVG to the container", () => {
-    const container = makeContainer();
-    renderBoard({ nInput: 6, nHidden: 4, nOutput: 3 }, container);
-    expect(container.querySelector("svg")).not.toBeNull();
+describe("buildBoard", () => {
+  it("creates an svg root node", () => {
+    const tree = buildBoard({ nInput: 6, nHidden: 4, nOutput: 3 });
+    expect(tree.tag).toBe("svg");
   });
 
   it("sets viewBox with default size", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { nInput: 6, nHidden: 4, nOutput: 3 },
-      container,
-    );
-    const viewBox = svg.getAttribute("viewBox");
-    expect(viewBox).toContain("-610");
-    expect(viewBox).toContain("1220");
+    const tree = buildBoard({ nInput: 6, nHidden: 4, nOutput: 3 });
+    expect(tree.attrs["viewBox"]).toContain("-610");
+    expect(tree.attrs["viewBox"]).toContain("1220");
   });
 
   it("sets viewBox with custom size", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { size: 600, nInput: 2, nHidden: 2, nOutput: 2 },
-      container,
-    );
-    const viewBox = svg.getAttribute("viewBox");
-    expect(viewBox).toContain("-310");
-    expect(viewBox).toContain("620");
+    const tree = buildBoard({
+      size: 600,
+      nInput: 2,
+      nHidden: 2,
+      nOutput: 2,
+    });
+    expect(tree.attrs["viewBox"]).toContain("-310");
+    expect(tree.attrs["viewBox"]).toContain("620");
   });
 
-  it("contains a style element", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { nInput: 2, nHidden: 2, nOutput: 2 },
-      container,
-    );
-    expect(svg.querySelector("style")).not.toBeNull();
+  it("contains a style node", () => {
+    const tree = buildBoard({ nInput: 2, nHidden: 2, nOutput: 2 });
+    const style = find(tree, (n) => n.tag === "style");
+    expect(style).toBeDefined();
+    expect(style!.text).toContain(".slider");
   });
 
   it("creates board edge circle", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { nInput: 2, nHidden: 2, nOutput: 2 },
-      container,
+    const tree = buildBoard({ nInput: 2, nHidden: 2, nOutput: 2 });
+    const edge = find(
+      tree,
+      (n) => n.tag === "circle" && (n.attrs["class"] ?? "").includes("full"),
     );
-    const edge = svg.querySelector("circle.full");
-    expect(edge).not.toBeNull();
-    expect(edge!.getAttribute("r")).toBe("600");
+    expect(edge).toBeDefined();
+    expect(edge!.attrs["r"]).toBe("600");
   });
 
   it("creates the log ring with data-ring attribute", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { nInput: 2, nHidden: 2, nOutput: 2 },
-      container,
-    );
-    const logRing = svg.querySelector("[data-ring='log']");
-    expect(logRing).not.toBeNull();
-    expect((logRing as HTMLElement).style.transform).toBe("rotate(4.2deg)");
+    const tree = buildBoard({ nInput: 2, nHidden: 2, nOutput: 2 });
+    const logRing = find(tree, (n) => n.attrs["data-ring"] === "log");
+    expect(logRing).toBeDefined();
+    expect(logRing!.attrs["style"]).toBe("transform: rotate(4.2deg)");
   });
 
   it("creates azimuthal ring sliders", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { nInput: 3, nHidden: 2, nOutput: 2 },
-      container,
-    );
-    const inputSliders = svg.querySelectorAll(
-      "[data-slider^='A'][data-slider-type='azimuthal']",
+    const tree = buildBoard({ nInput: 3, nHidden: 2, nOutput: 2 });
+    const inputSliders = findAll(
+      tree,
+      (n) =>
+        (n.attrs["data-slider"] ?? "").startsWith("A") &&
+        n.attrs["data-slider-type"] === "azimuthal",
     );
     expect(inputSliders.length).toBe(3);
   });
 
   it("creates radial ring sliders", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { nInput: 3, nHidden: 2, nOutput: 2 },
-      container,
-    );
-    const weightSliders = svg.querySelectorAll(
-      "[data-slider^='B'][data-slider-type='radial']",
+    const tree = buildBoard({ nInput: 3, nHidden: 2, nOutput: 2 });
+    const weightSliders = findAll(
+      tree,
+      (n) =>
+        (n.attrs["data-slider"] ?? "").startsWith("B") &&
+        n.attrs["data-slider-type"] === "radial",
     );
     expect(weightSliders.length).toBe(6);
   });
 
   it("creates all expected layer letters", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { nInput: 2, nHidden: 2, nOutput: 2 },
-      container,
-    );
+    const tree = buildBoard({ nInput: 2, nHidden: 2, nOutput: 2 });
 
-    expect(svg.querySelector("[data-slider^='A']")).not.toBeNull();
-    expect(svg.querySelector("[data-slider^='B']")).not.toBeNull();
-    expect(svg.querySelector("[data-slider^='C']")).not.toBeNull();
-    expect(svg.querySelector("[data-slider^='D']")).not.toBeNull();
-    expect(svg.querySelector("[data-slider^='E']")).not.toBeNull();
+    for (const letter of ["A", "B", "C", "D", "E"]) {
+      const found = find(
+        tree,
+        (n) => (n.attrs["data-slider"] ?? "").startsWith(letter),
+      );
+      expect(found, `expected slider starting with ${letter}`).toBeDefined();
+    }
   });
 
   it("renders center logo text", () => {
-    const container = makeContainer();
-    const svg = renderBoard(
-      { nInput: 2, nHidden: 2, nOutput: 2 },
-      container,
-    );
-    const texts = Array.from(svg.querySelectorAll("text.logo")).map(
-      (t) => t.textContent,
-    );
-    expect(texts).toContain("Cybernetic");
-    expect(texts).toContain("Studio");
+    const tree = buildBoard({ nInput: 2, nHidden: 2, nOutput: 2 });
+    const logoTexts = findAll(
+      tree,
+      (n) => n.tag === "text" && (n.attrs["class"] ?? "").includes("logo"),
+    ).map((n) => n.text);
+    expect(logoTexts).toContain("Cybernetic");
+    expect(logoTexts).toContain("Studio");
   });
 });

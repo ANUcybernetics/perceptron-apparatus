@@ -2,6 +2,8 @@ import { renderBoard, type BoardConfig } from "./board.js";
 import { deg2rad } from "./utils.js";
 
 export type { BoardConfig } from "./board.js";
+export type { VNode } from "./vnode.js";
+export { el, textEl, findAll, find, render } from "./vnode.js";
 
 export interface AnimationOptions {
   duration?: number;
@@ -276,5 +278,5 @@ function applyTransform(
   });
 }
 
-export { renderBoard } from "./board.js";
+export { buildBoard, renderBoard } from "./board.js";
 export { logRule, reluRule } from "./rule-ring.js";

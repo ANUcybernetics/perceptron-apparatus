@@ -1,4 +1,5 @@
-import { deg2rad, svgElement, svgText, type RuleTick } from "./utils.js";
+import { deg2rad, type RuleTick } from "./utils.js";
+import { el, textEl, type VNode } from "./vnode.js";
 
 export interface AzimuthalRingContext {
   radius: number;
@@ -10,14 +11,13 @@ function layerLetter(layerIndex: number): string {
   return String.fromCharCode(64 + layerIndex);
 }
 
-function renderSlider(
+function buildSlider(
   radius: number,
   thetaSweep: number,
   rule: RuleTick[],
   layerIndex: number,
   sliderNumber: number,
-  parent: SVGElement | Element,
-): SVGElement {
+): VNode[] {
   const tickLength = 14;
   const rangeMin = rule[0].value;
   const rangeMax = rule[rule.length - 1].value;
@@ -25,100 +25,97 @@ function renderSlider(
   const thetaOffset = thetaSweep * sliderNumber;
   const azPadding = 700 / radius + thetaSweep / 36;
 
-  const trackG = svgElement(
-    "g",
-    { transform: `rotate(${-thetaOffset})` },
-    parent,
-  );
+  const trackChildren: VNode[] = [];
 
-  const firstLabel = rule[0].label;
-  svgText(firstLabel ?? "", {
-    transform: `rotate(${-(0.7 * azPadding)})`,
-    class: "top etch",
-    x: "0",
-    y: String(radius),
-    "text-anchor": "end",
-    "dominant-baseline": "middle",
-  }, trackG);
+  trackChildren.push(
+    textEl("text", rule[0].label ?? "", {
+      transform: `rotate(${-(0.7 * azPadding)})`,
+      class: "top etch",
+      x: "0",
+      y: String(radius),
+      "text-anchor": "end",
+      "dominant-baseline": "middle",
+    }),
+  );
 
   for (const { label, value } of rule) {
     const theta =
       azPadding +
       ((thetaSweep - 2 * azPadding) * (value - rangeMin)) / dynamicRange;
     const lineClass = label ? "top etch heavy" : "top etch";
-    svgElement(
-      "line",
-      {
+    trackChildren.push(
+      el("line", {
         transform: `rotate(${-theta})`,
         class: lineClass,
         x1: "0",
         x2: "0",
         y1: String(radius - tickLength / 2),
         y2: String(radius + tickLength / 2),
-      },
-      trackG,
+      }),
     );
   }
 
-  const lastLabel = rule[rule.length - 1].label;
-  svgText(lastLabel ?? "", {
-    transform: `rotate(${-(thetaSweep - 0.7 * azPadding)})`,
-    class: "top etch",
-    x: "0",
-    y: String(radius),
-    "text-anchor": "start",
-    "dominant-baseline": "middle",
-  }, trackG);
+  trackChildren.push(
+    textEl("text", rule[rule.length - 1].label ?? "", {
+      transform: `rotate(${-(thetaSweep - 0.7 * azPadding)})`,
+      class: "top etch",
+      x: "0",
+      y: String(radius),
+      "text-anchor": "start",
+      "dominant-baseline": "middle",
+    }),
+  );
 
-  svgText(`${layerLetter(layerIndex)}${sliderNumber}`, {
-    transform: `rotate(${-0.5 * thetaSweep})`,
-    class: "top etch indices",
-    x: "0",
-    y: String(radius - tickLength),
-    "text-anchor": "middle",
-    "dominant-baseline": "middle",
-  }, trackG);
+  trackChildren.push(
+    textEl("text", `${layerLetter(layerIndex)}${sliderNumber}`, {
+      transform: `rotate(${-0.5 * thetaSweep})`,
+      class: "top etch indices",
+      x: "0",
+      y: String(radius - tickLength),
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+    }),
+  );
+
+  const trackG = el(
+    "g",
+    { transform: `rotate(${-thetaOffset})` },
+    trackChildren,
+  );
 
   const midTheta = 0.5 * thetaSweep;
   const cx = radius * Math.sin(deg2rad(midTheta));
   const cy = radius * Math.cos(deg2rad(midTheta));
 
-  const sliderG = svgElement(
-    "g",
-    {
-      "data-slider": `${layerLetter(layerIndex)}${sliderNumber}`,
-      "data-slider-type": "azimuthal",
-    },
-    parent,
-  );
-  (sliderG as HTMLElement).style.transform = `rotate(${-thetaOffset}deg)`;
-
-  svgElement(
-    "circle",
-    {
+  const sliderG = el("g", {
+    "data-slider": `${layerLetter(layerIndex)}${sliderNumber}`,
+    "data-slider-type": "azimuthal",
+    style: `transform: rotate(${-thetaOffset}deg)`,
+  }, [
+    el("circle", {
       class: "top slider",
       cx: String(cx),
       cy: String(cy),
       r: "5",
-    },
-    sliderG,
-  );
+    }),
+  ]);
 
-  return sliderG;
+  return [trackG, sliderG];
 }
 
-export function renderAzimuthalRing(
+export function buildAzimuthalRing(
   sliderCount: number,
   rule: RuleTick[],
   ctx: AzimuthalRingContext,
-  parent: SVGElement | Element,
-): SVGElement {
+): VNode {
   const thetaSweep = 360 / sliderCount;
-  const g = svgElement("g", { "data-ring-type": "azimuthal" }, parent);
+  const children: VNode[] = [];
 
   for (let i = 0; i < sliderCount; i++) {
-    renderSlider(ctx.radius, thetaSweep, rule, ctx.layerIndex, i, g);
+    children.push(
+      ...buildSlider(ctx.radius, thetaSweep, rule, ctx.layerIndex, i),
+    );
   }
 
-  return g;
+  return el("g", { "data-ring-type": "azimuthal" }, children);
 }

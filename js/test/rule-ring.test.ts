@@ -1,5 +1,7 @@
+// @vitest-environment node
 import { describe, it, expect } from "vitest";
-import { logRule, reluRule, renderRuleRing } from "../src/rule-ring.js";
+import { logRule, reluRule, buildRuleRing } from "../src/rule-ring.js";
+import { findAll } from "../src/vnode.js";
 
 describe("logRule", () => {
   it("generates ticks from 1.0 to 9.9", () => {
@@ -79,43 +81,60 @@ describe("reluRule", () => {
   });
 });
 
-describe("renderRuleRing", () => {
-  it("creates SVG elements for each tick", () => {
+describe("buildRuleRing", () => {
+  it("creates line nodes for each tick", () => {
     const rule = logRule();
-    const parent = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    const g = renderRuleRing(rule, { radius: 500, ringWidth: 30 }, parent);
+    const tree = buildRuleRing(rule, { radius: 500, ringWidth: 30 });
 
-    expect(g.tagName).toBe("g");
-    const lines = g.querySelectorAll("line");
+    const lines = findAll(tree, (n) => n.tag === "line");
     expect(lines.length).toBe(rule.length);
   });
 
-  it("creates a circle element for the ring edge", () => {
+  it("creates a circle node for the ring edge", () => {
     const rule = logRule();
-    const parent = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    const g = renderRuleRing(rule, { radius: 500, ringWidth: 30 }, parent);
+    const tree = buildRuleRing(rule, { radius: 500, ringWidth: 30 });
 
-    const circle = g.querySelector("circle");
-    expect(circle).not.toBeNull();
-    expect(circle!.getAttribute("class")).toBe("top full");
+    const circles = findAll(
+      tree,
+      (n) => n.tag === "circle" && (n.attrs["class"] ?? "").includes("full"),
+    );
+    expect(circles.length).toBe(1);
+    expect(circles[0].attrs["class"]).toBe("top full");
   });
 
-  it("positions tick marks at correct radius", () => {
+  it("positions circle at correct radius", () => {
     const rule = logRule();
-    const parent = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    const g = renderRuleRing(rule, { radius: 500, ringWidth: 30 }, parent);
+    const tree = buildRuleRing(rule, { radius: 500, ringWidth: 30 });
 
-    const circle = g.querySelector("circle");
+    const circle = findAll(
+      tree,
+      (n) => n.tag === "circle",
+    )[0];
     const expectedRadius = 500 - 30 / 2;
-    expect(circle!.getAttribute("r")).toBe(String(expectedRadius));
+    expect(circle.attrs["r"]).toBe(String(expectedRadius));
+  });
+
+  it("wraps each tick in a rotated group", () => {
+    const rule = logRule();
+    const tree = buildRuleRing(rule, { radius: 500, ringWidth: 30 });
+
+    const tickGroups = tree.children.filter(
+      (n) => n.tag === "g" && n.attrs["transform"]?.startsWith("rotate("),
+    );
+    expect(tickGroups.length).toBe(rule.length);
+  });
+
+  it("uses heavy class for labelled ticks", () => {
+    const rule = logRule();
+    const tree = buildRuleRing(rule, { radius: 500, ringWidth: 30 });
+
+    const heavyLines = findAll(
+      tree,
+      (n) => n.tag === "line" && (n.attrs["class"] ?? "").includes("heavy"),
+    );
+    const labelledTicks = rule.filter(
+      (t) => t.outerLabel != null || t.innerLabel != null,
+    );
+    expect(heavyLines.length).toBe(labelledTicks.length);
   });
 });

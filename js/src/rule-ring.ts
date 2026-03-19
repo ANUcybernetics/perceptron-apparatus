@@ -1,4 +1,5 @@
-import { svgElement, svgText, formatNumber } from "./utils.js";
+import { formatNumber } from "./utils.js";
+import { el, textEl, type VNode } from "./vnode.js";
 
 export interface LogRuleTick {
   outerLabel: string | null;
@@ -57,57 +58,49 @@ export interface RuleRingContext {
   ringWidth: number;
 }
 
-export function renderRuleRing(
+export function buildRuleRing(
   rule: LogRuleTick[],
   ctx: RuleRingContext,
-  parent: SVGElement | Element,
-): SVGElement {
+): VNode {
   const radius = ctx.radius - ctx.ringWidth / 2;
   const tickLength = 10;
-  const g = svgElement("g", {}, parent);
 
-  for (const { outerLabel, theta, innerLabel } of rule) {
+  const tickNodes: VNode[] = rule.map(({ outerLabel, theta, innerLabel }) => {
     const hasLabel = outerLabel != null || innerLabel != null;
     const lineClass = hasLabel ? "top etch heavy" : "top etch";
 
-    const tickG = svgElement("g", { transform: `rotate(${-theta})` }, g);
-    svgElement(
-      "line",
-      {
+    return el("g", { transform: `rotate(${-theta})` }, [
+      el("line", {
         class: lineClass,
         x1: "0",
         y1: String(radius - tickLength),
         x2: "0",
         y2: String(radius + tickLength),
-      },
-      tickG,
-    );
-    svgText(outerLabel ?? "", {
-      class: "top etch",
-      x: "0",
-      y: String(radius + 2.0 * tickLength),
-      "text-anchor": "middle",
-      "dominant-baseline": "auto",
-    }, tickG);
-    svgText(innerLabel ?? "", {
-      class: "top etch",
-      x: "0",
-      y: String(radius - 1.3 * tickLength),
-      "text-anchor": "middle",
-      "dominant-baseline": "auto",
-    }, tickG);
-  }
+      }),
+      textEl("text", outerLabel ?? "", {
+        class: "top etch",
+        x: "0",
+        y: String(radius + 2.0 * tickLength),
+        "text-anchor": "middle",
+        "dominant-baseline": "auto",
+      }),
+      textEl("text", innerLabel ?? "", {
+        class: "top etch",
+        x: "0",
+        y: String(radius - 1.3 * tickLength),
+        "text-anchor": "middle",
+        "dominant-baseline": "auto",
+      }),
+    ]);
+  });
 
-  svgElement(
-    "circle",
-    {
+  return el("g", {}, [
+    ...tickNodes,
+    el("circle", {
       class: "top full",
       cx: "0",
       cy: "0",
       r: String(radius),
-    },
-    g,
-  );
-
-  return g;
+    }),
+  ]);
 }
