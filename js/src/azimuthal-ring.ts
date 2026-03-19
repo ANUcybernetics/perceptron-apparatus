@@ -86,12 +86,12 @@ function renderSlider(
   const sliderG = svgElement(
     "g",
     {
-      transform: `rotate(${-thetaOffset})`,
       "data-slider": `${layerLetter(layerIndex)}${sliderNumber}`,
       "data-slider-type": "azimuthal",
     },
     parent,
   );
+  (sliderG as HTMLElement).style.transform = `rotate(${-thetaOffset}deg)`;
 
   svgElement(
     "circle",

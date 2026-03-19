@@ -5,6 +5,10 @@ function makeContainer(): HTMLDivElement {
   return document.createElement("div");
 }
 
+function getStyle(el: Element): CSSStyleDeclaration {
+  return (el as HTMLElement).style;
+}
+
 describe("PerceptronApparatus", () => {
   it("creates an SVG in the container", () => {
     const container = makeContainer();
@@ -40,7 +44,7 @@ describe("setLogRingRotation", () => {
     await apparatus.setLogRingRotation(45);
 
     const logRing = apparatus.svg.querySelector("[data-ring='log']");
-    expect(logRing!.getAttribute("transform")).toBe("rotate(45)");
+    expect(getStyle(logRing!).transform).toBe("rotate(45deg)");
   });
 
   it("updates rotation when called multiple times", async () => {
@@ -55,7 +59,7 @@ describe("setLogRingRotation", () => {
     await apparatus.setLogRingRotation(90);
 
     const logRing = apparatus.svg.querySelector("[data-ring='log']");
-    expect(logRing!.getAttribute("transform")).toBe("rotate(90)");
+    expect(getStyle(logRing!).transform).toBe("rotate(90deg)");
   });
 });
 
@@ -72,8 +76,7 @@ describe("setSlider (azimuthal)", () => {
 
     const slider = apparatus.svg.querySelector("[data-slider='A0']");
     expect(slider).not.toBeNull();
-    const transform = slider!.getAttribute("transform");
-    expect(transform).toMatch(/^rotate\(/);
+    expect(getStyle(slider!).transform).toMatch(/^rotate\(/);
   });
 
   it("resolves immediately with duration 0", async () => {
@@ -114,8 +117,7 @@ describe("setSlider (radial)", () => {
 
     const slider = apparatus.svg.querySelector("[data-slider='B0-0']");
     expect(slider).not.toBeNull();
-    const transform = slider!.getAttribute("transform");
-    expect(transform).toMatch(/^translate\(/);
+    expect(getStyle(slider!).transform).toMatch(/^translate\(/);
   });
 });
 
@@ -136,7 +138,7 @@ describe("setSliders (batch)", () => {
 
     for (let i = 0; i < 3; i++) {
       const slider = apparatus.svg.querySelector(`[data-slider='A${i}']`);
-      expect(slider!.getAttribute("transform")).toMatch(/^rotate\(/);
+      expect(getStyle(slider!).transform).toMatch(/^rotate\(/);
     }
   });
 
@@ -155,7 +157,7 @@ describe("setSliders (batch)", () => {
 
     const azimuthal = apparatus.svg.querySelector("[data-slider='A0']");
     const radial = apparatus.svg.querySelector("[data-slider='B0-0']");
-    expect(azimuthal!.getAttribute("transform")).toMatch(/^rotate\(/);
-    expect(radial!.getAttribute("transform")).toMatch(/^translate\(/);
+    expect(getStyle(azimuthal!).transform).toMatch(/^rotate\(/);
+    expect(getStyle(radial!).transform).toMatch(/^translate\(/);
   });
 });

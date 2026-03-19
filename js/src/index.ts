@@ -22,7 +22,7 @@ export class PerceptronApparatus {
   ): Promise<void> {
     const el = this.svg.querySelector("[data-ring='log']");
     if (!el) return Promise.resolve();
-    return applyTransform(el as SVGElement, `rotate(${degrees})`, opts);
+    return applyTransform(el as SVGElement, `rotate(${degrees}deg)`, opts);
   }
 
   setSlider(
@@ -80,7 +80,7 @@ export class PerceptronApparatus {
 
     return applyTransform(
       el,
-      `rotate(${-(baseOffset + deltaTheta)})`,
+      `rotate(${-(baseOffset + deltaTheta)}deg)`,
       opts,
     );
   }
@@ -118,7 +118,7 @@ export class PerceptronApparatus {
 
     return applyTransform(
       el,
-      `translate(${-offsetX}, ${-offsetY})`,
+      `translate(${-offsetX}px, ${-offsetY}px)`,
       opts,
     );
   }
@@ -251,13 +251,13 @@ function applyTransform(
   const duration = opts.duration ?? 0;
 
   if (duration <= 0) {
-    el.style.setProperty("--pa-duration", "0ms");
-    el.setAttribute("transform", transform);
+    el.style.transition = "none";
+    el.style.transform = transform;
     return Promise.resolve();
   }
 
   return new Promise((resolve) => {
-    el.style.setProperty("--pa-duration", `${duration}ms`);
+    el.style.transition = `transform ${duration}ms ease-in-out`;
 
     const onEnd = () => {
       el.removeEventListener("transitionend", onEnd);
@@ -266,7 +266,7 @@ function applyTransform(
     el.addEventListener("transitionend", onEnd);
 
     requestAnimationFrame(() => {
-      el.setAttribute("transform", transform);
+      el.style.transform = transform;
     });
 
     setTimeout(resolve, duration + 50);

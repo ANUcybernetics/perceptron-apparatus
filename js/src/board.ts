@@ -128,12 +128,10 @@ export function renderBoard(
     if (ring.type === "rule") {
       const logG = svgElement(
         "g",
-        {
-          "data-ring": "log",
-          transform: "rotate(4.2)",
-        },
+        { "data-ring": "log" },
         svg,
       );
+      (logG as HTMLElement).style.transform = "rotate(4.2deg)";
       renderRuleRing(
         ring.rule as LogRuleTick[],
         { radius: currentRadius, ringWidth },
@@ -276,9 +274,6 @@ text.indices.small {
 text.logo {
   fill: currentColor;
   stroke: none;
-}
-[data-ring], [data-slider] {
-  transition: transform var(--pa-duration, 0ms) ease-in-out;
 }
 `;
 }

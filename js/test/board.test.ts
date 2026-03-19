@@ -71,7 +71,7 @@ describe("renderBoard", () => {
     );
     const logRing = svg.querySelector("[data-ring='log']");
     expect(logRing).not.toBeNull();
-    expect(logRing!.getAttribute("transform")).toBe("rotate(4.2)");
+    expect((logRing as HTMLElement).style.transform).toBe("rotate(4.2deg)");
   });
 
   it("creates azimuthal ring sliders", () => {

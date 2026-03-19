@@ -179,10 +179,10 @@ function renderSlider$1(radius, thetaSweep, rule, layerIndex, sliderNumber, pare
 	const cx = radius * Math.sin(deg2rad(midTheta));
 	const cy = radius * Math.cos(deg2rad(midTheta));
 	const sliderG = svgElement("g", {
-		transform: `rotate(${-thetaOffset})`,
 		"data-slider": `${layerLetter$1(layerIndex)}${sliderNumber}`,
 		"data-slider-type": "azimuthal"
 	}, parent);
+	sliderG.style.transform = `rotate(${-thetaOffset}deg)`;
 	svgElement("circle", {
 		class: "top slider",
 		cx: String(cx),
@@ -358,10 +358,8 @@ function renderBoard(config, parent) {
 	rings.forEach((ring, ringIndex) => {
 		const ringWidth = widths[ringIndex];
 		if (ring.type === "rule") {
-			const logG = svgElement("g", {
-				"data-ring": "log",
-				transform: "rotate(4.2)"
-			}, svg);
+			const logG = svgElement("g", { "data-ring": "log" }, svg);
+			logG.style.transform = "rotate(4.2deg)";
 			renderRuleRing(ring.rule, {
 				radius: currentRadius,
 				ringWidth
@@ -481,9 +479,6 @@ text.logo {
   fill: currentColor;
   stroke: none;
 }
-[data-ring], [data-slider] {
-  transition: transform var(--pa-duration, 0ms) ease-in-out;
-}
 `;
 }
 //#endregion
@@ -501,7 +496,7 @@ var PerceptronApparatus = class {
 	setLogRingRotation(degrees, opts = {}) {
 		const el = this.svg.querySelector("[data-ring='log']");
 		if (!el) return Promise.resolve();
-		return applyTransform(el, `rotate(${degrees})`, opts);
+		return applyTransform(el, `rotate(${degrees}deg)`, opts);
 	}
 	setSlider(id, value, opts = {}) {
 		const el = this.svg.querySelector(`[data-slider='${id}']`);
@@ -524,7 +519,7 @@ var PerceptronApparatus = class {
 		const azPadding = 700 / this.getRadiusForLayer(layerIndex) + thetaSweep / 36;
 		const dynamicRange = rangeMax - rangeMin;
 		const clampedValue = Math.max(rangeMin, Math.min(rangeMax, value));
-		return applyTransform(el, `rotate(${-(thetaSweep * sliderNumber + (azPadding + (thetaSweep - 2 * azPadding) * (clampedValue - rangeMin) / dynamicRange - (azPadding + (thetaSweep - 2 * azPadding) * .5)))})`, opts);
+		return applyTransform(el, `rotate(${-(thetaSweep * sliderNumber + (azPadding + (thetaSweep - 2 * azPadding) * (clampedValue - rangeMin) / dynamicRange - (azPadding + (thetaSweep - 2 * azPadding) * .5)))}deg)`, opts);
 	}
 	setRadialSlider(el, id, value, opts) {
 		const { layerIndex, groupIndex, sliderIndex } = parseRadialId(id);
@@ -541,7 +536,7 @@ var PerceptronApparatus = class {
 		const radialOffset = radius - width * (clampedValue - rangeMin) / dynamicRange - midRadius;
 		const offsetX = radialOffset * Math.sin(deg2rad(theta));
 		const offsetY = radialOffset * Math.cos(deg2rad(theta));
-		return applyTransform(el, `translate(${-offsetX}, ${-offsetY})`, opts);
+		return applyTransform(el, `translate(${-offsetX}px, ${-offsetY}px)`, opts);
 	}
 	findAzimuthalRing(layerIndex) {
 		return {
@@ -631,19 +626,19 @@ function parseRadialId(id) {
 function applyTransform(el, transform, opts) {
 	const duration = opts.duration ?? 0;
 	if (duration <= 0) {
-		el.style.setProperty("--pa-duration", "0ms");
-		el.setAttribute("transform", transform);
+		el.style.transition = "none";
+		el.style.transform = transform;
 		return Promise.resolve();
 	}
 	return new Promise((resolve) => {
-		el.style.setProperty("--pa-duration", `${duration}ms`);
+		el.style.transition = `transform ${duration}ms ease-in-out`;
 		const onEnd = () => {
 			el.removeEventListener("transitionend", onEnd);
 			resolve();
 		};
 		el.addEventListener("transitionend", onEnd);
 		requestAnimationFrame(() => {
-			el.setAttribute("transform", transform);
+			el.style.transform = transform;
 		});
 		setTimeout(resolve, duration + 50);
 	});
