@@ -478,6 +478,8 @@ text {
   stroke: currentColor;
   fill: currentColor;
   scale: 1;
+  transform-box: fill-box;
+  transform-origin: center;
   transition: scale 150ms ease-out, fill 150ms ease-out, stroke 150ms ease-out;
 }
 .top.slider {
