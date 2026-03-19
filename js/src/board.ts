@@ -245,9 +245,16 @@ text {
 .slider {
   stroke: currentColor;
   fill: currentColor;
+  scale: 1;
+  transition: scale 150ms ease-out, fill 150ms ease-out, stroke 150ms ease-out;
 }
 .top.slider {
   stroke-width: 1;
+}
+.animating .slider {
+  scale: 2.5;
+  fill: var(--pa-highlight, currentColor);
+  stroke: var(--pa-highlight, currentColor);
 }
 .etch {
   stroke-width: 0.5;

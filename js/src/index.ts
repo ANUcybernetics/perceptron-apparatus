@@ -253,23 +253,26 @@ function applyTransform(
   if (duration <= 0) {
     el.style.transition = "none";
     el.style.transform = transform;
+    el.classList.remove("animating");
     return Promise.resolve();
   }
 
   return new Promise((resolve) => {
     el.style.transition = `transform ${duration}ms ease-in-out`;
+    el.classList.add("animating");
 
-    const onEnd = () => {
-      el.removeEventListener("transitionend", onEnd);
+    const done = () => {
+      el.removeEventListener("transitionend", done);
+      el.classList.remove("animating");
       resolve();
     };
-    el.addEventListener("transitionend", onEnd);
+    el.addEventListener("transitionend", done);
 
     requestAnimationFrame(() => {
       el.style.transform = transform;
     });
 
-    setTimeout(resolve, duration + 50);
+    setTimeout(done, duration + 50);
   });
 }
 

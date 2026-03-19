@@ -449,9 +449,16 @@ text {
 .slider {
   stroke: currentColor;
   fill: currentColor;
+  scale: 1;
+  transition: scale 150ms ease-out, fill 150ms ease-out, stroke 150ms ease-out;
 }
 .top.slider {
   stroke-width: 1;
+}
+.animating .slider {
+  scale: 2.5;
+  fill: var(--pa-highlight, currentColor);
+  stroke: var(--pa-highlight, currentColor);
 }
 .etch {
   stroke-width: 0.5;
@@ -628,19 +635,22 @@ function applyTransform(el, transform, opts) {
 	if (duration <= 0) {
 		el.style.transition = "none";
 		el.style.transform = transform;
+		el.classList.remove("animating");
 		return Promise.resolve();
 	}
 	return new Promise((resolve) => {
 		el.style.transition = `transform ${duration}ms ease-in-out`;
-		const onEnd = () => {
-			el.removeEventListener("transitionend", onEnd);
+		el.classList.add("animating");
+		const done = () => {
+			el.removeEventListener("transitionend", done);
+			el.classList.remove("animating");
 			resolve();
 		};
-		el.addEventListener("transitionend", onEnd);
+		el.addEventListener("transitionend", done);
 		requestAnimationFrame(() => {
 			el.style.transform = transform;
 		});
-		setTimeout(resolve, duration + 50);
+		setTimeout(done, duration + 50);
 	});
 }
 //#endregion
