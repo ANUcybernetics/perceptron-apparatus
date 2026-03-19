@@ -25,13 +25,9 @@ function renderSlider(
   const thetaOffset = thetaSweep * sliderNumber;
   const azPadding = 700 / radius + thetaSweep / 36;
 
-  const g = svgElement(
+  const trackG = svgElement(
     "g",
-    {
-      transform: `rotate(${-thetaOffset})`,
-      "data-slider": `${layerLetter(layerIndex)}${sliderNumber}`,
-      "data-slider-type": "azimuthal",
-    },
+    { transform: `rotate(${-thetaOffset})` },
     parent,
   );
 
@@ -43,7 +39,7 @@ function renderSlider(
     y: String(radius),
     "text-anchor": "end",
     "dominant-baseline": "middle",
-  }, g);
+  }, trackG);
 
   for (const { label, value } of rule) {
     const theta =
@@ -60,7 +56,7 @@ function renderSlider(
         y1: String(radius - tickLength / 2),
         y2: String(radius + tickLength / 2),
       },
-      g,
+      trackG,
     );
   }
 
@@ -72,7 +68,7 @@ function renderSlider(
     y: String(radius),
     "text-anchor": "start",
     "dominant-baseline": "middle",
-  }, g);
+  }, trackG);
 
   svgText(`${layerLetter(layerIndex)}${sliderNumber}`, {
     transform: `rotate(${-0.5 * thetaSweep})`,
@@ -81,24 +77,34 @@ function renderSlider(
     y: String(radius - tickLength),
     "text-anchor": "middle",
     "dominant-baseline": "middle",
-  }, g);
+  }, trackG);
 
-  const x1 = radius * Math.sin(deg2rad(azPadding));
-  const y1 = radius * Math.cos(deg2rad(azPadding));
-  const x2 = radius * Math.sin(deg2rad(thetaSweep - azPadding));
-  const y2 = radius * Math.cos(deg2rad(thetaSweep - azPadding));
+  const midTheta = 0.5 * thetaSweep;
+  const cx = radius * Math.sin(deg2rad(midTheta));
+  const cy = radius * Math.cos(deg2rad(midTheta));
 
-  svgElement(
-    "path",
+  const sliderG = svgElement(
+    "g",
     {
-      class: "top slider",
-      "stroke-linecap": "round",
-      d: `M ${x1} ${y1} A ${radius} ${radius} 0 0 0 ${x2} ${y2}`,
+      transform: `rotate(${-thetaOffset})`,
+      "data-slider": `${layerLetter(layerIndex)}${sliderNumber}`,
+      "data-slider-type": "azimuthal",
     },
-    g,
+    parent,
   );
 
-  return g;
+  svgElement(
+    "circle",
+    {
+      class: "top slider",
+      cx: String(cx),
+      cy: String(cy),
+      r: "5",
+    },
+    sliderG,
+  );
+
+  return sliderG;
 }
 
 export function renderAzimuthalRing(

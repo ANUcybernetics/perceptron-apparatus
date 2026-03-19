@@ -98,7 +98,7 @@ export function renderBoard(
 
   const svg = svgElement("svg", {
     viewBox,
-    stroke: "black",
+    stroke: "currentColor",
     fill: "transparent",
     "stroke-width": "1",
     xmlns: "http://www.w3.org/2000/svg",
@@ -216,7 +216,7 @@ function renderCenterLogo(
     class: "logo",
     x: String(textXCenter),
     y: String(textYFirst),
-    style: `font-family: sans-serif; font-size: ${textSize}px; fill: black; stroke: none;`,
+    style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
     "text-anchor": "middle",
     "dominant-baseline": "middle",
   }, parent);
@@ -226,7 +226,7 @@ function renderCenterLogo(
     class: "logo",
     x: String(textXRight),
     y: String(textYSecond),
-    style: `font-family: sans-serif; font-size: ${textSize}px; fill: black; stroke: none;`,
+    style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
     "text-anchor": "end",
     "dominant-baseline": "middle",
   }, parent);
@@ -241,25 +241,30 @@ text {
 }
 .full {
   stroke-width: 1;
-  stroke: #6ab04c;
+  stroke: currentColor;
+  opacity: 0.3;
 }
 .slider {
-  stroke: #f0932b;
+  stroke: currentColor;
+  fill: currentColor;
 }
 .top.slider {
-  stroke-width: 3;
+  stroke-width: 1;
 }
 .etch {
   stroke-width: 0.5;
-  stroke: black;
+  stroke: currentColor;
+  opacity: 0.4;
 }
 .etch.heavy {
   stroke-width: 1.5;
+  opacity: 0.6;
 }
 text {
-  fill: black;
+  fill: currentColor;
   stroke: none;
   font-weight: 500;
+  opacity: 0.5;
 }
 text.indices {
   font-size: 12px;
@@ -269,7 +274,7 @@ text.indices.small {
   font-size: 8px;
 }
 text.logo {
-  fill: black;
+  fill: currentColor;
   stroke: none;
 }
 [data-ring], [data-slider] {

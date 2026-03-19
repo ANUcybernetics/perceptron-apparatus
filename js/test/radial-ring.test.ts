@@ -90,7 +90,7 @@ describe("renderRadialRing", () => {
       ringWidth: 100,
     }, svg);
 
-    const topPaths = g.querySelectorAll("path.top.slider");
-    expect(topPaths.length).toBe(6);
+    const circles = g.querySelectorAll("circle.top.slider");
+    expect(circles.length).toBe(6);
   });
 });

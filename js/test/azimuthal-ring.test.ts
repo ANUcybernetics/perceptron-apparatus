@@ -72,8 +72,8 @@ describe("renderAzimuthalRing", () => {
       ringWidth: 10,
     }, svg);
 
-    const paths = g.querySelectorAll("path.slider");
-    expect(paths.length).toBe(4);
+    const circles = g.querySelectorAll("circle.slider");
+    expect(circles.length).toBe(4);
   });
 
   it("creates tick marks for rule values", () => {

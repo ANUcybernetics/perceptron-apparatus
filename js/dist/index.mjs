@@ -136,11 +136,7 @@ function renderSlider$1(radius, thetaSweep, rule, layerIndex, sliderNumber, pare
 	const dynamicRange = rule[rule.length - 1].value - rangeMin;
 	const thetaOffset = thetaSweep * sliderNumber;
 	const azPadding = 700 / radius + thetaSweep / 36;
-	const g = svgElement("g", {
-		transform: `rotate(${-thetaOffset})`,
-		"data-slider": `${layerLetter$1(layerIndex)}${sliderNumber}`,
-		"data-slider-type": "azimuthal"
-	}, parent);
+	const trackG = svgElement("g", { transform: `rotate(${-thetaOffset})` }, parent);
 	const firstLabel = rule[0].label;
 	svgText(firstLabel ?? "", {
 		transform: `rotate(${-(.7 * azPadding)})`,
@@ -149,7 +145,7 @@ function renderSlider$1(radius, thetaSweep, rule, layerIndex, sliderNumber, pare
 		y: String(radius),
 		"text-anchor": "end",
 		"dominant-baseline": "middle"
-	}, g);
+	}, trackG);
 	for (const { label, value } of rule) {
 		const theta = azPadding + (thetaSweep - 2 * azPadding) * (value - rangeMin) / dynamicRange;
 		const lineClass = label ? "top etch heavy" : "top etch";
@@ -160,7 +156,7 @@ function renderSlider$1(radius, thetaSweep, rule, layerIndex, sliderNumber, pare
 			x2: "0",
 			y1: String(radius - tickLength / 2),
 			y2: String(radius + tickLength / 2)
-		}, g);
+		}, trackG);
 	}
 	const lastLabel = rule[rule.length - 1].label;
 	svgText(lastLabel ?? "", {
@@ -170,7 +166,7 @@ function renderSlider$1(radius, thetaSweep, rule, layerIndex, sliderNumber, pare
 		y: String(radius),
 		"text-anchor": "start",
 		"dominant-baseline": "middle"
-	}, g);
+	}, trackG);
 	svgText(`${layerLetter$1(layerIndex)}${sliderNumber}`, {
 		transform: `rotate(${-.5 * thetaSweep})`,
 		class: "top etch indices",
@@ -178,17 +174,22 @@ function renderSlider$1(radius, thetaSweep, rule, layerIndex, sliderNumber, pare
 		y: String(radius - tickLength),
 		"text-anchor": "middle",
 		"dominant-baseline": "middle"
-	}, g);
-	const x1 = radius * Math.sin(deg2rad(azPadding));
-	const y1 = radius * Math.cos(deg2rad(azPadding));
-	const x2 = radius * Math.sin(deg2rad(thetaSweep - azPadding));
-	const y2 = radius * Math.cos(deg2rad(thetaSweep - azPadding));
-	svgElement("path", {
+	}, trackG);
+	const midTheta = .5 * thetaSweep;
+	const cx = radius * Math.sin(deg2rad(midTheta));
+	const cy = radius * Math.cos(deg2rad(midTheta));
+	const sliderG = svgElement("g", {
+		transform: `rotate(${-thetaOffset})`,
+		"data-slider": `${layerLetter$1(layerIndex)}${sliderNumber}`,
+		"data-slider-type": "azimuthal"
+	}, parent);
+	svgElement("circle", {
 		class: "top slider",
-		"stroke-linecap": "round",
-		d: `M ${x1} ${y1} A ${radius} ${radius} 0 0 0 ${x2} ${y2}`
-	}, g);
-	return g;
+		cx: String(cx),
+		cy: String(cy),
+		r: "5"
+	}, sliderG);
+	return sliderG;
 }
 function renderAzimuthalRing(sliderCount, rule, ctx, parent) {
 	const thetaSweep = 360 / sliderCount;
@@ -202,23 +203,18 @@ function layerLetter(layerIndex) {
 	return String.fromCharCode(64 + layerIndex);
 }
 function renderSlider(radius, width, theta, layerIndex, groupIndex, sliderIndex, parent) {
+	const midRadius = radius - width / 2;
+	const cx = midRadius * Math.sin(deg2rad(theta));
+	const cy = midRadius * Math.cos(deg2rad(theta));
 	const g = svgElement("g", {
 		"data-slider": `${layerLetter(layerIndex)}${groupIndex}-${sliderIndex}`,
 		"data-slider-type": "radial"
 	}, parent);
-	svgElement("path", {
+	svgElement("circle", {
 		class: "top slider",
-		transform: `rotate(${-theta}) translate(0 ${radius})`,
-		"stroke-linecap": "round",
-		d: `M 0 0 v ${-width}`
-	}, g);
-	svgText(String(sliderIndex), {
-		transform: `rotate(${-theta})`,
-		class: "top etch indices small",
-		x: "0",
-		y: String(radius + 8),
-		"text-anchor": "middle",
-		"dominant-baseline": "middle"
+		cx: String(cx),
+		cy: String(cy),
+		r: "5"
 	}, g);
 	return g;
 }
@@ -340,7 +336,7 @@ function renderBoard(config, parent) {
 	const svgPadding = 10;
 	const svg = svgElement("svg", {
 		viewBox: `${-(size / 2 + svgPadding)} ${-(size / 2 + svgPadding)} ${size + 2 * svgPadding} ${size + 2 * svgPadding}`,
-		stroke: "black",
+		stroke: "currentColor",
 		fill: "transparent",
 		"stroke-width": "1",
 		xmlns: "http://www.w3.org/2000/svg"
@@ -426,7 +422,7 @@ function renderCenterLogo(centerSpace, parent) {
 		class: "logo",
 		x: String(textXCenter),
 		y: String(textYFirst),
-		style: `font-family: sans-serif; font-size: ${textSize}px; fill: black; stroke: none;`,
+		style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
 		"text-anchor": "middle",
 		"dominant-baseline": "middle"
 	}, parent);
@@ -435,7 +431,7 @@ function renderCenterLogo(centerSpace, parent) {
 		class: "logo",
 		x: String(textXRight),
 		y: String(textYSecond),
-		style: `font-family: sans-serif; font-size: ${textSize}px; fill: black; stroke: none;`,
+		style: `font-family: sans-serif; font-size: ${textSize}px; fill: currentColor; stroke: none;`,
 		"text-anchor": "end",
 		"dominant-baseline": "middle"
 	}, parent);
@@ -449,25 +445,30 @@ text {
 }
 .full {
   stroke-width: 1;
-  stroke: #6ab04c;
+  stroke: currentColor;
+  opacity: 0.3;
 }
 .slider {
-  stroke: #f0932b;
+  stroke: currentColor;
+  fill: currentColor;
 }
 .top.slider {
-  stroke-width: 3;
+  stroke-width: 1;
 }
 .etch {
   stroke-width: 0.5;
-  stroke: black;
+  stroke: currentColor;
+  opacity: 0.4;
 }
 .etch.heavy {
   stroke-width: 1.5;
+  opacity: 0.6;
 }
 text {
-  fill: black;
+  fill: currentColor;
   stroke: none;
   font-weight: 500;
+  opacity: 0.5;
 }
 text.indices {
   font-size: 12px;
@@ -477,7 +478,7 @@ text.indices.small {
   font-size: 8px;
 }
 text.logo {
-  fill: black;
+  fill: currentColor;
   stroke: none;
 }
 [data-ring], [data-slider] {

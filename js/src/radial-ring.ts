@@ -19,6 +19,10 @@ function renderSlider(
   sliderIndex: number,
   parent: SVGElement | Element,
 ): SVGElement {
+  const midRadius = radius - width / 2;
+  const cx = midRadius * Math.sin(deg2rad(theta));
+  const cy = midRadius * Math.cos(deg2rad(theta));
+
   const g = svgElement(
     "g",
     {
@@ -29,24 +33,15 @@ function renderSlider(
   );
 
   svgElement(
-    "path",
+    "circle",
     {
       class: "top slider",
-      transform: `rotate(${-theta}) translate(0 ${radius})`,
-      "stroke-linecap": "round",
-      d: `M 0 0 v ${-width}`,
+      cx: String(cx),
+      cy: String(cy),
+      r: "5",
     },
     g,
   );
-
-  svgText(String(sliderIndex), {
-    transform: `rotate(${-theta})`,
-    class: "top etch indices small",
-    x: "0",
-    y: String(radius + 8),
-    "text-anchor": "middle",
-    "dominant-baseline": "middle",
-  }, g);
 
   return g;
 }
