@@ -1,7 +1,7 @@
 [tools]
-elixir = "latest"
-erlang = "latest"
-node = "latest"
+erlang = "28.1.1"
+elixir = "1.18.4-otp-28"
+node = "24"
 pnpm = "latest"
 
 [tasks.board]
