@@ -148,7 +148,10 @@ import { PerceptronApparatus } from "perceptron-apparatus";
 import { trainMnist } from "perceptron-apparatus/training";
 
 // Interactive widgets (MNIST input grid, poker hand selector, animator)
-import { MnistInputWidget, ComputationAnimator } from "perceptron-apparatus/widgets";
+import {
+  MnistInputWidget,
+  ComputationAnimator,
+} from "perceptron-apparatus/widgets";
 ```
 
 This automatically creates the complete ring sequence:
