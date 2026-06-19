@@ -224,10 +224,29 @@ The project includes Typst templates for generating educational materials:
 These materials make the apparatus accessible for educational demonstrations and
 public engagement.
 
+## Citation
+
+If you use the Perceptron Apparatus, please cite it. Machine-readable citation
+metadata lives in [`CITATION.cff`](CITATION.cff); GitHub's "Cite this
+repository" button turns it into APA or BibTeX.
+
+<!-- After the first GitHub release is archived by Zenodo, paste its concept DOI
+into CITATION.cff and add a badge near the top of this file:
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX) -->
+
 ## Author
 
-(c) 2024 Ben Swift
+(c) 2024 Ben Swift, with fabrication support from Sam Shellard
+([Workshop7](https://www.canberra.edu.au/future-students/study-at-uc/study-areas/design/workshop7),
+University of Canberra).
 
 ## Licence
 
-MIT
+This project is dual-licensed:
+
+- code (Elixir, TypeScript, and build tooling) under the
+  [MIT licence](LICENSE-MIT)
+- documentation, fabrication designs, and educational materials (`docs/`,
+  generated SVGs, posters, and worksheets) under
+  [Creative Commons Attribution 4.0 International](LICENSE-CC-BY-4.0)
+  (CC-BY-4.0)

@@ -1,0 +1,31 @@
+{
+  "title": "Perceptron Apparatus",
+  "description": "A physical computational device that performs artificial neural network calculations through mechanical manipulation---an \"abacus for deep learning\". The project combines digital fabrication tooling (laser-cut and CNC-routed SVG generation), machine-learning infrastructure for training and exporting network weights (MNIST digit and poker-hand classifiers), and a browser-based digital twin with interactive widgets. Educational posters and worksheets make the apparatus usable for public engagement and teaching. A Cybernetic Studio (Australian National University) project. Source code is released under the MIT licence; documentation, fabrication designs, and educational materials are released under CC-BY-4.0.",
+  "upload_type": "software",
+  "license": "MIT",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Swift, Ben",
+      "affiliation": "Australian National University",
+      "orcid": "0000-0003-2138-5969"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "Shellard, Sam",
+      "type": "Producer",
+      "affiliation": "Workshop7, University of Canberra"
+    }
+  ],
+  "keywords": [
+    "neural networks",
+    "machine learning",
+    "perceptron",
+    "physical computing",
+    "digital fabrication",
+    "STEM education",
+    "science communication",
+    "MNIST"
+  ]
+}

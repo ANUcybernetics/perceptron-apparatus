@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use the Perceptron Apparatus, please cite it as below."
+title: "Perceptron Apparatus"
+abstract: >-
+  A physical computational device that performs artificial neural network
+  calculations through mechanical manipulation---an "abacus for deep learning".
+  The project combines digital fabrication tooling (laser-cut and CNC-routed SVG
+  generation), machine-learning infrastructure for training and exporting
+  network weights, and a browser-based digital twin with interactive widgets,
+  alongside educational posters and worksheets for teaching and public
+  engagement.
+type: software
+authors:
+  - family-names: Swift
+    given-names: Ben
+    affiliation: "Australian National University"
+    orcid: "https://orcid.org/0000-0003-2138-5969"
+license:
+  - MIT
+  - CC-BY-4.0
+repository-code: "https://github.com/ANUcybernetics/perceptron-apparatus"
+url: "https://github.com/ANUcybernetics/perceptron-apparatus"
+keywords:
+  - neural networks
+  - machine learning
+  - perceptron
+  - physical computing
+  - digital fabrication
+  - STEM education
+  - science communication
+  - MNIST
+# After the first release is archived by Zenodo, add its concept DOI here:
+# doi: 10.5281/zenodo.XXXXXXX
