@@ -13,6 +13,17 @@ A [Cybernetic Studio](https://github.com/ANUcybernetics/) project by
 UC's
 [Workshop7](https://www.canberra.edu.au/future-students/study-at-uc/study-areas/design/workshop7).
 
+![The Perceptron Apparatus: a large laser-cut plywood disc on a three-legged table, its surface engraved with concentric rings of brass slider markers](docs/images/apparatus.jpg)
+
+The concentric rings encode the network---input values, weights, and activations
+are set and read by sliding the brass markers along laser-cut tracks:
+
+| Top-down view of the computation rings                                                                                   | Setting values by hand                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| ![Top-down view of the apparatus showing concentric input, weight, and output rings](docs/images/apparatus-top-down.jpg) | ![A person sliding brass markers to set values on the apparatus](docs/images/apparatus-in-use.jpg) |
+
+_Photographs by Andrew Meares._
+
 ## Project scope
 
 This monorepo has two peer components:
