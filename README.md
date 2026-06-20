@@ -1,5 +1,7 @@
 # Perceptron Apparatus
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20768557.svg)](https://doi.org/10.5281/zenodo.20768557)
+
 A physical computational device that performs Artificial Neural Network
 calculations through mechanical manipulation---think "abacus for deep learning".
 This project combines digital tools for fabrication, machine learning
@@ -229,10 +231,6 @@ public engagement.
 If you use the Perceptron Apparatus, please cite it. Machine-readable citation
 metadata lives in [`CITATION.cff`](CITATION.cff); GitHub's "Cite this
 repository" button turns it into APA or BibTeX.
-
-<!-- After the first GitHub release is archived by Zenodo, paste its concept DOI
-into CITATION.cff and add a badge near the top of this file:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX) -->
 
 ## Author
 
