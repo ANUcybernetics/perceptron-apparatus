@@ -27,5 +27,10 @@
     "STEM education",
     "science communication",
     "MNIST"
+  ],
+  "communities": [
+    {
+      "identifier": "cybernetic-studio"
+    }
   ]
 }
