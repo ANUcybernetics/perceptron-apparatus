@@ -2,7 +2,7 @@
   "title": "Perceptron Apparatus",
   "description": "A physical computational device that performs artificial neural network calculations through mechanical manipulation---an \"abacus for deep learning\". The project combines digital fabrication tooling (laser-cut and CNC-routed SVG generation), machine-learning infrastructure for training and exporting network weights (MNIST digit and poker-hand classifiers), and a browser-based digital twin with interactive widgets. Educational posters and worksheets make the apparatus usable for public engagement and teaching. A Cybernetic Studio (Australian National University) project. Source code is released under the MIT licence; documentation, fabrication designs, and educational materials are released under CC-BY-4.0.",
   "upload_type": "software",
-  "license": "MIT",
+  "license": "cc-by-4.0",
   "access_right": "open",
   "creators": [
     {
