@@ -119,6 +119,29 @@ describe("setSlider (radial)", () => {
     expect(slider).not.toBeNull();
     expect(getStyle(slider!).transform).toMatch(/^translate\(/);
   });
+
+  it("moves a radial slider to its value on the engraved scale", async () => {
+    const container = makeContainer();
+    const apparatus = new PerceptronApparatus(container, {
+      nInput: 36,
+      nHidden: 6,
+      nOutput: 10,
+    });
+    const slider = apparatus.svg.querySelector("[data-slider='B0-0']")!;
+    const circle = slider.querySelector("circle")!;
+    const radiusAt = async (value: number) => {
+      await apparatus.setSlider("B0-0", value);
+      const [dx, dy] = getStyle(slider).transform.match(/-?[\d.]+(?:e-?\d+)?/g)!.map(Number);
+      return Math.hypot(
+        Number(circle.getAttribute("cx")) + dx,
+        Number(circle.getAttribute("cy")) + dy,
+      );
+    };
+
+    // the guide arcs put the scale's minimum on the outside of the ring
+    expect(await radiusAt(-5)).toBeCloseTo(465);
+    expect(await radiusAt(5)).toBeCloseTo(355);
+  });
 });
 
 describe("setSliders (batch)", () => {

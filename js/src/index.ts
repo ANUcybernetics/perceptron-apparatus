@@ -123,7 +123,7 @@ export class PerceptronApparatus {
 
     return applyTransform(
       el,
-      `translate(${-offsetX}px, ${-offsetY}px)`,
+      `translate(${offsetX}px, ${offsetY}px)`,
       opts,
     );
   }

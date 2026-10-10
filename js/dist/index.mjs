@@ -572,9 +572,7 @@ var PerceptronApparatus = class {
 		const theta = thetaSweep * groupIndex + (sliderIndex + 1) * (thetaSweep / (ringDef.slidersPerGroup + 1));
 		const midRadius = radius - width / 2;
 		const radialOffset = radius - width * (clampedValue - rangeMin) / dynamicRange - midRadius;
-		const offsetX = radialOffset * Math.sin(deg2rad(theta));
-		const offsetY = radialOffset * Math.cos(deg2rad(theta));
-		return applyTransform(el, `translate(${-offsetX}px, ${-offsetY}px)`, opts);
+		return applyTransform(el, `translate(${radialOffset * Math.sin(deg2rad(theta))}px, ${radialOffset * Math.cos(deg2rad(theta))}px)`, opts);
 	}
 	findAzimuthalRing(layerIndex) {
 		return {
