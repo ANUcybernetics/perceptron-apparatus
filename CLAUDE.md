@@ -23,6 +23,7 @@ computation animator). Uses pnpm, tsdown, vitest, oxlint, and tsgo. See
 - `docs/`: Typst templates for educational posters and worksheets, ML
   documentation, exported weight JSON files
 - `svg/`: generated SVG output
+- `video/`: explainer videos built on the digital twin (see "Video style")
 - `mise.toml`: unified task runner for both components (`mise run test`,
   `mise run build`)
 
@@ -132,6 +133,10 @@ GitHub (e.g. `pnpm add github:benswift/perceptron_apparatus?path=js`). The
 `?path=` syntax works with pnpm and yarn but not npm. Rebuild with
 `cd js && pnpm build` and commit the updated `dist/` whenever the TS source
 changes.
+
+## Video style
+
+Make videos with the `ben:styled-video` skill. Style guide: `video/STYLE.md`.
 
 <!-- usage-rules-start -->
 <!-- usage-rules-header -->

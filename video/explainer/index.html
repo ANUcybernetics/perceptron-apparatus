@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Perceptron Apparatus explainer</title>
+    <link rel="stylesheet" href="kit/kit.css" />
+    <style>
+      html, body { width: 1920px; height: 1080px; }
+    </style>
+  </head>
+  <body>
+    <!-- Script: video/scripts/explainer.md. build() is in explainer.js. -->
+    <div id="stage" class="stage" data-tail="8" data-aspect="landscape" data-composition-id="explainer"
+         data-start="0" data-duration="112.02" data-width="1920" data-height="1080" data-fps="50">
+      <div id="scene" class="clip layer scene" data-start="0" data-duration="112.02" data-track-index="0"></div>
+      <audio id="sound" class="clip" src="assets/mix.wav" data-start="0" data-duration="112.02" data-track-index="1"></audio>
+    </div>
+    <script type="module">
+      import * as M from "./kit/motion/motion.js";
+      import { build, FONTS } from "./explainer.js";
+      M.ready(build, { fonts: FONTS, captions: false }).then(({ tl }) => {
+        window.__timelines["explainer"] = tl;
+      });
+    </script>
+  </body>
+</html>

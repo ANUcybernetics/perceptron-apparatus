@@ -28,3 +28,8 @@ perceptron_apparatus-*.tar
 
 # JS package
 js/node_modules/
+
+# Videos
+/video/node_modules/
+/video/out/
+/video/*/assets/

@@ -1,0 +1,8 @@
+{
+  "name": "perceptron-apparatus-video",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "astromotion": "github:ANUcybernetics/astromotion#v0.34.4"
+  }
+}

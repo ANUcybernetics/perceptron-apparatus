@@ -1,0 +1,79 @@
+WEBVTT
+
+00:00:01.000 --> 00:00:02.765
+This table is a computer.
+
+00:00:03.265 --> 00:00:10.370
+No electricity, no chips: just plywood, brass sliders and a circular slide rule.
+
+00:00:11.270 --> 00:00:16.239
+It runs a neural network, the same arithmetic that underpins modern AI.
+
+00:00:17.239 --> 00:00:18.911
+Start with a handwritten digit,
+
+00:00:19.311 --> 00:00:21.540
+shrunk to thirty-six squares.
+
+00:00:22.340 --> 00:00:25.823
+Each square sets one slider on the outer ring:
+
+00:00:26.323 --> 00:00:29.249
+the more ink, the further it slides.
+
+00:00:30.449 --> 00:00:37.043
+The next ring holds the weights: numbers the network learned from thousands of handwritten digits.
+
+00:00:37.843 --> 00:00:39.654
+They are everything it knows.
+
+00:00:40.654 --> 00:00:41.815
+Now the work.
+
+00:00:42.315 --> 00:00:43.244
+Take an input,
+
+00:00:43.944 --> 00:00:45.105
+take its weight,
+
+00:00:45.805 --> 00:00:48.267
+and multiply them on the slide rule.
+
+00:00:49.867 --> 00:00:52.560
+Add the answer to a slider in the hidden ring.
+
+00:00:54.160 --> 00:00:55.692
+Then do it again.
+
+00:00:56.193 --> 00:00:58.515
+Two hundred and sixteen times.
+
+00:01:01.715 --> 00:01:04.687
+Anything that ends up below zero goes back to zero.
+
+00:01:06.087 --> 00:01:09.523
+One more ring of weights, sixty more multiplications,
+
+00:01:11.923 --> 00:01:15.081
+and the ten inner sliders hold the answer.
+
+00:01:15.881 --> 00:01:18.157
+The one that has travelled furthest wins.
+
+00:01:19.057 --> 00:01:20.218
+It's a seven.
+
+00:01:22.418 --> 00:01:25.343
+By hand, that takes the best part of an hour.
+
+00:01:26.343 --> 00:01:31.545
+A chip in a data centre does the same sums trillions of times a second.
+
+00:01:32.745 --> 00:01:35.020
+But nothing different is happening in there.
+
+00:01:35.520 --> 00:01:38.539
+It is multiplying and adding, all the way down.
+
+00:01:39.739 --> 00:01:42.014
+Here, you can watch every step.

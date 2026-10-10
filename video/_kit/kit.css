@@ -1,0 +1,60 @@
+/* The look of the Perceptron Apparatus videos: white line on black with gold
+   accents, in the ANU palette and type (anu-typst-template's anu-colors,
+   astro-theme-anu's Public Sans). STYLE.md next to this directory is the guide. */
+
+@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-Light.otf") format("opentype"); font-weight: 300; }
+@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-Regular.otf") format("opentype"); font-weight: 400; }
+@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-Medium.otf") format("opentype"); font-weight: 500; }
+@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-SemiBold.otf") format("opentype"); font-weight: 600; }
+@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-Bold.otf") format("opentype"); font-weight: 700; }
+
+:root {
+  --ground: #000;
+  --gold: #be830e;                   /* anu-colors.gold */
+  --gold-2: #e5a930;                 /* lighter gold, for thin marks and type on black */
+  --text: rgb(255 255 255 / 95%);
+  --text-2: rgb(255 255 255 / 72%);
+  --muted: rgb(255 255 255 / 50%);
+  --line: rgb(255 255 255 / 85%);
+  --font-ui: "Public Sans", sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: var(--ground); }
+body { font-family: var(--font-ui); color: var(--text); }
+.stage { position: relative; overflow: hidden; background: var(--ground); width: 1920px; height: 1080px; }
+
+/* Everything animated is absolutely placed and moved by transform/opacity only. */
+.layer { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.scene { isolation: isolate; }
+
+/* ---- caption band: one sentence at a time, in a region nothing else uses ---- */
+.captions { position: absolute; left: 0; right: 0; bottom: 0; height: 190px; background: var(--ground); }
+.caption {
+  position: absolute; left: 160px; right: 160px; top: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-size: 42px; line-height: 1.3; font-weight: 400; color: var(--text); text-wrap: balance;
+  opacity: 0;
+}
+
+/* ---- the apparatus: the digital twin's SVG (js/src/board.ts), restyled ---- */
+.board { width: 1220px; height: 1220px; color: var(--line); }
+.board svg { position: absolute; left: 0; top: 0; width: 1220px; height: 1220px; overflow: visible; }
+.board svg text { font-family: var(--font-ui) !important; }
+/* the twin animates with CSS transitions; a video frame is a function of t */
+.board svg * { transition: none !important; }
+.board .slider { fill: var(--gold-2); stroke: var(--gold-2); }
+.board .full { opacity: 0.55; }
+.board .etch { opacity: 0.5; }
+.board .etch.heavy { opacity: 0.7; }
+
+/* ---- type ---- */
+.title { font-size: 104px; font-weight: 700; line-height: 1.02; letter-spacing: -0.02em; color: var(--gold-2); white-space: nowrap; }
+.tagline { font-size: 40px; font-weight: 300; color: var(--text); white-space: nowrap; }
+.credit { font-size: 28px; font-weight: 400; line-height: 1.45; color: var(--text-2); white-space: nowrap; }
+.credit b { font-weight: 600; color: var(--text); }
+.num { font-size: 84px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1; }
+.num.gold, .count.gold { color: var(--gold-2); }
+.label { font-size: 32px; font-weight: 400; color: var(--muted); white-space: nowrap; }
+.count { font-size: 170px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
+.scene svg { display: block; }
