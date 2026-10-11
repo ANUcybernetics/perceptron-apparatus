@@ -60,7 +60,7 @@ defmodule PerceptronApparatus.ZooTest do
   @tag :model
   test "the apparatus's network learns to classify the animals it was trained on" do
     {train_data, _test_data} = Zoo.load_data()
-    {inputs, labels} = train_data
+    {inputs, _labels} = train_data
 
     trained_params =
       Zoo.n_input()

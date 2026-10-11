@@ -7,30 +7,32 @@ learning". This monorepo has two peer components:
 ### Elixir (root)
 
 Ash-based CLI application for fabrication file generation (SVG for laser-cutting
-and CNC-routing), ML training (Axon/MNIST/poker), and weight export. Run via Mix
-tasks---see README.md for usage.
+and CNC-routing), ML training (Nx/EXLA; MNIST, zoo and letters tasks), and
+weight export. Run via Mix tasks---see README.md for usage.
 
 ### TypeScript (`js/`)
 
 NPM package providing a digital twin of the physical apparatus. Generates SVGs
 in the browser, provides an animation API for the log ring and sliders, and
-includes interactive widgets (MNIST input grid, poker hand selector, computation
-animator). Uses pnpm, tsdown, vitest, oxlint, and tsgo. See `js/src/index.ts`
-for the public API (`PerceptronApparatus` class).
+includes interactive widgets (MNIST input grid, animal trait selector,
+next-letter context picker, computation animator). Uses pnpm, tsdown, vitest,
+oxlint, and tsgo. See `js/src/index.ts` for the public API
+(`PerceptronApparatus` class).
 
 ### Shared resources
 
-- `docs/`: Typst templates for educational posters and worksheets, ML
-  documentation, exported weight JSON files
+- `docs/`: Typst templates for educational posters and worksheets, exported
+  weight JSON files
+- `scripts/`: standalone `uv run` analysis scripts (slider-noise check of the
+  exported weights, candidate task and training recipe comparison)
+- `priv/zoo.data`: the vendored UCI Zoo dataset
 - `svg/`: generated SVG output
 - `video/`: explainer videos built on the digital twin (see "Video style")
 - `mise.toml`: unified task runner for both components (`mise run test`,
   `mise run build`)
 
-For detailed information about the ML implementations:
-
-- MNIST digit classification: docs/mnist-mlp.md
-- Poker hand classification: docs/poker-mlp.md
+README.md explains the design (weight scale, training recipe, tasks) and holds
+the measured results; `CHANGELOG.md` records design changes.
 
 ## Key modules and structure
 
@@ -45,23 +47,27 @@ For detailed information about the ML implementations:
 
 ### Machine learning modules
 
-- `PerceptronApparatus.MLP`: MNIST digit classification (36→6→10 network)
-- `PerceptronApparatus.Poker`: poker hand classification (36→6→10 network)
+- `PerceptronApparatus.MLP`: MNIST data, model creation, training, and weight
+  export for any task that fits the board
+- `PerceptronApparatus.Zoo`: animal classification data and encoding (21→6→7)
+- `PerceptronApparatus.Letters`: next-letter prediction data and encoding
+  (30→6→10)
 
-Both modules provide:
+Training uses softmax cross-entropy, non-negative output weights and per-step
+weight noise; `MLP.fit_weights_to_apparatus/2` rescales weights to the slider
+ranges. See the `train_model/3` and `fit_weights_to_apparatus/2` docs.
 
-- data loading and preprocessing
-- model creation with fixed architecture
-- training with Axon/Polaris
-- parameter inspection
-- weight export to JSON (with optional scaling)
+The weight scale (log magnitude, 0.02 to 5, sign on the marker) is defined twice
+and must stay in step: `PerceptronApparatus.Utils.weight_rule/0` and
+`weight_scale_fraction/1`, and `weightRule()` and `weightScaleFraction()` in
+`js/src/utils.ts`. The same constants are in `scripts/apparatus_sim.py`.
 
 ### Mix tasks
 
 - `mix perceptron`: generate apparatus SVG with default or custom parameters
 - `mix perceptron.generate`: generate using presets (mnist, xor, language)
-- `mix perceptron.export_weights`: train MNIST model and export weights
-- `mix perceptron.export_poker_weights`: train poker model and export weights
+- `mix perceptron.export_weights --task mnist|zoo|letters`: train a model and
+  export its weights, fitted to the apparatus and padded to the 36-6-10 board
 
 ### Rendering
 
@@ -71,7 +77,7 @@ ring rendering with automatic width calculation and spacing.
 
 ### JS/TS package (`js/`)
 
-- `js/src/utils.ts`: deg2rad, rule generation, SVG DOM helpers
+- `js/src/utils.ts`: deg2rad, rule generation, the weight scale
 - `js/src/rule-ring.ts`: log and ReLU rule generation + rendering
 - `js/src/azimuthal-ring.ts`: arc slider rendering (layers A, C, E)
 - `js/src/radial-ring.ts`: radial slider rendering (layers B, D)
@@ -81,14 +87,15 @@ ring rendering with automatic width calculation and spacing.
 ### JS/TS training module (`js/src/training/`)
 
 Zero-dependency MNIST training that mirrors the Elixir MLP module. Architecture:
-36 → 6 (ReLU, no bias) → 10 (linear, no bias). Implements matmul, ReLU, MSE
-loss, Adam optimiser, and weight clamping from scratch.
+36 → 6 (ReLU, no bias) → 10 (linear, no bias). Implements matmul, ReLU,
+cross-entropy loss, Adam optimiser, weight noise and the non-negative output
+constraint from scratch.
 
 - `js/src/training/math.ts`: matrix operations, Adam optimiser
 - `js/src/training/model.ts`: MLP class with forward/backward/step
 - `js/src/training/data.ts`: MNIST loading (fetch + gunzip IDX), downsampling,
   normalisation
-- `js/src/training/weights.ts`: weight extraction and balanced geometric scaling
+- `js/src/training/weights.ts`: weight extraction and `fitWeightsToApparatus`
 - `js/src/training/index.ts`: `trainMnist()` orchestrator, re-exports
 
 Import via `perceptron-apparatus/training`. Training tests use
@@ -107,11 +114,16 @@ external sites (e.g. Astro).
   `stepDuration`. Supports `AbortSignal` for cancellation.
 - `js/src/widgets/mnist-input.ts`: `MnistInputWidget` --- drawable 6x6 grid,
   click/drag to paint, returns 36 normalised values
-- `js/src/widgets/poker-input.ts`: `PokerInputWidget` --- 5-card selector with
-  suit/rank dropdowns, encodes to 36 values matching the poker MLP encoding
-  scheme. Also exports `encodeHand()` and `POKER_HAND_NAMES`.
+- `js/src/widgets/zoo-input.ts`: `ZooInputWidget` --- trait checkboxes and leg
+  count, encodes to 36 values matching `PerceptronApparatus.Zoo`. Also exports
+  `encodeAnimal()`, `ZOO_CLASS_NAMES` and `ZOO_EXAMPLES`.
+- `js/src/widgets/letters-input.ts`: `LettersInputWidget` --- three-symbol
+  context picker, encodes to 36 values matching `PerceptronApparatus.Letters`.
+  Also exports `encodeContext()` and `LETTERS_ALPHABET`.
 - `js/src/widgets/weights.ts`: bundled pre-trained weights (`mnistWeights`,
-  `pokerWeights`) from `docs/*.json`
+  `zooWeights`, `lettersWeights`), generated from `docs/*-weights.json`;
+  regenerate it with `uv run scripts/bundle_weights.py` whenever those files
+  change
 - `js/src/widgets/index.ts`: re-exports all widgets and weights
 
 ### Development

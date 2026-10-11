@@ -1,4 +1,4 @@
-// Generated from docs/*-weights.json (the output of `mix perceptron.export_weights`).
+// Generated from docs/*-weights.json by scripts/bundle_weights.py.
 // Every set is padded with zeros to the 36-input, 10-output board.
 
 export interface Weights {

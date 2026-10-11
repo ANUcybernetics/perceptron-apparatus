@@ -34,18 +34,16 @@
 #let weights = json("mnist-weights.json")
 #let model_name = [MNIST]
 
-// Helper function to format weight values
+// Helper function to format weight values: two significant figures, which is
+// about what a slider on the log weight scale can be set to
 #let fmt(x) = {
-  let val = calc.round(x, digits: 1)
-  let formatted = if calc.abs(val - calc.round(val)) < 0.01 {
-    str(int(val)) + ".0"
+  if x == 0 {
+    text(fill: gray.darken(20%), "0")
   } else {
-    str(val)
-  }
-  if val == 0 {
-    text(fill: gray.darken(20%), formatted)
-  } else {
-    formatted
+    let digits = if calc.abs(x) < 0.1 { 3 } else if calc.abs(x) < 1 { 2 } else {
+      1
+    }
+    str(calc.round(x, digits: digits))
   }
 }
 
