@@ -62,14 +62,10 @@ defmodule PerceptronApparatus.ZooTest do
     {train_data, _test_data} = Zoo.load_data()
     {inputs, labels} = train_data
 
-    # several passes per epoch: see Mix.Tasks.Perceptron.ExportWeights
-    passes = Nx.tensor(for _pass <- 1..20, index <- 0..80, do: index)
-    epoch_data = {Nx.take(inputs, passes), Nx.take(labels, passes)}
-
     trained_params =
       Zoo.n_input()
       |> MLP.create_model(Zoo.n_output())
-      |> MLP.train_model(epoch_data, epochs: 10, batch_size: 16)
+      |> MLP.train_model(train_data, epochs: 200, batch_size: 16)
 
     weights = trained_params |> MLP.extract_weights() |> MLP.fit_weights_to_apparatus(inputs)
 

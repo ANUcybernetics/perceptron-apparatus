@@ -93,9 +93,8 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
       load: &Zoo.load_data/0,
       n_input: Zoo.n_input(),
       n_output: Zoo.n_output(),
-      epochs: 20,
+      epochs: 400,
       batch_size: 16,
-      passes_per_epoch: 20,
       restarts: 5
     },
     "letters" => %{
@@ -145,12 +144,11 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
 
     Mix.shell().info("Training #{task.n_input}-6-#{task.n_output} model (#{epochs} epochs)")
     model = MLP.create_model(task.n_input, task.n_output)
-    epoch_data = repeat_shuffled(train_data, Map.get(task, :passes_per_epoch, 1))
 
     trained_params =
       1..restarts
       |> Enum.map(fn _run ->
-        MLP.train_model(model, epoch_data,
+        MLP.train_model(model, train_data,
           epochs: epochs,
           batch_size: config[:batch_size] || task.batch_size,
           learning_rate: config[:learning_rate],
@@ -171,17 +169,5 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     Mix.shell().info(
       "Test accuracy of the exported weights: #{Float.round(test_accuracy * 100, 1)}%"
     )
-  end
-
-  # A small dataset makes for an epoch of only a few steps, and a long run of
-  # short epochs exhausts EXLA's processes. Several shuffled passes per epoch
-  # give the same training in fewer, longer epochs.
-  defp repeat_shuffled(data, 1), do: data
-
-  defp repeat_shuffled({inputs, labels}, passes) do
-    n = Nx.axis_size(inputs, 0)
-    order = Nx.tensor(for _pass <- 1..passes, index <- Enum.shuffle(0..(n - 1)), do: index)
-
-    {Nx.take(inputs, order), Nx.take(labels, order)}
   end
 end

@@ -368,40 +368,27 @@ defmodule PerceptronApparatus.MLP do
       |> Nx.to_batched(batch_size)
       |> Stream.zip(Nx.to_batched(train_labels, batch_size))
 
-    loop =
-      model
-      |> Loop.trainer(loss, Polaris.Optimizers.adam(learning_rate: learning_rate))
-      |> Loop.metric(:accuracy)
+    optimizer = Polaris.Optimizers.adam(learning_rate: learning_rate)
 
-    # Add weight projection if needed
-    loop =
-      if nonnegative_output do
-        Loop.handle_event(loop, :iteration_completed, &project_output_weights_nonnegative/1)
-      else
-        loop
-      end
+    optimizer =
+      if nonnegative_output,
+        do: Polaris.Updates.stateless(optimizer, &keep_output_weights_nonnegative/2),
+        else: optimizer
 
-    Loop.run(loop, batched_data, Axon.ModelState.empty(), epochs: epochs)
+    model
+    |> Loop.trainer(loss, optimizer)
+    |> Loop.metric(:accuracy)
+    # compiling the whole training step with EXLA matters beyond speed: left to
+    # the default evaluator, every iteration starts EXLA processes that are never
+    # reclaimed, and a run of ~10,000 iterations hits the VM's process limit
+    |> Loop.run(batched_data, Axon.ModelState.empty(), epochs: epochs, compiler: EXLA)
   end
 
-  # Project output layer weights to be non-negative after each update
-  defp project_output_weights_nonnegative(state) do
-    # Access the model parameters from step_state.model_state
-    model_state = state.step_state.model_state
-
-    # Get current parameters
-    params = model_state.data
-
-    # Project output layer weights to [0, +inf)
-    updated_params =
-      update_in(params, ["output", "kernel"], fn weights ->
-        Nx.max(weights, 0)
-      end)
-
-    # Update the model state with projected weights
-    updated_model_state = %{model_state | data: updated_params}
-    updated_step_state = %{state.step_state | model_state: updated_model_state}
-    {:continue, %{state | step_state: updated_step_state}}
+  # Limits each step so no output layer weight lands below zero.
+  defp keep_output_weights_nonnegative(updates, params) do
+    update_in(updates, ["output", "kernel"], fn update ->
+      Nx.max(update, Nx.negate(params["output"]["kernel"]))
+    end)
   end
 
   @doc """
