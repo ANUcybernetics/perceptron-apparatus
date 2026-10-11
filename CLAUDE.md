@@ -23,8 +23,9 @@ oxlint, and tsgo. See `js/src/index.ts` for the public API
 
 - `docs/`: Typst templates for educational posters and worksheets, exported
   weight JSON files
-- `scripts/`: standalone `uv run` analysis scripts (slider-noise check of the
-  exported weights, candidate task and training recipe comparison)
+- `scripts/`: standalone `uv run` scripts (slider-noise check of the exported
+  weights, candidate task and training recipe comparison, and the two that
+  regenerate the twin's bundled weights and sample digits)
 - `priv/zoo.data`: the vendored UCI Zoo dataset
 - `svg/`: generated SVG output
 - `video/`: explainer videos built on the digital twin (see "Video style")
@@ -54,17 +55,22 @@ the measured results; `CHANGELOG.md` records design changes.
   (30→6→10)
 
 Training uses softmax cross-entropy, non-negative output weights and per-step
-weight noise; `MLP.fit_weights_to_apparatus/2` rescales weights to the slider
-ranges. See the `train_model/3` and `fit_weights_to_apparatus/2` docs.
+weight noise matched to the weight scale; `MLP.fit_weights_to_apparatus/2`
+rescales weights to the slider ranges. See the `train_model/3` and
+`fit_weights_to_apparatus/2` docs.
 
-The weight scale (log magnitude, 0.02 to 5, sign on the marker) is defined twice
-and must stay in step: `PerceptronApparatus.Utils.weight_rule/0` and
-`weight_scale_fraction/1`, and `weightRule()` and `weightScaleFraction()` in
-`js/src/utils.ts`. The same constants are in `scripts/apparatus_sim.py`.
+There are two weight scales: `linear` (-5 to 5), which the built apparatus has
+and is the default everywhere, and `log` (magnitude 0.02 to 5, sign on the
+marker), an option for a new build. Both are defined twice and must stay in
+step: `PerceptronApparatus.Utils.weight_rule/1` and `weight_scale_fraction/2`,
+and `weightRule()` and `weightScaleFraction()` in `js/src/utils.ts`. The same
+constants are in `scripts/apparatus_sim.py`. The explainer video keeps its own
+copy of the linear slider position (`radPos` in `video/explainer/explainer.js`).
 
 ### Mix tasks
 
 - `mix perceptron`: generate apparatus SVG with default or custom parameters
+  (`--weight-scale linear|log`)
 - `mix perceptron.generate`: generate using presets (mnist, xor, language)
 - `mix perceptron.export_weights --task mnist|zoo|letters`: train a model and
   export its weights, fitted to the apparatus and padded to the 36-6-10 board
@@ -88,8 +94,8 @@ ring rendering with automatic width calculation and spacing.
 
 Zero-dependency MNIST training that mirrors the Elixir MLP module. Architecture:
 36 → 6 (ReLU, no bias) → 10 (linear, no bias). Implements matmul, ReLU,
-cross-entropy loss, Adam optimiser, weight noise and the non-negative output
-constraint from scratch.
+cross-entropy loss, Adam optimiser, weight noise for either weight scale and the
+non-negative output constraint from scratch.
 
 - `js/src/training/math.ts`: matrix operations, Adam optimiser
 - `js/src/training/model.ts`: MLP class with forward/backward/step
@@ -124,6 +130,10 @@ external sites (e.g. Astro).
   `zooWeights`, `lettersWeights`), generated from `docs/*-weights.json`;
   regenerate it with `uv run scripts/bundle_weights.py` whenever those files
   change
+- `js/src/widgets/sample-digits.ts`: one sample digit per class that the bundled
+  MNIST weights answer correctly; regenerate it with
+  `uv run scripts/pick_sample_digits.py` whenever the MNIST weights change. The
+  explainer video follows its 7, so re-check the video after regenerating.
 - `js/src/widgets/index.ts`: re-exports all widgets and weights
 
 ### Development

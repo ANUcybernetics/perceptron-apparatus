@@ -5,22 +5,27 @@ weights and the public interfaces of the code.
 
 ## Unreleased
 
-The previous design is preserved at the `linear-weight-scale` tag.
+The code as it was before these changes is at the `linear-weight-scale` tag. The
+built apparatus itself is unchanged.
 
 ### Weight scale
 
-- Weight sliders (rings B and D) now carry a log scale of magnitude: a zero
+- The weight rings (B and D) keep their linear scale from -5 to 5, which remains
+  the default everywhere.
+- A log scale of magnitude is available as an option for a new build: a zero
   position at the outer end of the slot, then 0.02 to 5 with labels on the 1-2-5
-  series. The first design had a linear scale from -5 to 5.
-- Sign is no longer a position on the scale. A negative weight is shown by its
+  series. Ask for it with `--weight-scale log` on `mix perceptron`,
+  `mix perceptron.generate` and `mix perceptron.export_weights`, or
+  `weightScale: "log"` on the digital twin and `trainMnist`.
+- On the log scale sign is not a position. A negative weight is shown by its
   marker, which the digital twin draws hollow. The physical marker for a
-  negative weight is still to be designed.
-- This changes the engraving on both weight rings, so an existing board needs
-  those rings re-cut to use the new weights.
+  negative weight is still to be designed, and no apparatus has been built with
+  this scale.
 
-With the first design's MNIST weights, a 1% error in slider position cut test
-accuracy from 45.8% to 35.4% on the linear scale. With the new weights on the
-new scale the same error cuts it from 67.4% to 65.4%.
+With the first MNIST weights, a 1% error in slider position cut test accuracy
+from 45.8% to 35.4% on the linear scale. With the new weights on the same scale
+it cuts it from 63.5% to 58.1%. Weights trained for the log scale, set on the
+log scale, go from 67.4% to 65.4%.
 
 ### Training
 
@@ -28,6 +33,9 @@ new scale the same error cuts it from 67.4% to 65.4%.
   raises MNIST test accuracy at 6 hidden units from about 50% to about 70%.
 - Output weights are non-negative by default, and every weight is perturbed by
   random noise on each training step so that the weights tolerate slider error.
+  The noise matches the weight scale: an offset of the same size on the
+  apparatus for every weight on the linear scale, a random factor on the log
+  scale.
 - Exported weights are fitted to the slider ranges
   (`MLP.fit_weights_to_apparatus/2`, `fitWeightsToApparatus`) in place of being
   scaled to a maximum of 5. Hidden and output sliders now stay within their
@@ -55,5 +63,8 @@ new scale the same error cuts it from 67.4% to 65.4%.
   `ZooInputWidget`, `LettersInputWidget` and their weights. `scaleWeights` is
   replaced by `fitWeightsToApparatus`, and the `weightClamp` training option by
   `nonnegativeOutput` and `weightNoise`.
-- `setSlider` on a weight slider positions it on the log scale and sets
-  `data-sign` on the slider element.
+- On a board with the log scale, `setSlider` on a weight slider sets `data-sign`
+  on the slider element.
+- `sampleDigits` now holds one digit for each class, chosen by
+  `scripts/pick_sample_digits.py` to be ones the bundled weights answer
+  correctly. It held five digits before.

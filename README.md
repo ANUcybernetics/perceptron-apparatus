@@ -20,8 +20,7 @@ UC's
 | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
 | ![Top-down view of the apparatus showing concentric input, weight, and output rings](docs/images/apparatus-top-down.jpg) | ![A person sliding brass markers to set values on the apparatus](docs/images/apparatus-in-use.jpg) |
 
-_Photographs by Andrew Meares. They show the first build, which has linear
-weight scales; see [the weight scale](#the-weight-scale) for what changed._
+_Photographs by Andrew Meares._
 
 ## How it works
 
@@ -30,14 +29,14 @@ activation, and 10 outputs, with no biases anywhere. Every number in that
 network has a slider, and the sliders sit in concentric rings, working inwards
 from the rim:
 
-| Ring | Holds                    | Sliders | Scale                |
-| ---- | ------------------------ | ------- | -------------------- |
-| log  | the slide rule           | none    | one decade, 1 to 10  |
-| A    | inputs                   | 36      | 0 to 1               |
-| B    | input-to-hidden weights  | 6 × 36  | log, 0 and 0.02 to 5 |
-| C    | hidden values            | 6       | -5 to 5              |
-| D    | hidden-to-output weights | 10 × 6  | log, 0 and 0.02 to 5 |
-| E    | outputs                  | 10      | 0 to 5               |
+| Ring | Holds                    | Sliders | Scale               |
+| ---- | ------------------------ | ------- | ------------------- |
+| log  | the slide rule           | none    | one decade, 1 to 10 |
+| A    | inputs                   | 36      | 0 to 1              |
+| B    | input-to-hidden weights  | 6 × 36  | -5 to 5             |
+| C    | hidden values            | 6       | -5 to 5             |
+| D    | hidden-to-output weights | 10 × 6  | -5 to 5             |
+| E    | outputs                  | 10      | 0 to 5              |
 
 Rings A, C and E hold values that are added up, and their sliders run around the
 ring. Rings B and D hold the weights, in radial slots grouped by the unit they
@@ -65,44 +64,54 @@ output layer.
 
 ## The weight scale
 
-The first build engraved every weight slot with a linear scale from -5 to 5.
-Trained weights are not spread evenly over a range like that. In the weights
-that build shipped with, 88% of the input-to-hidden weights were smaller than
-0.5. They crowded into the middle tenth of each slot, where it is hard to tell
-even 0.5 from 1.
+The apparatus as built has a linear scale from -5 to 5 on every weight slot, and
+that is what the generator and the digital twin draw unless told otherwise.
+Trained weights are not spread evenly over a range like that. Most of them are
+small, so they crowd into the middle of each slot, where a millimetre of error
+in setting a slider is a large share of the weight it holds.
 
-Weight slots now carry a log scale. The outer end of the slot is zero, and after
-a short gap the scale runs from 0.02 to 5 with labels at 1, 2 and 5 in each
-decade. Equal distances are equal ratios, so a small weight is set as precisely
-as a large one. Sign is not on the scale. A negative weight gets a different
-marker, which the digital twin draws hollow, so the whole slot measures
-magnitude.[^sign]
+The code also offers a log scale for anyone building a new one:
+`--weight-scale log` on the generator, or `weightScale: "log"` in the twin. The
+outer end of the slot is zero, and after a short gap the scale runs from 0.02 to
+5 with labels at 1, 2 and 5 in each decade. Equal distances are equal ratios, so
+a small weight is set as precisely as a large one. Sign is not on the scale. A
+negative weight gets a different marker, which the twin draws hollow, so the
+whole slot measures magnitude.[^sign]
 
 [^sign]:
-    The physical marker for a negative weight is not designed yet. A second bead
-    colour would do it.
+    No apparatus has been built with the log scale, and the physical marker for
+    a negative weight is not designed. A second bead colour would do it.
 
-There is a tidy rule behind this. A slider that holds a sum must be linear,
-because addition is movement along it. A slider that only ever supplies a factor
-can be logarithmic, and it then carries the same scale as the slide rule it is
-read against.
+There is a tidy rule behind the log scale. A slider that holds a sum must be
+linear, because addition is movement along it. A slider that only ever supplies
+a factor can be logarithmic, and it then carries the same scale as the slide
+rule it is read against.
 
-`scripts/slider_scale_sim.py` measures what this buys. It sets every weight
-slider with a random position error and counts how often the network still gets
-the right answer. With the current MNIST weights, on the 10,000-image test set:
+`scripts/slider_scale_sim.py` measures what the scale is worth. It sets every
+weight slider with a random position error and counts how often the network
+still gets the right answer. On the 10,000-image MNIST test set:
 
-| Weight scale               | No error | 1% of slot | 2% of slot | 5% of slot |
-| -------------------------- | -------- | ---------- | ---------- | ---------- |
-| log, as engraved           | 67.4%    | 65.4%      | 61.2%      | 44.6%      |
-| linear, -5 to 5            | 67.4%    | 54.9%      | 37.6%      | 18.2%      |
-| linear, cut to fit weights | 67.4%    | 66.1%      | 63.6%      | 50.4%      |
+| Weights and scale                            | No error | 1% of slot | 2% of slot | 5% of slot |
+| -------------------------------------------- | -------- | ---------- | ---------- | ---------- |
+| the first weights, linear scale              | 45.8%    | 35.4%      | 28.1%      | 21.7%      |
+| the current weights, linear scale            | 63.5%    | 58.1%      | 47.1%      | 25.8%      |
+| weights trained for the log scale, log scale | 67.4%    | 65.4%      | 61.2%      | 44.6%      |
 
-On a 110 mm slot, 2% is about 2 mm. The last row is a linear scale that ends
-exactly at the layer's largest weight. It does slightly better than the log
-scale, but it would have to be engraved for one particular set of weights. The
-largest weight in a layer varies from 0.8 to 4.3 across the three tasks here.
-The log scale gets close to the fitted one with a single engraving for every
-task.
+On a 110 mm slot, 2% is about 2 mm. The first row is the weights the apparatus
+was first shown with, which are at the `linear-weight-scale` tag. The second is
+what ships now, trained for the scale the apparatus has. The third was measured
+on weights exported with `--weight-scale log`, which are not kept in the
+repository.[^logweights]
+
+[^logweights]:
+    They are in the history, at commit `66a1121`, when the log scale was briefly
+    the only one.
+
+The linear scale loses most of its ground because it is fixed at -5 to 5 while
+the largest weight in a layer is between 1.0 and 3.5 across the three tasks
+here. A linear scale that ended exactly at each layer's largest weight would
+score 55.0% at a 2% error with the current weights, but it would have to be
+engraved for one particular set of them.
 
 ## Training
 
@@ -116,9 +125,11 @@ exist only because the network will be worked by hand:
 - **Non-negative output weights.** With ring D never negative, every output
   slider only moves upwards as products are added, so ring E needs no negative
   half.
-- **Weight noise.** Each training step multiplies every weight by a fresh random
-  factor (log standard deviation 0.1). The network learns weights that still
-  work when a slider is set slightly off.
+- **Weight noise.** Each training step perturbs every weight afresh, the way a
+  slider on the chosen scale is misset, so the network learns weights that still
+  work when a slider is slightly off. On the linear scale that is an offset of
+  the same size on the apparatus for every weight (standard deviation 1% of the
+  slot). On the log scale it is a random factor (log standard deviation 0.1).
 - **Fitting to the sliders.** A bias-free ReLU network gives the same answers if
   one hidden unit's incoming weights are multiplied by _k_ and its outgoing
   weights divided by _k_. `fit_weights_to_apparatus/2` uses that freedom so that
@@ -129,18 +140,21 @@ exist only because the network will be worked by hand:
 hidden units over five seeds, with the same network at 64 hidden units for
 scale:
 
-| Recipe                         | MNIST | Zoo   | Letters | Dot-matrix |
-| ------------------------------ | ----- | ----- | ------- | ---------- |
-| mean squared error             | 50.5% | 83.4% | 54.4%   | 51.0%      |
-| cross-entropy                  | 69.9% | 95.1% | 59.3%   | 99.9%      |
-| + non-negative output weights  | 69.5% | 91.7% | 58.9%   | 99.9%      |
-| + weight noise (as shipped)    | 68.0% | 93.3% | 57.8%   | 99.8%      |
-| 64 hidden units, cross-entropy | 81.5% | 95.8% | 61.8%   | 99.9%      |
+| Recipe                          | MNIST | Zoo   | Letters | Dot-matrix |
+| ------------------------------- | ----- | ----- | ------- | ---------- |
+| mean squared error              | 50.5% | 83.4% | 54.4%   | 51.0%      |
+| cross-entropy                   | 69.9% | 95.1% | 59.3%   | 99.9%      |
+| + non-negative output weights   | 69.5% | 91.7% | 58.9%   | 99.9%      |
+| + weight noise for a log scale  | 68.0% | 93.3% | 57.8%   | 99.8%      |
+| + weight noise for linear scale | 64.2% | 89.3% | 57.7%   | 98.2%      |
+| 64 hidden units, cross-entropy  | 81.5% | 95.8% | 61.8%   | 99.9%      |
 
-Together the last two steps cost one to two points of accuracy with perfect
-sliders. Weight noise earns that back once the sliders are imperfect. At a 2%
-slider error the best MNIST model scores 56.2% without weight noise and 62.5%
-with it, and the letters model goes from 46.4% to 54.9%.
+The two weight-noise rows are alternatives, and the linear one is what ships. It
+costs about five points on MNIST with perfect sliders and earns them back once
+the sliders are imperfect. Set on the linear scale with a 2% slider error, the
+best MNIST model scores 23.4% with no weight noise, 33.8% with the log scale's
+noise and 45.3% with the linear scale's. The letters model goes from 22.1% to
+37.6% to 47.2%.
 
 Train and export a task's weights with:
 
@@ -152,7 +166,11 @@ mix perceptron.export_weights --task letters --output docs/letters-weights.json
 
 Each file holds the weight matrices `B` (36 × 6) and `D` (6 × 10), padded with
 zeros where a task uses fewer inputs or outputs, and the test accuracy of the
-weights as written. `mix help perceptron.export_weights` lists the options.
+weights as written. Training assumes the linear weight scale unless given
+`--weight-scale log`, and `mix help perceptron.export_weights` lists the other
+options. After an export, `uv run scripts/bundle_weights.py` and
+`uv run scripts/pick_sample_digits.py` regenerate the twin's bundled weights and
+its sample digits.
 
 ## Tasks
 
@@ -162,7 +180,7 @@ Three tasks ship with trained weights.
 
 MNIST digits are cut down from 28 × 28 pixels to 6 × 6 by keeping every fifth
 pixel or so, which gives the 36 inputs. The ten outputs are the digits. The
-exported weights score 67.4% on the MNIST test set, against 10% for guessing.
+exported weights score 63.5% on the MNIST test set, against 10% for guessing.
 With 64 hidden units the same 6 × 6 images reach 81.5%, so the rest of the gap
 to a real digit classifier is the image size.
 
@@ -172,8 +190,9 @@ The [UCI Zoo dataset](https://archive.ics.uci.edu/dataset/111/zoo) describes 101
 animals by 15 yes-or-no traits (hair, feathers, lays eggs, and so on) and a leg
 count. That makes 21 inputs, 15 for the traits and 6 for a one-hot leg count,
 and 7 outputs: mammal, bird, reptile, fish, amphibian, insect and invertebrate.
-The exported weights get all 20 held-out animals right, and all 101 overall.
-Averaged over repeated cross-validation the recipe scores 93%.
+The exported weights get 19 of the 20 held-out animals right, and 100 of the 101
+overall; the toad is taken for a mammal. Averaged over repeated cross-validation
+the recipe scores 89%.
 
 This is the task to show a visitor. The inputs are things they know about an
 animal of their own choosing, and some of the weights can be read. The largest
@@ -188,7 +207,7 @@ scores each of the ten symbols as the next one. Its text is
 [_Pride and Prejudice_](https://www.gutenberg.org/ebooks/1342), reduced to the
 words that can be spelt with those nine letters.
 
-The exported weights pick the right next symbol 57.3% of the time on held-out
+The exported weights pick the right next symbol 58.8% of the time on held-out
 text. A lookup table of every three-symbol context manages 62.2%, so there is
 little left to learn at this context length. Feed each prediction back in as the
 newest symbol and the apparatus writes `the the the the`, for as long as anyone
@@ -214,6 +233,7 @@ mix perceptron                      # 1200 mm board, 36-6-10 network, to svg/boa
 mix perceptron --size 1150 --file svg/small.svg
 mix perceptron --qr "https://example.com"
 mix perceptron.generate --preset xor
+mix perceptron --weight-scale log   # log weight scale, for a new build
 mix help perceptron                 # all options
 ```
 
@@ -264,8 +284,9 @@ console.log(ZOO_CLASS_NAMES[prediction]);
 ```
 
 In step mode the animator performs every multiplication in order, turning the
-log ring and moving the sliders as a person would. The package has three entry
-points:
+log ring and moving the sliders as a person would. Pass `weightScale: "log"`
+with the board's dimensions to draw the log weight scale. The package has three
+entry points:
 
 - `perceptron-apparatus`: SVG generation and the slider and log ring animation
   API
@@ -321,8 +342,8 @@ mise run check              # type-check the TypeScript package
 
 The analysis scripts are standalone: `uv run scripts/slider_scale_sim.py` and
 `uv run scripts/candidate_tasks.py`. [`CHANGELOG.md`](CHANGELOG.md) records
-design changes, and the `linear-weight-scale` tag is the last commit of the
-first design.
+design changes, and the `linear-weight-scale` tag is the last commit before the
+training recipe and the tasks changed.
 
 ## Citation
 

@@ -35,7 +35,7 @@
 #let model_name = [MNIST]
 
 // Helper function to format weight values: two significant figures, which is
-// about what a slider on the log weight scale can be set to
+// about what a weight slider can be set to
 #let fmt(x) = {
   if x == 0 {
     text(fill: gray.darken(20%), "0")
