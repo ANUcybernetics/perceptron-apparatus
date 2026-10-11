@@ -9,6 +9,7 @@
 # ///
 """Build a video's voice, timing, music and renders.
 
+    video/video.py script <slug>    # the spoken lines alone, for reading aloud -> out/<slug>/
     video/video.py voice <slug>     # ElevenLabs voice -> assets/voice.wav, timing.json, captions.vtt
     video/video.py music <slug>     # ElevenLabs music bed -> assets/music.mp3
     video/video.py mix <slug>       # voice + ducked music -> assets/mix.wav, data-duration synced
@@ -100,6 +101,21 @@ def parse_script(slug: str) -> list[dict]:
             pauses.append(DEFAULT_GAP)
         lines.append({"segments": texts, "pauses": pauses})
     return lines
+
+
+@app.command()
+def script(slug: str) -> None:
+    """Write the spoken lines alone, with their pauses, as a copy to record from.
+    Edit the wording in scripts/<slug>.md, not in the copy."""
+    parts = [f"{slug}: reading copy of video/scripts/{slug}.md\n"]
+    for n, line in enumerate(parse_script(slug), 1):
+        parts.append(f"\n{n}.")
+        for text, pause in zip(line["segments"], line["pauses"]):
+            parts.append(f"   {text}\n      (pause {pause:g} s)")
+    out = OUT / slug / f"{slug}-script.txt"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(parts) + "\n")
+    print(out)
 
 
 def synth(text: str, previous: str, following: str) -> dict:
