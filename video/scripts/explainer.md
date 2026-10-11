@@ -26,11 +26,13 @@ next highest 1.47).
 **VO:** This table is a computer. [beat 0.5] No electricity, no chips: just
 plywood, brass sliders and a circular slide rule. [beat 0.9]
 
-_Visual:_ from black, the title, and beside it three photographs of the built
-apparatus in turn: the whole table, a hand setting sliders, one brass slider
-close up. On "sliders" the last photograph gives way to the drawing of the
-table, top-down, white line on black with its sliders in gold, in the same
-place. The sliders glint; the outer log ring turns on "slide rule".
+_Visual:_ from black, three full-frame photographs of the built apparatus in
+turn, under the decks' hero scrim: the whole table, a hand setting sliders, one
+brass slider close up. Over them, the ANU and School of Cybernetics logo, the
+title with a gold rule, the tagline and "Dr Ben Swift · Cybernetic Studio". On
+"sliders" the title block clears and the last photograph gives way to the
+drawing of the table, top-down, white line on black with its sliders in gold.
+The sliders glint; the outer log ring turns on "slide rule".
 
 _Reads (draft):_ 1. this is a real table that has been built; 2. people work it
 by hand; 3. its sliders are brass; 4. the drawing is that table; 5. the outer

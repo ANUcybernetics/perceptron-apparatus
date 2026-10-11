@@ -24,13 +24,16 @@ const SAMPLE = await fetch("kit/mnist-digits.json").then((r) => r.json());
 // the School of Cybernetics lockup that closes the video (astro-theme-anu's SocyLogo)
 const LOGO = await fetch("kit/socy-logo.svg").then((r) => r.text());
 // Andrew Meares's photographs of the apparatus: the table, in use, a brass slider
+const loaded = async (src) => {
+  const img = new Image();
+  img.src = src;
+  await img.decode();
+  return img;
+};
+// the ANU and School of Cybernetics lockup, for the opening title
+const HERO_LOGO = await loaded("kit/socy-primary-horizontal-white.svg");
 const PHOTOS = await Promise.all(
-  [3317, 3239, 3379].map(async (n) => {
-    const img = new Image();
-    img.src = `kit/photos/apparatus-${n}.jpg`;
-    await img.decode();
-    return img;
-  }),
+  [3317, 3239, 3379].map((n) => loaded(`kit/photos/apparatus-${n}.jpg`)),
 );
 
 export const FONTS = [300, 400, 500, 600, 700].map((w) => `${w} 20px "Public Sans"`);
@@ -339,17 +342,20 @@ export function build(tl, S, T) {
   const fadeIn = (e, t, dur = 0.4) => tl.to(e, { opacity: 1 }, t, { dur });
   const fadeOut = (e, t, dur = 0.4) => tl.to(e, { opacity: 0 }, t, { dur, ease: "in-cubic" });
 
-  // the real thing first, in the frame the drawing then takes over
-  const PHOTO = { x: 880, y: 98, w: 1040, h: 693 };
-  const photoL = M.layer(scene, PHOTO.x, PHOTO.y);
+  // The real thing first: full-frame photographs under the scrim of the decks'
+  // hero slide (astro-theme-university's deck.css), with the title block over
+  // them. They sit under the scene and run behind the caption band.
+  const photoL = M.el("div", { class: "layer" });
+  Object.assign(photoL.style, { width: "1920px", height: "1080px" });
+  S.root.insertBefore(photoL, scene);
   const tPhoto = [0.1, T.word(0, "No") - 0.2, T.word(0, "brass") - 0.25];
   PHOTOS.forEach((img, n) => {
     Object.assign(img.style, {
       position: "absolute",
-      left: "0",
-      top: "0",
-      width: `${PHOTO.w}px`,
-      height: `${PHOTO.h}px`,
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
     });
     photoL.appendChild(img);
     M.set(img, { opacity: 0 });
@@ -358,6 +364,26 @@ export function build(tl, S, T) {
     if (n < PHOTOS.length - 1) tl.set(img, { opacity: 0 }, tPhoto[n + 1] + 0.6);
     else fadeOut(img, tDraw, 0.9);
   });
+  const scrim = M.el("div", {}, photoL);
+  Object.assign(scrim.style, {
+    position: "absolute",
+    inset: "0",
+    background: "linear-gradient(to top, rgb(0 0 0 / 80%), rgb(0 0 0 / 20%))",
+  });
+  const heroL = M.layer(scene, 110, 0);
+  M.set(heroL, { opacity: 0 });
+  HERO_LOGO.alt = "Australian National University, School of Cybernetics";
+  Object.assign(HERO_LOGO.style, { position: "absolute", left: "0", top: "70px", height: "84px" });
+  heroL.appendChild(HERO_LOGO);
+  const heroText = M.el("div", {}, heroL);
+  Object.assign(heroText.style, { position: "absolute", left: "0", top: "580px" });
+  M.el("div", { class: "title hero", text: "Perceptron Apparatus" }, heroText);
+  M.el("div", { class: "hero-rule" }, heroText);
+  M.el("div", { class: "tagline", text: "An abacus for deep learning" }, heroText);
+  M.el("div", { class: "byline", text: "Dr Ben Swift · Cybernetic Studio" }, heroText);
+  M.appear(tl, heroL, 0.15, { dur: 0.6 });
+  // clear before the drawing's own title arrives, so the two never overlap
+  fadeOut(heroL, tDraw - 0.5, 0.45);
   M.set(boardL, { opacity: 0 });
   fadeIn(boardL, tDraw, 0.9);
   fadeOut(boardL, tLogo - 0.6, 0.6);
@@ -413,7 +439,7 @@ export function build(tl, S, T) {
     <div class="credit">Designed by Ben Swift · fabricated with Sam Shellard, UC Workshop7</div>
     <div class="credit">github.com/ANUcybernetics/perceptron-apparatus</div>`;
   M.set([titleL, creditL], { opacity: 0 });
-  fadeIn(titleL, 0.1, 0.6);
+  fadeIn(titleL, tDraw + 0.3, 0.9);
   fadeOut(titleL, T.start(1) - 0.5);
   fadeIn(titleL, END - 0.4, 0.8);
   fadeIn(creditL, END + 0.4, 0.8);
@@ -1078,7 +1104,18 @@ export function build(tl, S, T) {
   });
 
   // ---------------------------------------------------------------- captions
+  // the band's black ground, absent while the opening photographs run behind it
+  const capGround = M.el("div", { class: "layer" }, S.root);
+  Object.assign(capGround.style, {
+    top: "890px",
+    width: "1920px",
+    height: "190px",
+    background: "#000",
+  });
+  M.set(capGround, { opacity: 0 });
+  fadeIn(capGround, tDraw, 0.9);
   const capBand = M.el("div", { class: "captions" }, S.root);
+  capBand.style.background = "none";
   const cues = T.lines.flatMap((l) => l.segments);
   cues.forEach((cue, n) => {
     const c = M.el("div", { class: "caption", text: cue.caption }, capBand);

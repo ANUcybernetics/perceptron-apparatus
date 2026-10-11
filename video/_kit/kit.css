@@ -50,6 +50,10 @@ body { font-family: var(--font-ui); color: var(--text); }
 
 /* ---- type ---- */
 .title { font-size: 104px; font-weight: 300; line-height: 1.02; letter-spacing: -0.02em; color: var(--gold-2); white-space: nowrap; }
+/* the opening title, over a photograph: white with a gold rule, as on the decks' hero slide */
+.title.hero { color: var(--text); }
+.hero-rule { width: 128px; height: 4px; background: var(--gold); margin: 30px 0 34px; }
+.byline { font-size: 32px; font-weight: 300; color: var(--text-2); white-space: nowrap; margin-top: 14px; }
 .tagline { font-size: 40px; font-weight: 300; color: var(--text); white-space: nowrap; }
 .credit { font-size: 28px; font-weight: 400; line-height: 1.45; color: var(--text-2); white-space: nowrap; }
 .credit b { font-weight: 600; color: var(--text); }

@@ -46,8 +46,11 @@ apparatus.
   upright. The drawing has no perspective.
 - **Photographs open a video, and only that.** Andrew Meares's studio
   photographs (`_kit/photos/`, exported from the set in the `studio-photos`
-  memory) show that the apparatus has been built, in the frame the drawing then
-  takes over.
+  memory) show that the apparatus has been built. They run full-frame, behind
+  the caption band too, under the scrim of the decks' hero slide (black, 20% at
+  the top to 80% at the bottom), with the title block over them: the white ANU
+  and School of Cybernetics logo, the title in white with a gold rule, the
+  tagline and the byline.
 - **Light type.** Display type is Public Sans at weight 300, as in the ANU
   theme; never a heavy weight for a title.
 - **The left of the frame is the working-out**: the input grid, the sum, the
