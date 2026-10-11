@@ -2,7 +2,8 @@
 # requires-python = ">=3.12"
 # dependencies = ["httpx", "numpy"]
 # ///
-"""Check whether candidate demonstration tasks fit the apparatus.
+"""Check which demonstration tasks fit the apparatus, and under which training
+recipe.
 
 Each task is trained at the apparatus's architecture (at most 36 inputs, 6
 bias-free ReLU hidden units, at most 10 bias-free linear outputs, prediction by
@@ -10,23 +11,27 @@ largest output) and scored on held-out data over several seeds. For context
 each task also reports the majority-class share and the same network with 64
 hidden units, which shows how much the 6-unit bottleneck costs.
 
-Three training recipes are compared, none of which changes what the apparatus
-computes:
+Training recipes compared, none of which changes what the apparatus computes:
 
-- mse: mean squared error on one-hot targets, as the repo's training code does
+- mse: mean squared error on one-hot targets
 - ce: softmax cross-entropy
 - ce + constant input: cross-entropy, with one spare input slider fixed at 1 so
   the hidden units get a bias; only possible when the task leaves an input free
+- ce + nonneg: cross-entropy with non-negative hidden-to-output weights, so
+  every output slider only ever accumulates upwards
+- ce + nonneg + noise: the same, with every weight multiplied by a fresh random
+  factor on each training step (log standard deviation 0.1); this is the recipe
+  the Elixir and TypeScript training code uses
 
-For each recipe the best 6-hidden model's weights are scaled so each layer
-peaks at 5, as the weight export does, and put through the slider-noise model
-from slider_scale_sim.py (see its docstring) on a linear scale and on a
-full-slot log scale with sign carried separately.
+For each recipe the best 6-hidden model's weights are fitted to the apparatus
+as the weight export does and put through the slider-noise model (see
+apparatus_sim.py), on the apparatus's log weight scale and on the most
+favourable linear scale possible for those weights.
 
 Tasks:
 
-- mnist: the existing digit task, trained on the 60,000-image training set and
-  scored on the 10,000-image test set
+- mnist: handwritten digits downsampled to 6x6, trained on the 60,000-image
+  training set and scored on the 10,000-image test set
 - zoo: UCI Zoo, 15 yes/no animal traits plus one-hot leg count (21 inputs) to
   7 animal classes; 101 animals, so scored by repeated 5-fold cross-validation
 - letters: next-symbol prediction over a 10-symbol alphabet (the letters
@@ -36,33 +41,27 @@ Tasks:
 - language: which of 10 (or 5) languages a word or 6-word phrase is in, from
   its 26 letter proportions with diacritics stripped
 
-Run with `uv run scripts/candidate_tasks.py`. It downloads its data on each run.
+Run with `uv run scripts/candidate_tasks.py`. It downloads its data on each
+run and takes several minutes.
 """
 
 import sys
 import unicodedata
 from collections import Counter
+from dataclasses import dataclass
 from pathlib import Path
 
-import httpx
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import slider_scale_sim as sim
+import apparatus_sim as sim
+from apparatus_sim import Dataset
 
 SEEDS = 5
 MAX_INPUTS = 36
-RECIPES = [("mse", False), ("ce", False), ("ce", True)]
 NOISE_TRIALS = 50
 NOISE_SIGMAS = [0.01, 0.02, 0.05]
-LOG_FLOOR = 0.02
-ZOO_URL = "https://archive.ics.uci.edu/ml/machine-learning-databases/zoo/zoo.data"
-BOOK_URLS = [
-    "https://www.gutenberg.org/files/11/11-0.txt",
-    "https://www.gutenberg.org/files/1342/1342-0.txt",
-]
 WORDS_URL = "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/{0}/{0}_50k.txt"
-ALPHABET = "etaoinshr "
 LANGUAGES = ["en", "fr", "de", "es", "it", "pt", "nl", "sv", "pl", "fi"]
 DIGITS = """
 01110 00100 01110 11111 00010 11111 00110 11111 01110 01110
@@ -74,17 +73,23 @@ DIGITS = """
 01110 01110 11111 01110 00010 01110 01110 01000 01110 01100
 """
 
-Dataset = tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+
+@dataclass(frozen=True)
+class Recipe:
+    name: str
+    loss: str
+    constant_input: bool = False
+    nonnegative_output: bool = False
+    weight_noise: float = 0.0
 
 
-def fetch(url: str) -> str:
-    response = httpx.get(url, follow_redirects=True, timeout=60)
-    response.raise_for_status()
-    return response.content.decode("utf-8-sig")
-
-
-def one_hot(labels: np.ndarray, classes: int) -> np.ndarray:
-    return np.eye(classes)[labels]
+RECIPES = [
+    Recipe("mse", "mse"),
+    Recipe("ce", "ce"),
+    Recipe("ce + constant input", "ce", constant_input=True),
+    Recipe("ce + nonneg", "ce", nonnegative_output=True),
+    Recipe("ce + nonneg + noise", "ce", nonnegative_output=True, weight_noise=0.1),
+]
 
 
 def train(
@@ -94,29 +99,38 @@ def train(
     hidden: int,
     epochs: int,
     seed: int,
-    loss: str,
+    recipe: Recipe,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Bias-free ReLU MLP trained with Adam on MSE or softmax cross-entropy."""
+    """Bias-free ReLU MLP trained with Adam under the given recipe."""
     rng = np.random.default_rng(seed)
     params = [
         rng.normal(0, np.sqrt(2 / x.shape[1]), (x.shape[1], hidden)),
         rng.normal(0, np.sqrt(1 / hidden), (hidden, classes)),
     ]
+    if recipe.nonnegative_output:
+        params[1] = np.abs(params[1])
     moments = [[np.zeros_like(p), np.zeros_like(p)] for p in params]
-    targets = one_hot(y, classes)
+    targets = sim.one_hot(y, classes)
     step = 0
     for _ in range(epochs):
         order = rng.permutation(len(x))
         for start in range(0, len(x), 128):
             batch = order[start : start + 128]
-            h = np.maximum(x[batch] @ params[0], 0)
-            out = h @ params[1]
-            if loss == "ce":
+            noise = [
+                np.exp(rng.normal(0, recipe.weight_noise, p.shape)) for p in params
+            ]
+            b, d = params[0] * noise[0], params[1] * noise[1]
+            h = np.maximum(x[batch] @ b, 0)
+            out = h @ d
+            if recipe.loss == "ce":
                 exp = np.exp(out - out.max(1, keepdims=True))
                 delta = (exp / exp.sum(1, keepdims=True) - targets[batch]) / len(batch)
             else:
                 delta = 2 * (out - targets[batch]) / len(batch)
-            grads = [x[batch].T @ ((delta @ params[1].T) * (h > 0)), h.T @ delta]
+            grads = [
+                (x[batch].T @ ((delta @ d.T) * (h > 0))) * noise[0],
+                (h.T @ delta) * noise[1],
+            ]
             step += 1
             for p, g, m in zip(params, grads, moments, strict=True):
                 m[0] = 0.9 * m[0] + 0.1 * g
@@ -126,22 +140,17 @@ def train(
                     * (m[0] / (1 - 0.9**step))
                     / (np.sqrt(m[1] / (1 - 0.999**step)) + 1e-8)
                 )
+            if recipe.nonnegative_output:
+                np.maximum(params[1], 0, out=params[1])
     return params[0], params[1]
 
 
-def scale_to_apparatus(b: np.ndarray, d: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    return b * sim.WMAX / np.abs(b).max(), d * sim.WMAX / np.abs(d).max()
-
-
-def noise_report(b: np.ndarray, d: np.ndarray, x: np.ndarray, y: np.ndarray) -> None:
-    b, d = scale_to_apparatus(b, d)
-    small = np.mean(np.abs(np.concatenate([b.ravel(), d.ravel()])) < 0.5)
-    print(f"  scaled weights below 0.5 in magnitude: {small:.0%}")
-    schemes = {
-        "linear": sim.linear,
-        "log": lambda m, s: sim.log(m, s, LOG_FLOOR, False),
-    }
-    for name, perturb in schemes.items():
+def noise_report(
+    b: np.ndarray, d: np.ndarray, x_fit: np.ndarray, x: np.ndarray, y: np.ndarray
+) -> None:
+    b, d = sim.fit_to_apparatus(b, d, x_fit)
+    print(f"  fitted to the apparatus: accuracy {sim.accuracy(b, d, x, y):.3f}")
+    for name, perturb in (("log", sim.log_scale), ("linear to fit", sim.linear_scale)):
         cells = []
         for sigma in NOISE_SIGMAS:
             accs = [
@@ -149,7 +158,7 @@ def noise_report(b: np.ndarray, d: np.ndarray, x: np.ndarray, y: np.ndarray) -> 
                 for _ in range(NOISE_TRIALS)
             ]
             cells.append(f"{sigma:.0%}: {np.mean(accs):.3f}")
-        print(f"  slider noise, {name:6} scale  " + "  ".join(cells))
+        print(f"  slider noise, {name:13} scale  " + "  ".join(cells))
 
 
 def with_constant_input(data: Dataset) -> Dataset:
@@ -168,12 +177,12 @@ def evaluate(
     classes: int,
     epochs: int,
     final: Dataset | None = None,
-) -> tuple[np.ndarray, np.ndarray, bool]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Train on each split under each recipe and report held-out accuracy.
 
     The noise check uses each recipe's best 6-hidden model on its own test data,
     or, when `final` is given, a model trained and checked on that dataset
-    instead. Returns the best such model and whether it takes a constant input.
+    instead. Returns the model trained with the last recipe.
     """
     print(f"\n=== {name} ===", flush=True)
     x_test, y_test = splits[0][2], splits[0][3]
@@ -182,73 +191,56 @@ def evaluate(
         f"train {len(splits[0][0])}, test {len(x_test)}, "
         f"majority class {np.bincount(y_test).max() / len(y_test):.3f}"
     )
-    best = None
-    for loss, constant in RECIPES:
-        if constant and splits[0][0].shape[1] >= MAX_INPUTS:
+    for recipe in RECIPES:
+        if recipe.constant_input and splits[0][0].shape[1] >= MAX_INPUTS:
             continue
-        print(f" {loss}{' + constant input' if constant else ''}:")
-        recipe_splits = [with_constant_input(d) for d in splits] if constant else splits
+        print(f" {recipe.name}:")
+        recipe_splits = (
+            [with_constant_input(s) for s in splits]
+            if recipe.constant_input
+            else splits
+        )
         models = []
         for hidden in (6, 64):
             accs = []
             for seed, (x_train, y_train, x_te, y_te) in enumerate(recipe_splits):
-                b, d = train(x_train, y_train, classes, hidden, epochs, seed, loss)
+                b, d = train(x_train, y_train, classes, hidden, epochs, seed, recipe)
                 accs.append(sim.accuracy(b, d, x_te, y_te))
                 if hidden == 6:
-                    models.append((accs[-1], b, d, x_te, y_te))
+                    models.append((accs[-1], b, d, x_train, x_te, y_te))
             print(
                 f"  {hidden:2} hidden: accuracy {np.mean(accs):.3f} ± {np.std(accs):.3f}, "
                 f"best {np.max(accs):.3f}",
                 flush=True,
             )
         if final is not None:
-            whole = with_constant_input(final) if constant else final
+            whole = with_constant_input(final) if recipe.constant_input else final
             fits = [
-                train(whole[0], whole[1], classes, 6, epochs, seed, loss)
+                train(whole[0], whole[1], classes, 6, epochs, seed, recipe)
                 for seed in range(SEEDS)
             ]
             models = [
-                (sim.accuracy(b, d, whole[2], whole[3]), b, d, whole[2], whole[3])
+                (
+                    sim.accuracy(b, d, whole[2], whole[3]),
+                    b,
+                    d,
+                    whole[0],
+                    whole[2],
+                    whole[3],
+                )
                 for b, d in fits
             ]
-        acc, b, d, x_noise, y_noise = max(models, key=lambda m: m[0])
+        acc, b, d, x_fit, x_noise, y_noise = max(models, key=lambda m: m[0])
         print(
             f"  model used for the noise check: accuracy {acc:.3f} on {len(y_noise)} examples"
         )
-        noise_report(b, d, x_noise, y_noise)
-        if best is None or acc > best[0]:
-            best = (acc, b, d, constant)
-    return best[1:]
-
-
-def mnist_data() -> Dataset:
-    def images(name: str) -> np.ndarray:
-        full = sim.fetch_idx(name, 16).reshape(-1, 28, 28)
-        return (
-            full[:, sim.SAMPLE_INDICES][:, :, sim.SAMPLE_INDICES].reshape(-1, 36) / 255
-        )
-
-    return (
-        images("train-images-idx3-ubyte.gz"),
-        sim.fetch_idx("train-labels-idx1-ubyte.gz", 8).astype(int),
-        images("t10k-images-idx3-ubyte.gz"),
-        sim.fetch_idx("t10k-labels-idx1-ubyte.gz", 8).astype(int),
-    )
+        noise_report(b, d, x_fit, x_noise, y_noise)
+    return b, d
 
 
 def zoo_splits() -> tuple[list[Dataset], Dataset]:
     """Repeated 5-fold splits, plus the whole dataset as both train and test."""
-    rows = [line.split(",") for line in fetch(ZOO_URL).split()]
-    traits = np.array([[int(v) for v in row[1:17]] for row in rows])
-    legs = traits[:, 12]
-    leg_values = sorted(set(legs.tolist()))
-    x = np.hstack(
-        [
-            np.delete(traits, 12, axis=1),
-            np.array([[float(v == n) for n in leg_values] for v in legs]),
-        ]
-    ).astype(float)
-    y = np.array([int(row[17]) - 1 for row in rows])
+    x, y = sim.zoo_data()
     splits = []
     for repeat in range(SEEDS):
         order = np.random.default_rng(repeat).permutation(len(x))
@@ -259,30 +251,7 @@ def zoo_splits() -> tuple[list[Dataset], Dataset]:
     return splits, (x, y, x, y)
 
 
-def letters_data() -> tuple[Dataset, str]:
-    keep = set(ALPHABET.strip())
-    words = [
-        w
-        for url in BOOK_URLS
-        for w in "".join(
-            c if c.isalpha() else " "
-            for c in fetch(url).lower().replace("'", "").replace("’", "")
-        ).split()
-        if set(w) <= keep
-        and (len(w) > 1 or w in "ai")
-        and not (len(w) > 1 and set(w) == {"i"})
-    ]
-    text = " ".join(words)
-    codes = np.array([ALPHABET.index(c) for c in text])
-    x = np.hstack([one_hot(codes[i : len(codes) - 3 + i], 10) for i in range(3)])
-    y = codes[3:]
-    cut = int(len(y) * 0.9)
-    return (x[:cut], y[:cut], x[cut:], y[cut:]), text
-
-
-def letters_report(
-    data: Dataset, text: str, b: np.ndarray, d: np.ndarray, constant: bool
-) -> None:
+def letters_report(data: Dataset, text: str, b: np.ndarray, d: np.ndarray) -> None:
     x_train, y_train, x_test, y_test = data
     print(f"  corpus: {len(text)} symbols, e.g. '{text[:60]}'")
 
@@ -302,15 +271,16 @@ def letters_report(
     )
 
     rng = np.random.default_rng(0)
-    out = [ALPHABET.index(c) for c in "the"]
+    out = [sim.ALPHABET.index(c) for c in "the"]
     for _ in range(120):
-        context = one_hot(np.array(out[-3:]), 10).reshape(1, 30)
-        context = np.hstack([context, np.ones((1, 1))]) if constant else context
-        scores = sim.forward(b, d, context)[0]
+        scores = sim.forward(b, d, sim.one_hot(np.array(out[-3:]), 10).reshape(1, 30))[
+            0
+        ]
         probs = np.exp(scores - scores.max())
         out.append(int(rng.choice(10, p=probs / probs.sum())))
+    sample = "".join(sim.ALPHABET[i] for i in out)
     print(
-        f"  sampled from the best 6-hidden model (softmax of its outputs): '{''.join(ALPHABET[i] for i in out)}'"
+        f"  sampled from the last recipe's model (softmax of its outputs): '{sample}'"
     )
 
 
@@ -348,7 +318,9 @@ def language_data(languages: list[str], phrase_words: int, seed: int) -> Dataset
     parts: list[list] = [[], [], [], []]
     for label, language in enumerate(languages):
         vocab: dict[str, int] = {}
-        for line in fetch(WORDS_URL.format(language)).splitlines():
+        for line in (
+            sim.fetch(WORDS_URL.format(language)).decode("utf-8-sig").splitlines()
+        ):
             word, count = line.rsplit(" ", 1)
             word = strip_accents(word)
             if word.isascii() and word.isalpha() and word.islower() and len(word) >= 2:
@@ -369,14 +341,14 @@ def language_data(languages: list[str], phrase_words: int, seed: int) -> Dataset
 
 
 def main() -> None:
-    evaluate("mnist", [mnist_data()] * SEEDS, classes=10, epochs=10)
+    evaluate("mnist", [sim.mnist_data()] * SEEDS, classes=10, epochs=10)
 
     splits, whole = zoo_splits()
     evaluate("zoo", splits, classes=7, epochs=2000, final=whole)
 
-    letters, text = letters_data()
-    b, d, constant = evaluate("letters", [letters] * SEEDS, classes=10, epochs=10)
-    letters_report(letters, text, b, d, constant)
+    letters, text = sim.letters_data()
+    b, d = evaluate("letters", [letters] * SEEDS, classes=10, epochs=10)
+    letters_report(letters, text, b, d)
 
     evaluate(
         "dotmatrix (test: 3 of 35 pixels flipped)",
