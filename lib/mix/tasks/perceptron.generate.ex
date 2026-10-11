@@ -93,16 +93,18 @@ defmodule Mix.Tasks.Perceptron.Generate do
     end
 
     # Handle presets
-    config = 
+    config =
       case opts[:preset] do
-        nil -> 
+        nil ->
           Keyword.merge(@defaults, opts)
+
         preset_name ->
           case Map.get(@presets, preset_name) do
             nil ->
               Mix.shell().error("Unknown preset: #{preset_name}")
               Mix.shell().error("Available presets: #{Map.keys(@presets) |> Enum.join(", ")}")
               System.halt(1)
+
             preset_config ->
               @defaults
               |> Keyword.merge(Enum.map(preset_config, fn {k, v} -> {k, v} end))
@@ -132,7 +134,11 @@ defmodule Mix.Tasks.Perceptron.Generate do
     Mix.shell().info("Parameters:")
     Mix.shell().info("  Size: #{size}mm")
     Mix.shell().info("  Network: #{n_input}-#{n_hidden}-#{n_output}")
-    Mix.shell().info("  Operations per inference: #{ops.total} (#{ops.mac} MAC + #{ops.relu} ReLU)")
+
+    Mix.shell().info(
+      "  Operations per inference: #{ops.total} (#{ops.mac} MAC + #{ops.relu} ReLU)"
+    )
+
     Mix.shell().info("  Estimated time per inference: #{format_time(ops.time_seconds)}")
     if qr_data, do: Mix.shell().info("  QR data: #{qr_data}")
     if print_mode, do: Mix.shell().info("  Print mode: enabled")

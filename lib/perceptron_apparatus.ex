@@ -5,7 +5,10 @@ defmodule PerceptronApparatus do
 
   resources do
     resource PerceptronApparatus.Board do
-      define :create_board, action: :create, args: [:size, :n_input, :n_hidden, :n_output, {:optional, :qr_data}]
+      define :create_board,
+        action: :create,
+        args: [:size, :n_input, :n_hidden, :n_output, {:optional, :qr_data}]
+
       define :write_svg, action: :write_svg, args: [:board, :filename, {:optional, :print_mode}]
     end
 

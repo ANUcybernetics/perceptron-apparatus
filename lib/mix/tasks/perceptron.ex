@@ -103,7 +103,11 @@ defmodule Mix.Tasks.Perceptron do
     Mix.shell().info("Parameters:")
     Mix.shell().info("  Size: #{size}mm")
     Mix.shell().info("  Network: #{n_input}-#{n_hidden}-#{n_output}")
-    Mix.shell().info("  Operations per inference: #{ops.total} (#{ops.mac} MAC + #{ops.relu} ReLU)")
+
+    Mix.shell().info(
+      "  Operations per inference: #{ops.total} (#{ops.mac} MAC + #{ops.relu} ReLU)"
+    )
+
     Mix.shell().info("  Estimated time per inference: #{format_time(ops.time_seconds)}")
     if qr_data, do: Mix.shell().info("  QR data: #{qr_data}")
     if print_mode, do: Mix.shell().info("  Print mode: enabled")

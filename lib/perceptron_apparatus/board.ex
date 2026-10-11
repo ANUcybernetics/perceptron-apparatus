@@ -538,7 +538,8 @@ defmodule PerceptronApparatus.Board do
         {"class", "logo"},
         {"x", to_string(text_x_center)},
         {"y", to_string(text_y_first)},
-        {"style", "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
+        {"style",
+         "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
         {"text-anchor", "middle"},
         {"dominant-baseline", "middle"}
       ])
@@ -548,7 +549,8 @@ defmodule PerceptronApparatus.Board do
         {"class", "logo"},
         {"x", to_string(text_x_right)},
         {"y", to_string(text_y_second)},
-        {"style", "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
+        {"style",
+         "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
         {"text-anchor", "end"},
         {"dominant-baseline", "middle"}
       ])

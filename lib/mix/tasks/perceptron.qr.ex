@@ -79,22 +79,26 @@ defmodule Mix.Tasks.Perceptron.Qr do
 
     Mix.shell().info("Creating central piece...")
     Mix.shell().info("Parameters:")
+
     if qr_data do
       Mix.shell().info("  QR data: #{qr_data}")
     else
       Mix.shell().info("  Content: Cybernetic Studio logo")
     end
+
     Mix.shell().info("  Board size: #{size}mm")
     if print_mode, do: Mix.shell().info("  Print mode: enabled")
     Mix.shell().info("  Output file: #{filename}")
     Mix.shell().info("")
 
     center_space = 150
-    elements = if qr_data do
-      render_qr_code(qr_data, center_space)
-    else
-      render_cybernetic_studio_logo(center_space)
-    end
+
+    elements =
+      if qr_data do
+        render_qr_code(qr_data, center_space)
+      else
+        render_cybernetic_studio_logo(center_space)
+      end
 
     padding = center_space * 0.05
     box_size = center_space * 0.4 + padding * 2
@@ -262,7 +266,8 @@ defmodule Mix.Tasks.Perceptron.Qr do
         {"class", "logo"},
         {"x", to_string(text_x_center)},
         {"y", to_string(text_y_first)},
-        {"style", "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
+        {"style",
+         "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
         {"text-anchor", "middle"},
         {"dominant-baseline", "middle"}
       ])
@@ -272,7 +277,8 @@ defmodule Mix.Tasks.Perceptron.Qr do
         {"class", "logo"},
         {"x", to_string(text_x_right)},
         {"y", to_string(text_y_second)},
-        {"style", "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
+        {"style",
+         "font-family: 'Neon Tubes 2'; font-size: #{text_size}px; fill: black; stroke: none;"},
         {"text-anchor", "end"},
         {"dominant-baseline", "middle"}
       ])
