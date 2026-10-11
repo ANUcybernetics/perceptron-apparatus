@@ -90,7 +90,7 @@ def linear_scale(w: np.ndarray, sigma: float, top: float | None = None) -> np.nd
 
 
 def log_scale(w: np.ndarray, sigma: float) -> np.ndarray:
-    """A slider set on the apparatus's weight scale, with position error `sigma`:
+    """A slider set on the log weight scale, with position error `sigma`:
     a zero park position, then WEIGHT_MIN to WEIGHT_MAX on a log scale, with sign
     carried by the marker and so never misread."""
     magnitude = np.minimum(np.abs(w), WEIGHT_MAX)

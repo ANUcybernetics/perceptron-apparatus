@@ -15,9 +15,9 @@ docs/letters-weights.json this reports:
   which should be about the end of its scale (5)
 - accuracy when every weight slider is set with a Gaussian position error
   (sigma, as a fraction of slot length), on three scales:
-  - log: the scale the apparatus has, a zero park position then 0.02 to 5 on a
-    log scale, with sign on the slider marker
-  - linear ±5: the linear scale the apparatus used to have
+  - log: the optional log scale, a zero park position then 0.02 to 5 on a log
+    scale, with sign on the slider marker
+  - linear ±5: the linear scale the built apparatus has, and the default
   - linear to fit: a linear scale spanning plus and minus the layer's largest
     weight, which would have to be engraved to suit one particular set of
     weights and is the most favourable linear scale possible for them
@@ -25,8 +25,8 @@ docs/letters-weights.json this reports:
 Only the weight sliders are noisy. Reading errors on the input, hidden and
 output sliders and on the log ring are not modelled.
 
-The comparison that led to the log scale was run on the earlier linear-scale
-weights; that version of this script is at the `linear-weight-scale` tag.
+The exported weights are trained for the linear scale. To check weights trained
+for the log scale, export them with `--weight-scale log` first.
 
 Run from anywhere with `uv run scripts/slider_scale_sim.py`. It downloads the
 MNIST and letters data on each run.

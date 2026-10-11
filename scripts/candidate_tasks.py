@@ -19,14 +19,20 @@ Training recipes compared, none of which changes what the apparatus computes:
   the hidden units get a bias; only possible when the task leaves an input free
 - ce + nonneg: cross-entropy with non-negative hidden-to-output weights, so
   every output slider only ever accumulates upwards
-- ce + nonneg + noise: the same, with every weight multiplied by a fresh random
-  factor on each training step (log standard deviation 0.1); this is the recipe
-  the Elixir and TypeScript training code uses
+- ce + nonneg + log noise: the same, with every weight multiplied by a fresh
+  random factor on each training step (log standard deviation 0.1), which is how
+  a slider on the log weight scale is misset; the training code's recipe for
+  that scale
+- ce + nonneg + linear noise: instead, every weight gets a fresh random offset
+  of the same size on the apparatus (standard deviation 1% of the slot), which
+  is how a slider on the linear weight scale is misset; the training code's
+  default recipe
 
 For each recipe the best 6-hidden model's weights are fitted to the apparatus
 as the weight export does and put through the slider-noise model (see
-apparatus_sim.py), on the apparatus's log weight scale and on the most
-favourable linear scale possible for those weights.
+apparatus_sim.py), on the log weight scale, on the linear -5 to 5 scale the
+built apparatus has, and on the most favourable linear scale possible for those
+weights.
 
 Tasks:
 
@@ -81,6 +87,7 @@ class Recipe:
     constant_input: bool = False
     nonnegative_output: bool = False
     weight_noise: float = 0.0
+    weight_scale: str = "log"
 
 
 RECIPES = [
@@ -88,8 +95,41 @@ RECIPES = [
     Recipe("ce", "ce"),
     Recipe("ce + constant input", "ce", constant_input=True),
     Recipe("ce + nonneg", "ce", nonnegative_output=True),
-    Recipe("ce + nonneg + noise", "ce", nonnegative_output=True, weight_noise=0.1),
+    Recipe("ce + nonneg + log noise", "ce", nonnegative_output=True, weight_noise=0.1),
+    Recipe(
+        "ce + nonneg + linear noise",
+        "ce",
+        nonnegative_output=True,
+        weight_noise=0.01,
+        weight_scale="linear",
+    ),
 ]
+
+
+def linear_offsets(
+    b: np.ndarray, d: np.ndarray, x: np.ndarray, level: float, rng: np.random.Generator
+) -> tuple[np.ndarray, np.ndarray]:
+    """A random offset for every weight, the same size on the apparatus for all
+    of them: `level` is its standard deviation as a fraction of the slot. What
+    one unit on the apparatus is in each layer's weights as trained is estimated
+    from the batch `x`, as fit_to_apparatus would rescale them."""
+    tiny = 1e-6
+    pre = x @ b
+    scale = np.minimum(
+        sim.HIDDEN_MAX / np.maximum(np.abs(pre).max(0), tiny),
+        sim.WEIGHT_MAX / np.maximum(np.abs(b).max(0), tiny),
+    )
+    fitted_d = d / scale[:, None]
+    out = np.maximum(pre * scale, 0) @ fitted_d
+    out_scale = min(
+        sim.OUTPUT_MAX / max(np.abs(out).max(), tiny),
+        sim.WEIGHT_MAX / max(np.abs(fitted_d).max(), tiny),
+    )
+    slot = 2 * sim.WEIGHT_MAX * level
+    return (
+        rng.normal(0, 1, b.shape) * slot / scale,
+        rng.normal(0, 1, d.shape) * slot * scale[:, None] / out_scale,
+    )
 
 
 def train(
@@ -116,10 +156,17 @@ def train(
         order = rng.permutation(len(x))
         for start in range(0, len(x), 128):
             batch = order[start : start + 128]
-            noise = [
-                np.exp(rng.normal(0, recipe.weight_noise, p.shape)) for p in params
-            ]
-            b, d = params[0] * noise[0], params[1] * noise[1]
+            if recipe.weight_noise and recipe.weight_scale == "linear":
+                noise = [1.0, 1.0]
+                offsets = linear_offsets(
+                    params[0], params[1], x[batch], recipe.weight_noise, rng
+                )
+                b, d = params[0] + offsets[0], params[1] + offsets[1]
+            else:
+                noise = [
+                    np.exp(rng.normal(0, recipe.weight_noise, p.shape)) for p in params
+                ]
+                b, d = params[0] * noise[0], params[1] * noise[1]
             h = np.maximum(x[batch] @ b, 0)
             out = h @ d
             if recipe.loss == "ce":
@@ -150,7 +197,12 @@ def noise_report(
 ) -> None:
     b, d = sim.fit_to_apparatus(b, d, x_fit)
     print(f"  fitted to the apparatus: accuracy {sim.accuracy(b, d, x, y):.3f}")
-    for name, perturb in (("log", sim.log_scale), ("linear to fit", sim.linear_scale)):
+    scales = (
+        ("log", sim.log_scale),
+        ("linear ±5", lambda w, sigma: sim.linear_scale(w, sigma, sim.WEIGHT_MAX)),
+        ("linear to fit", sim.linear_scale),
+    )
+    for name, perturb in scales:
         cells = []
         for sigma in NOISE_SIGMAS:
             accs = [
