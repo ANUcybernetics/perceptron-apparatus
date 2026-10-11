@@ -196,4 +196,5 @@ def main() -> None:
     simulate("poker", *load_poker())
 
 
-main()
+if __name__ == "__main__":
+    main()
