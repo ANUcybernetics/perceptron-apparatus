@@ -323,7 +323,8 @@ export function build(tl, S, T) {
   });
   // marks that sit on the board and move with it, in board units from the centre
   const ov = M.svg("svg", { viewBox: "-610 -610 1220 1220" }, spinL);
-  M.set(boardL, camProps(HOME_CAM));
+  // centred while it has the frame to itself, then across to make room for the working-out
+  M.set(boardL, camProps({ ...HOME_CAM, sx: 960 }));
   // push-ins take the board past the scene's edges on purpose
   boardL.setAttribute("data-layout-allow-overflow", "");
   // covers the left of the scene while a push-in would spill the board into it
@@ -386,6 +387,7 @@ export function build(tl, S, T) {
   fadeOut(heroL, tDraw - 0.5, 0.45);
   M.set(boardL, { opacity: 0 });
   fadeIn(boardL, tDraw, 0.9);
+  cam(HOME_CAM, T.start(1) - 0.9, 0.9);
   fadeOut(boardL, tLogo - 0.6, 0.6);
 
   const band = (r, w) =>
@@ -439,8 +441,6 @@ export function build(tl, S, T) {
     <div class="credit">Designed by Ben Swift · fabricated with Sam Shellard, UC Workshop7</div>
     <div class="credit">github.com/ANUcybernetics/perceptron-apparatus</div>`;
   M.set([titleL, creditL], { opacity: 0 });
-  fadeIn(titleL, tDraw + 0.3, 0.9);
-  fadeOut(titleL, T.start(1) - 0.5);
   fadeIn(titleL, END - 0.4, 0.8);
   fadeIn(creditL, END + 0.4, 0.8);
   fadeOut([titleL, creditL], tLogo - 0.6, 0.6);
