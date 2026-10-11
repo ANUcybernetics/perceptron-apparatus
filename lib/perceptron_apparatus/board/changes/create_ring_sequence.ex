@@ -56,7 +56,7 @@ defmodule PerceptronApparatus.Board.Changes.CreateRingSequence do
   end
 
   defp create_weight_ring!(n_groups, n_sliders_per_group) do
-    rule = Utils.new_rule(-5, 5, 1, 5)
+    rule = Utils.weight_rule()
     shape = %{groups: n_groups, sliders_per_group: n_sliders_per_group}
 
     RadialRing

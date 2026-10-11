@@ -1,4 +1,4 @@
-import { newRule } from "./utils.js";
+import { newRule, weightRule } from "./utils.js";
 import { logRule, buildRuleRing, type LogRuleTick } from "./rule-ring.js";
 import { buildAzimuthalRing } from "./azimuthal-ring.js";
 import { buildRadialRing } from "./radial-ring.js";
@@ -35,7 +35,7 @@ function createRingSequence(nInput: number, nHidden: number, nOutput: number): R
       fixedWidth: 25,
       groups: nHidden,
       slidersPerGroup: nInput,
-      rule: newRule(-5, 5, 1, 5),
+      rule: weightRule(),
     },
     {
       type: "azimuthal",
@@ -48,7 +48,7 @@ function createRingSequence(nInput: number, nHidden: number, nOutput: number): R
       fixedWidth: 25,
       groups: nOutput,
       slidersPerGroup: nHidden,
-      rule: newRule(-5, 5, 1, 5),
+      rule: weightRule(),
     },
     {
       type: "azimuthal",
@@ -241,6 +241,9 @@ text {
 }
 .top.slider {
   stroke-width: 1;
+}
+[data-sign="negative"] .slider {
+  fill: var(--pa-negative, transparent);
 }
 .animating .slider {
   scale: 2.5;

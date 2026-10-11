@@ -53,6 +53,46 @@ defmodule PerceptronApparatus.Utils do
     end)
   end
 
+  @weight_min 0.02
+  @weight_max 5.0
+  @weight_zero_gap 0.12
+  @weight_labelled ["0.02", "0.05", "0.1", "0.2", "0.5", "1", "2", "5"]
+
+  @doc """
+  The rule for a weight slider: zero, then a tick at every leading digit from
+  the smallest settable magnitude to the largest, labelled on the 1-2-5 series.
+
+  Weight sliders carry magnitude on a log scale; sign is shown by the slider
+  marker, not by position.
+  """
+  def weight_rule do
+    ticks =
+      for exponent <- -2..0,
+          digit <- 1..9,
+          val = D.new(1, digit, exponent),
+          D.to_float(val) >= @weight_min and D.to_float(val) <= @weight_max do
+        label = val |> D.normalize() |> D.to_string(:normal)
+        {if(label in @weight_labelled, do: label), val}
+      end
+
+    [{"0", D.new(0)} | ticks]
+  end
+
+  @doc """
+  Fraction of a weight slot between its zero end (0.0) and the largest
+  magnitude (1.0). Magnitudes too small to set park at zero.
+  """
+  def weight_scale_fraction(value) do
+    magnitude = min(abs(value), @weight_max)
+
+    if magnitude < @weight_min do
+      0.0
+    else
+      log_fraction = :math.log(magnitude / @weight_min) / :math.log(@weight_max / @weight_min)
+      @weight_zero_gap + (1 - @weight_zero_gap) * log_fraction
+    end
+  end
+
   # LazyHTML helper functions for SVG generation
 
   @doc """

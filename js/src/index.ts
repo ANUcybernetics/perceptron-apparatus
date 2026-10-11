@@ -1,5 +1,5 @@
 import { renderBoard, type BoardConfig } from "./board.js";
-import { deg2rad } from "./utils.js";
+import { deg2rad, weightScaleFraction } from "./utils.js";
 import type { MultiplyAccumulateStep } from "./widgets/trace.js";
 
 export type { BoardConfig } from "./board.js";
@@ -82,11 +82,9 @@ export class PerceptronApparatus {
     const ringDef = this.findRadialRing(layerIndex);
     if (!ringDef) return Promise.resolve();
 
-    const { rangeMin, rangeMax, ringWidth } = ringDef;
+    const { ringWidth } = ringDef;
     const radius = this.getRadiusForLayer(layerIndex) - 5;
     const width = ringWidth - 10;
-    const dynamicRange = rangeMax - rangeMin;
-    const clampedValue = Math.max(rangeMin, Math.min(rangeMax, value));
 
     const groups = ringDef.groups;
     const thetaSweep = 360 / groups;
@@ -94,8 +92,10 @@ export class PerceptronApparatus {
     const theta = thetaOffset + (sliderIndex + 1) * (thetaSweep / (ringDef.slidersPerGroup + 1));
 
     const midRadius = radius - width / 2;
-    const valueRadius = radius - (width * (clampedValue - rangeMin)) / dynamicRange;
+    const valueRadius = radius - width * weightScaleFraction(value);
     const radialOffset = valueRadius - midRadius;
+
+    el.setAttribute("data-sign", value < 0 ? "negative" : "positive");
 
     const offsetX = radialOffset * Math.sin(deg2rad(theta));
     const offsetY = radialOffset * Math.cos(deg2rad(theta));
@@ -119,8 +119,6 @@ export class PerceptronApparatus {
   private findRadialRing(layerIndex: number): {
     groups: number;
     slidersPerGroup: number;
-    rangeMin: number;
-    rangeMax: number;
     ringWidth: number;
   } | null {
     const size = this.config.size;
@@ -137,23 +135,17 @@ export class PerceptronApparatus {
       {
         groups: number;
         slidersPerGroup: number;
-        rangeMin: number;
-        rangeMax: number;
         ringWidth: number;
       }
     > = {
       2: {
         groups: this.config.nHidden,
         slidersPerGroup: this.config.nInput,
-        rangeMin: -5,
-        rangeMax: 5,
         ringWidth: radialWidth,
       },
       4: {
         groups: this.config.nOutput,
         slidersPerGroup: this.config.nHidden,
-        rangeMin: -5,
-        rangeMax: 5,
         ringWidth: radialWidth,
       },
     };

@@ -108,15 +108,12 @@ defmodule PerceptronApparatus.RadialRing do
   end
 
   def render_guides(radius, width, groups, rule) do
-    range_min = List.first(rule) |> elem(1) |> D.to_float()
-    range_max = List.last(rule) |> elem(1) |> D.to_float()
-    dynamic_range = range_max - range_min
     theta_sweep = 360 / groups
 
     radii =
       rule
       |> Enum.map(fn {label, val} ->
-        {label, radius - width * (D.to_float(val) - range_min) / dynamic_range}
+        {label, radius - width * weight_scale_fraction(D.to_float(val))}
       end)
 
     circles =

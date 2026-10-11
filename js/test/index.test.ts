@@ -140,9 +140,34 @@ describe("setSlider (radial)", () => {
       );
     };
 
-    // the guide arcs put the scale's minimum on the outside of the ring
-    expect(await radiusAt(-5)).toBeCloseTo(465);
+    // zero parks at the outside of the ring and the largest magnitude sits at
+    // the inside, whatever the sign
+    expect(await radiusAt(0)).toBeCloseTo(465);
     expect(await radiusAt(5)).toBeCloseTo(355);
+    expect(await radiusAt(-5)).toBeCloseTo(355);
+
+    // equal ratios are equal distances
+    const step = (await radiusAt(0.05)) - (await radiusAt(0.5));
+    expect((await radiusAt(0.5)) - (await radiusAt(5))).toBeCloseTo(step);
+
+    // anything too small to set is parked at zero
+    expect(await radiusAt(0.01)).toBeCloseTo(465);
+  });
+
+  it("shows a weight's sign on the slider marker", async () => {
+    const container = makeContainer();
+    const apparatus = new PerceptronApparatus(container, {
+      nInput: 3,
+      nHidden: 2,
+      nOutput: 2,
+    });
+    const slider = apparatus.svg.querySelector("[data-slider='B0-0']")!;
+
+    await apparatus.setSlider("B0-0", -1.5);
+    expect(slider.getAttribute("data-sign")).toBe("negative");
+
+    await apparatus.setSlider("B0-0", 1.5);
+    expect(slider.getAttribute("data-sign")).toBe("positive");
   });
 });
 

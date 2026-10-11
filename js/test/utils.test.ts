@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deg2rad, newRule, formatNumber } from "../src/utils.js";
+import { deg2rad, newRule, formatNumber, weightRule, weightScaleFraction } from "../src/utils.js";
 
 describe("deg2rad", () => {
   it("converts 0 degrees to 0 radians", () => {
@@ -69,5 +69,43 @@ describe("newRule", () => {
     const rule = newRule(-5, 5, 1, 5);
     const labelled = rule.filter((t) => t.label != null);
     expect(labelled.map((t) => t.value)).toEqual([-5, 0, 5]);
+  });
+});
+
+describe("weightRule", () => {
+  it("runs from zero to the maximum with a tick at every leading digit", () => {
+    const values = weightRule().map((t) => t.value);
+    expect(values[0]).toBe(0);
+    expect(values[1]).toBe(0.02);
+    expect(values[values.length - 1]).toBe(5);
+    expect(values).toContain(0.07);
+    expect(values).toContain(0.3);
+    expect(values).toContain(4);
+    expect(values).not.toContain(6);
+  });
+});
+
+describe("weightScaleFraction", () => {
+  it("puts zero at one end and the maximum at the other", () => {
+    expect(weightScaleFraction(0)).toBe(0);
+    expect(weightScaleFraction(5)).toBeCloseTo(1);
+  });
+
+  it("ignores sign", () => {
+    expect(weightScaleFraction(-0.3)).toBe(weightScaleFraction(0.3));
+  });
+
+  it("leaves a gap between zero and the smallest marked magnitude", () => {
+    expect(weightScaleFraction(0.02)).toBeGreaterThan(0);
+    expect(weightScaleFraction(0.019)).toBe(0);
+  });
+
+  it("clamps magnitudes beyond the maximum", () => {
+    expect(weightScaleFraction(50)).toBeCloseTo(1);
+  });
+
+  it("is logarithmic above the minimum", () => {
+    const ratio = (a: number, b: number) => weightScaleFraction(b) - weightScaleFraction(a);
+    expect(ratio(0.02, 0.2)).toBeCloseTo(ratio(0.5, 5));
   });
 });

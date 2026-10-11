@@ -1,4 +1,4 @@
-import { deg2rad, type RuleTick } from "./utils.js";
+import { deg2rad, weightScaleFraction, type RuleTick } from "./utils.js";
 import { el, textEl, type VNode } from "./vnode.js";
 
 export interface RadialRingContext {
@@ -71,14 +71,11 @@ function buildGroup(
 }
 
 function buildGuides(radius: number, width: number, groups: number, rule: RuleTick[]): VNode[] {
-  const rangeMin = rule[0].value;
-  const rangeMax = rule[rule.length - 1].value;
-  const dynamicRange = rangeMax - rangeMin;
   const thetaSweep = 360 / groups;
 
   const radii = rule.map(({ label, value }) => ({
     label,
-    r: radius - (width * (value - rangeMin)) / dynamicRange,
+    r: radius - width * weightScaleFraction(value),
   }));
 
   const nodes: VNode[] = [];

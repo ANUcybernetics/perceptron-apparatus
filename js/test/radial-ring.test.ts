@@ -1,11 +1,11 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
 import { buildRadialRing } from "../src/radial-ring.js";
-import { newRule } from "../src/utils.js";
+import { weightRule } from "../src/utils.js";
 import { findAll } from "../src/vnode.js";
 
 describe("buildRadialRing", () => {
-  const rule = newRule(-5, 5, 1, 5);
+  const rule = weightRule();
 
   it("creates the correct total number of sliders", () => {
     const tree = buildRadialRing(3, 4, rule, {
@@ -90,6 +90,20 @@ describe("buildRadialRing", () => {
         (n.attrs["class"] ?? "").includes("slider"),
     );
     expect(circles.length).toBe(6);
+  });
+
+  it("labels the guide arcs with the 1-2-5 series from zero up to the maximum", () => {
+    const tree = buildRadialRing(1, 2, rule, {
+      radius: 300,
+      layerIndex: 2,
+      ringWidth: 100,
+    });
+
+    const labels = findAll(
+      tree,
+      (n) => n.tag === "text" && !(n.attrs["class"] ?? "").includes("indices"),
+    ).map((n) => n.text);
+    expect(labels).toEqual(["0", "0.02", "0.05", "0.1", "0.2", "0.5", "1", "2", "5"]);
   });
 
   it("has data-ring-type attribute on root", () => {
