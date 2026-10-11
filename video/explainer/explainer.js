@@ -1,12 +1,24 @@
-// The explainer: video/scripts/explainer.md. One handwritten 7, followed through
-// the digital twin (js/) with the bundled MNIST weights. Every slider position
-// and every number on screen comes from computeTrace; the apparatus is drawn by
-// the twin itself and driven as a pure function of t (apparatusAt, below).
+// The explainer: video/scripts/explainer.md. One handwritten 7, followed slowly
+// through the digital twin (js/) with the bundled MNIST weights, then two fast
+// passes with the animal and next-letter weights. Every slider position and
+// every number on screen comes from the bundled weights; the apparatus is drawn
+// by the twin itself and driven as a pure function of t (apparatusAt, below).
 
 import * as M from "./kit/motion/motion.js";
 import * as C from "./kit/motion/canvas.js";
 import { PerceptronApparatus } from "./kit/apparatus/index.mjs";
-import { sampleDigits, mnistWeights, computeTrace } from "./kit/apparatus/widgets/index.mjs";
+import {
+  sampleDigits,
+  mnistWeights,
+  computeTrace,
+  zooWeights,
+  encodeAnimal,
+  ZOO_EXAMPLES,
+  ZOO_CLASS_NAMES,
+  lettersWeights,
+  encodeContext,
+  LETTERS_ALPHABET,
+} from "./kit/apparatus/widgets/index.mjs";
 
 const SAMPLE = await fetch("kit/mnist-digits.json").then((r) => r.json());
 
@@ -30,14 +42,14 @@ const N_HID = 6;
 const N_OUT = 10;
 // the step shown slowly: the largest product of the pass, and a negative one,
 // which is what sends a hidden slider below zero
-const EX = { i: 34, j: 5 };
+const EX = { i: 33, j: 4 };
 EX.input = PX[EX.i];
 EX.weight = W.B[EX.i][EX.j];
 EX.product = EX.input * EX.weight;
-EX.angle = MACS.find((m) => m.target === "C5" && m.inputSlider === "A34").logRingAngle;
+EX.angle = MACS.find((m) => m.target === `C${EX.j}` && m.inputSlider === `A${EX.i}`).logRingAngle;
 
 // the 216 hidden-layer steps, the shown one first, and the hidden values after n of them
-const ORDER1 = [5, 0, 1, 2, 3, 4].flatMap((j) =>
+const ORDER1 = [EX.j, 0, 1, 2, 3, 5].flatMap((j) =>
   Array.from({ length: N_IN }, (_, n) => ({ i: j === EX.j ? (n + EX.i) % N_IN : n, j })),
 );
 const CUM1 = ORDER1.reduce(
@@ -63,6 +75,67 @@ const CUM2 = ORDER2.reduce(
   [Array(N_OUT).fill(0)],
 );
 const ANSWER = CUM2.at(-1).indexOf(Math.max(...CUM2.at(-1)));
+
+// A whole pass in slider order, for the two tasks that run fast: the hidden
+// and output values after each step.
+const pass = (px, weights) => {
+  const cum1 = [Array(N_HID).fill(0)];
+  for (let j = 0; j < N_HID; j++)
+    for (let i = 0; i < N_IN; i++) {
+      const c = [...cum1.at(-1)];
+      c[j] += px[i] * weights.B[i][j];
+      cum1.push(c);
+    }
+  const pre = cum1.at(-1);
+  const hidden = pre.map((v) => Math.max(0, v));
+  const cum2 = [Array(N_OUT).fill(0)];
+  for (let k = 0; k < N_OUT; k++)
+    for (let j = 0; j < N_HID; j++) {
+      const e = [...cum2.at(-1)];
+      e[k] += hidden[j] * weights.D[j][k];
+      cum2.push(e);
+    }
+  const out = cum2.at(-1);
+  return { px, W: weights, cum1, pre, hidden, cum2, out, answer: out.indexOf(Math.max(...out)) };
+};
+const DOG = ZOO_EXAMPLES.find((a) => a.name === "dog");
+const ZOO = pass(encodeAnimal(DOG.animal), zooWeights);
+const CONTEXT = " th";
+const LET = pass(encodeContext(CONTEXT), lettersWeights);
+// one line of the dog's checklist per input slider, in slider order
+const ZOO_QUESTIONS = [
+  "hair",
+  "feathers",
+  "lays eggs",
+  "milk",
+  "flies",
+  "lives in water",
+  "predator",
+  "teeth",
+  "backbone",
+  "breathes air",
+  "venomous",
+  "fins",
+  "tail",
+  "domestic",
+  "at least cat-sized",
+  "no legs",
+  "2 legs",
+  "4 legs",
+  "5 legs",
+  "6 legs",
+  "8 legs",
+];
+// a fast pass at u in [0, 1]: the hidden steps, back to zero, then the output steps
+const HIDDEN_SHARE = 0.55;
+const OUTPUT_FROM = 0.65;
+const fastAt = (task, u) => {
+  const n1 = Math.floor(N_IN * N_HID * Math.min(1, u / HIDDEN_SHARE));
+  const n2 = Math.floor(N_HID * N_OUT * Math.max(0, (u - OUTPUT_FROM) / (1 - OUTPUT_FROM)));
+  const settle = Math.min(1, Math.max(0, (u - HIDDEN_SHARE) / (OUTPUT_FROM - HIDDEN_SHARE - 0.02)));
+  const c = u < HIDDEN_SHARE ? task.cum1[n1] : task.pre.map((v) => (v < 0 ? v * (1 - settle) : v));
+  return { n1, n2, c, e: task.cum2[n2] };
+};
 
 // ------------------------------------------------------------ board geometry
 // Where the twin puts a slider for a value, in board units from the centre
@@ -105,11 +178,11 @@ export function build(tl, S, T) {
   const TOTAL = Number(S.root.dataset.duration);
 
   // ------------------------------------------------------------------ cues
-  const tGlint = [T.word(0, "brass"), T.word(9, "watch")];
+  const tGlint = [T.word(0, "brass"), T.word(12, "watch")];
   const tSpin = T.word(0, "circular");
   const tSets = T.word(2, "sets");
   const tPushA = seg(2, 3).start - 0.55;
-  const CLOSE = [21, 22, 23]; // the three sliders the push-in on ring A lands on
+  const CLOSE = [13, 14, 15]; // the three sliders the push-in on ring A lands on
   const rank = Array.from({ length: N_IN }, (_, i) => i).filter((i) => !CLOSE.includes(i));
   const tA = PX.map((_, i) =>
     CLOSE.includes(i) ? tPushA + 1.5 + CLOSE.indexOf(i) * 0.6 : tSets + rank.indexOf(i) * 0.075,
@@ -124,23 +197,73 @@ export function build(tl, S, T) {
   const tPushE = seg(7, 1).start - 0.35;
   const tSeven = T.word(7, "seven");
   const tBack = seg(7, 3).end + 0.9;
-  const zoomOut = { start: T.word(8, "chip") - 0.2, dur: 3.4 };
-  const zoomIn = { start: T.word(9, "multiplying") - 0.2, dur: 3.2 };
+  // the digit task clears and the weights move to the animal task's, then the next-letter task's
+  const tClear1 = T.word(8, "Slide") - 0.3;
+  const tGlide1 = T.word(8, "Slide") + 0.3;
+  const tZooYes = [seg(9, 1).start + 0.65, seg(9, 2).start + 0.8, seg(9, 3).start + 0.4];
+  const called = [0, 1, 3]; // hair, feathers and milk are named aloud
+  const tZooA = ZOO_QUESTIONS.map((_, i) =>
+    called.includes(i)
+      ? tZooYes[called.indexOf(i)]
+      : seg(9, 3).end + 0.15 + (i - called.filter((c) => c < i).length) * 0.055,
+  );
+  const zooRun = { start: T.word(9, "same"), end: seg(9, 5).start - 0.6 };
+  const tMammal = T.word(9, "mammal");
+  const tClear2 = T.start(10) - 0.3;
+  const tGlide2 = T.word(10, "weights");
+  const tLetA = [T.word(10, "After"), T.word(10, "T,"), T.word(10, "H:")];
+  const letRun = { start: T.word(10, "H:") + 0.55, end: seg(10, 3).start - 0.55 };
+  const tE = T.word(10, "E.");
+  const GLIDE = { spread: 2.0, dur: 0.7 };
+  const zoomOut = { start: T.word(11, "chip") - 0.2, dur: 3.4 };
+  const zoomIn = { start: T.word(12, "multiplying") - 0.2, dur: 3.2 };
   const tReset = TOTAL - 3.4;
 
   const step1 = (t) => 2 + Math.floor(214 * C.phase(t, run1.start, run1.end - run1.start) ** 2.2);
   const step2 = (t) => 1 + Math.floor(59 * C.phase(t, run2.start, run2.end - run2.start) ** 1.6);
   const live = (t) => 1 - C.phase(t, tReset, 1.6, "in-out-cubic");
   const below = PRE.map((v, j) => (v < -0.05 ? j : -1)).filter((j) => j >= 0);
+  const runU = (run, t) => C.phase(t, run.start, run.end - run.start);
+  const fast = [
+    { task: ZOO, run: zooRun },
+    { task: LET, run: letRun },
+  ];
 
   // Every slider's value and the log ring's angle at time t.
   const apparatusAt = (t) => {
     const on = live(t);
-    const a = PX.map((v, i) => v * C.phase(t, tA[i], 0.55, "out-cubic") * on);
+    const gone1 = 1 - C.phase(t, tClear1, 0.8, "in-out-cubic");
+    const gone2 = 1 - C.phase(t, tClear2, 0.8, "in-out-cubic");
+    const glide = (n, t0) => C.phase(t, t0 + M.hash(n) * GLIDE.spread, GLIDE.dur, "in-out-cubic");
+    const zoo = fastAt(ZOO, runU(zooRun, t));
+    const letters = fastAt(LET, runU(letRun, t));
+    const a = PX.map(
+      (v, i) =>
+        (v * C.phase(t, tA[i], 0.55, "out-cubic") * gone1 +
+          ZOO.px[i] * C.phase(t, tZooA[i] ?? 0, 0.5, "out-cubic") * gone2 +
+          LET.px[i] * C.phase(t, tLetA[Math.floor(i / 10)] ?? 0, 0.5, "out-cubic")) *
+        on,
+    );
     const b = (i, j) =>
-      W.B[i][j] * C.phase(t, tLearn + 0.3 + M.hash(i * 6 + j) * 2.6, 0.7, "in-out-cubic") * on;
+      lerp(
+        lerp(
+          W.B[i][j] * C.phase(t, tLearn + 0.3 + M.hash(i * 6 + j) * 2.6, 0.7, "in-out-cubic"),
+          ZOO.W.B[i][j],
+          glide(300 + i * 6 + j, tGlide1),
+        ),
+        LET.W.B[i][j],
+        glide(600 + i * 6 + j, tGlide2),
+      ) * on;
     const d = (j, k) =>
-      W.D[j][k] * C.phase(t, tD + M.hash(100 + j * 10 + k) * 0.8, 0.6, "in-out-cubic") * on;
+      lerp(
+        lerp(
+          W.D[j][k] * C.phase(t, tD + M.hash(100 + j * 10 + k) * 0.8, 0.6, "in-out-cubic"),
+          ZOO.W.D[j][k],
+          glide(900 + j * 10 + k, tGlide1),
+        ),
+        LET.W.D[j][k],
+        glide(1000 + j * 10 + k, tGlide2),
+      ) * on;
     let c;
     if (t < run1.start) {
       c = Array(N_HID).fill(0);
@@ -154,10 +277,19 @@ export function build(tl, S, T) {
     const ring =
       4.2 +
       360 * C.phase(t, tSpin, 2.4, "in-out-cubic") +
-      EX.angle * C.phase(t, tMul, 1.7, "in-out-cubic") * on +
+      EX.angle * C.phase(t, tMul, 1.7, "in-out-cubic") * gone1 +
       360 * 4 * C.phase(t, run1.start, run1.end - run1.start, "in-quad") +
-      360 * 2 * C.phase(t, run2.start, run2.end - run2.start, "in-out-quad");
-    return { a, b, c: c.map((v) => v * on), d, e: e.map((v) => v * on), ring };
+      360 * 2 * C.phase(t, run2.start, run2.end - run2.start, "in-out-quad") +
+      360 * 3 * C.phase(t, zooRun.start, zooRun.end - zooRun.start, "in-out-quad") +
+      360 * 3 * C.phase(t, letRun.start, letRun.end - letRun.start, "in-out-quad");
+    return {
+      a,
+      b,
+      c: c.map((v, j) => (v * gone1 + zoo.c[j] * gone2 + letters.c[j]) * on),
+      d,
+      e: e.map((v, k) => (v * gone1 + zoo.e[k] * gone2 + letters.e[k]) * on),
+      ring,
+    };
   };
 
   // -------------------------------------------------------------- the board
@@ -342,7 +474,7 @@ export function build(tl, S, T) {
   const pen = M.svg(
     "path",
     {
-      d: "M1.35 3.45 L1.45 2.5 L4.55 2.5 C4.75 3.5 3.85 4.4 4.45 5.75",
+      d: "M2.3 2.5 L4.65 2.5 C4.6 3.3 3.75 4.0 3.5 5.7",
       fill: "none",
       stroke: WHITE,
       "stroke-width": 0.42,
@@ -365,7 +497,7 @@ export function build(tl, S, T) {
 
   // push in on ring A, walking round the table so its labels read upright:
   // three neighbouring squares of the grid, three distances
-  const TURN = -135; // brings sliders A21 to A23 to the bottom of the table
+  const TURN = 145; // brings sliders A13 to A15 to the bottom of the table
   tl.to(shade, { opacity: 1 }, tPushA - 0.1, { dur: 0.25 });
   cam({ by: 500, s: 2.6, sx: RIGHT.sx, sy: 560 }, tPushA, 1.2);
   tl.to(spinL, { rotation: TURN }, tPushA, { dur: 1.2, ease: "in-out-cubic" });
@@ -429,7 +561,7 @@ export function build(tl, S, T) {
   const tWt = T.word(4, "weight");
   const tStepOut = T.start(5) - 0.35;
   tl.to(shade, { opacity: 1 }, T.start(4) - 0.2, { dur: 0.25 });
-  cam({ bx: -130, by: 345, s: 1.7, ...RIGHT }, T.start(4) - 0.1, 1.1);
+  cam({ bx: -300, by: 235, s: 1.5, ...RIGHT }, T.start(4) - 0.1, 1.1);
   cam(HOME_CAM, tStepOut, 1.0);
   tl.to(shade, { opacity: 0 }, tStepOut + 1.0, { dur: 0.25 });
   const exRings = [
@@ -458,7 +590,25 @@ export function build(tl, S, T) {
   fadeOut(countL, T.start(6) - 0.25, 0.3);
   fadeIn(countL, run2.start - 0.1, 0.3);
   fadeOut(countL, tPushE - 0.1, 0.3);
+  for (const run of [zooRun, letRun]) {
+    fadeIn(countL, run.start - 0.1, 0.3);
+    fadeOut(countL, run.end + 0.5, 0.3);
+  }
+  const fastStep = (t) => {
+    const now = fast.find(({ run }) => t >= run.start - 0.5 && t < run.end + 0.5);
+    if (!now) return null;
+    const { n1, n2 } = fastAt(now.task, runU(now.run, t));
+    return { task: now.task, n1, n2 };
+  };
   const runInput = (t) => {
+    const f = fastStep(t);
+    if (f) {
+      const s1 = Math.max(0, f.n1 - 1);
+      const s2 = f.n2 - 1;
+      return s2 < 0
+        ? azPos("A", s1 % N_IN, f.task.px[s1 % N_IN])
+        : azPos("C", s2 % N_HID, f.task.hidden[s2 % N_HID]);
+    }
     if (t < run2.start) {
       const { i } = ORDER1[step1(t) - 1];
       return azPos("A", i, PX[i]);
@@ -467,6 +617,14 @@ export function build(tl, S, T) {
     return azPos("C", j, HIDDEN[j]);
   };
   const runWeight = (t) => {
+    const f = fastStep(t);
+    if (f) {
+      const s1 = Math.max(0, f.n1 - 1);
+      const s2 = f.n2 - 1;
+      const [i, j] = [s1 % N_IN, Math.floor(s1 / N_IN)];
+      const [h, k] = [s2 % N_HID, Math.floor(s2 / N_HID)];
+      return s2 < 0 ? radPos("B", j, i, f.task.W.B[i][j]) : radPos("D", k, h, f.task.W.D[h][k]);
+    }
     if (t < run2.start) {
       const { i, j } = ORDER1[step1(t) - 1];
       return radPos("B", j, i, W.B[i][j]);
@@ -475,7 +633,7 @@ export function build(tl, S, T) {
     return radPos("D", k, j, W.D[j][k]);
   };
   const runRings = [ring(runInput, 13), ring(runWeight, 13)];
-  for (const run of [run1, run2]) {
+  for (const run of [run1, run2, zooRun, letRun]) {
     tl.set(runRings, { opacity: 1 }, run.start);
     fadeOut(runRings, run.end, 0.3);
   }
@@ -551,10 +709,154 @@ export function build(tl, S, T) {
   fadeIn(gridL, tBack + 0.6);
   tl.set(goldFrame, { opacity: 1 }, tBack);
 
+  // ------------------------------------------------ the same table, other jobs
+  // the digit task clears; only the weight sliders move
+  fadeOut([gridL, answer, goldDigit, ...digits, winner], tClear1, 0.6);
+  for (const t0 of [tGlide1, tGlide2]) {
+    lit(bands.B, t0 - 0.2, t0 + GLIDE.spread + GLIDE.dur + 0.3);
+    lit(bands.D, t0 - 0.2, t0 + GLIDE.spread + GLIDE.dur + 0.3);
+  }
+  const text = (parent, content, style) => {
+    const d = M.el("div", { text: content }, parent);
+    Object.assign(d.style, { position: "absolute", whiteSpace: "nowrap", ...style });
+    return d;
+  };
+  // how far each output slider has travelled, as a bar beside its name
+  const BAR = { x: 250, w: 230, h: 14 };
+  const barsFor = (names, task, y, pitch) => {
+    const L = M.layer(scene, 470, y);
+    M.set(L, { opacity: 0 });
+    const rows = names.map((name, k) => {
+      const top = k * pitch;
+      const style = { right: `${-BAR.x + 24}px`, top: `${top}px`, fontSize: "30px", lineHeight: 1 };
+      text(L, name, { ...style, color: "var(--text-2)" });
+      const gold = text(L, name, { ...style, color: GOLD, fontWeight: 600 });
+      // the winner's name in gold, laid over the plain one
+      gold.setAttribute("data-layout-allow-overlap", "");
+      M.set(gold, { opacity: 0 });
+      const track = M.el("div", {}, L);
+      Object.assign(track.style, {
+        position: "absolute",
+        left: `${BAR.x}px`,
+        top: `${top + 14}px`,
+        width: `${BAR.w}px`,
+        height: "2px",
+        background: "rgb(255 255 255 / 25%)",
+      });
+      const bar = M.el("div", {}, L);
+      Object.assign(bar.style, {
+        position: "absolute",
+        left: `${BAR.x}px`,
+        top: `${top + 15 - BAR.h / 2}px`,
+        width: "0px",
+        height: `${BAR.h}px`,
+        background: GOLD,
+      });
+      return { gold, bar };
+    });
+    return { L, rows, task };
+  };
+  const centreWord = (word, size, t) => {
+    const e = label(word, 0, 4, GOLD, size, 700);
+    tl.fromTo(e, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1 }, t, {
+      dur: 0.5,
+      ease: "out-back(1.4)",
+    });
+    return e;
+  };
+  const outputsFrom = (run) => run.start + (run.end - run.start) * HIDDEN_SHARE - 0.3;
+
+  // an animal: 21 yes-or-no answers, one input slider each
+  const ROW = 48;
+  const zooL = M.layer(scene, 90, 50);
+  M.set(zooL, { opacity: 0 });
+  text(zooL, DOG.name, { left: "0", top: "0", fontSize: "64px", fontWeight: 600, lineHeight: 1 });
+  const zooRows = ZOO_QUESTIONS.map((question, i) => {
+    const row = M.el("div", {}, zooL);
+    Object.assign(row.style, {
+      position: "absolute",
+      left: `${Math.floor(i / 7) * 285}px`,
+      top: `${96 + (i % 7) * ROW}px`,
+    });
+    const box = M.el("div", {}, row);
+    Object.assign(box.style, {
+      position: "absolute",
+      left: "0",
+      top: "3px",
+      width: "24px",
+      height: "24px",
+      border: "2px solid rgb(255 255 255 / 55%)",
+    });
+    const yes = M.el("div", {}, box);
+    Object.assign(yes.style, { position: "absolute", inset: "-2px", background: GOLD });
+    M.set(yes, { opacity: 0 });
+    text(row, question, { left: "40px", top: "0", fontSize: "28px", lineHeight: "30px" });
+    return { row, yes };
+  });
+  fadeIn(zooL, T.word(9, "animal") - 0.2);
+  zooRows.forEach(({ row, yes }, i) => {
+    if (ZOO.px[i]) tl.to(yes, { opacity: 1 }, tZooA[i], { dur: 0.2 });
+    else tl.to(row, { opacity: 0.4 }, tZooA[i], { dur: 0.2 });
+    if (called.includes(i)) tl.to(row, { scale: 1.12 }, tZooA[i], { dur: 0.25, yoyo: true });
+  });
+  lit(bands.A, T.word(9, "input"), zooRun.start);
+  const zooBars = barsFor(ZOO_CLASS_NAMES, ZOO, 515, 50);
+  fadeIn(zooBars.L, outputsFrom(zooRun));
+  lit(bands.E, outputsFrom(zooRun), tMammal);
+  const zooWinner = ring((t) => azPos("E", ZOO.answer, apparatusAt(t).e[ZOO.answer]), 11);
+  pulseIn(zooWinner, tMammal);
+  fadeIn(zooBars.rows[ZOO.answer].gold, tMammal);
+  const zooAnswer = centreWord(ZOO_CLASS_NAMES[ZOO.answer], 44, tMammal);
+  fadeOut([zooL, zooBars.L, zooWinner, zooAnswer], tClear2, 0.6);
+
+  // the next letter: the last three symbols in, ten possible symbols out
+  const BOX = 120;
+  const letL = M.layer(scene, 90, 60);
+  M.set(letL, { opacity: 0 });
+  const letBoxes = [...CONTEXT, LETTERS_ALPHABET[LET.answer]].map((ch, n) => {
+    const guess = n === CONTEXT.length;
+    const box = M.el("div", {}, letL);
+    Object.assign(box.style, {
+      position: "absolute",
+      left: `${n * (BOX + 24)}px`,
+      top: "0",
+      width: `${BOX}px`,
+      height: `${BOX}px`,
+      border: `3px solid ${guess ? GOLD : "rgb(255 255 255 / 70%)"}`,
+    });
+    const glyph = text(box, ch === " " ? "space" : ch, {
+      inset: "0",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: ch === " " ? "28px" : "84px",
+      fontWeight: ch === " " ? 400 : 600,
+      color: guess ? GOLD : ch === " " ? "var(--muted)" : WHITE,
+    });
+    M.set(glyph, { opacity: 0 });
+    return glyph;
+  });
+  fadeIn(letL, T.word(10, "next") - 0.2);
+  letBoxes.slice(0, CONTEXT.length).forEach((glyph, n) => fadeIn(glyph, tLetA[n], 0.25));
+  lit(bands.A, tLetA[0], letRun.start);
+  const symbols = [...LETTERS_ALPHABET].map((ch) => (ch === " " ? "space" : ch));
+  const letBars = barsFor(symbols, LET, 240, 44);
+  fadeIn(letBars.L, outputsFrom(letRun));
+  lit(bands.E, outputsFrom(letRun), tE);
+  const letWinner = ring((t) => azPos("E", LET.answer, apparatusAt(t).e[LET.answer]), 11);
+  pulseIn(letWinner, tE);
+  fadeIn(letBars.rows[LET.answer].gold, tE);
+  tl.fromTo(letBoxes.at(-1), { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1 }, tE, {
+    dur: 0.5,
+    ease: "out-back(1.4)",
+  });
+  const letAnswer = centreWord(LETTERS_ALPHABET[LET.answer], 120, tE);
+  const letPanel = [letL, letBars.L];
+
   // by hand: most of an hour, swept round the rim
   const clock = o("path", { fill: "none", stroke: GOLD, "stroke-width": 7 });
   // 276 steps at ten seconds each is 46 minutes
-  const tHand = T.word(8, "hand");
+  const tHand = T.word(11, "hand");
   fadeOut(clock, zoomOut.start - 0.1, 0.4);
 
   // a chip: the same table, tiny, thousands of times over
@@ -571,8 +873,8 @@ export function build(tl, S, T) {
   // the board and the field below read the same zoom(t), so they can't drift apart
   for (const { start, dur } of [zoomOut, zoomIn])
     tl.sample(boardL, start, dur, (p) => camProps(view(zoom(start + p * dur))));
-  fadeOut(gridL, zoomOut.start - 0.1);
-  fadeIn(gridL, zoomIn.start + zoomIn.dur - 0.5);
+  fadeOut(letPanel, zoomOut.start - 0.1);
+  fadeIn(letPanel, zoomIn.start + zoomIn.dur - 0.5);
   const smooth = (v, a, b) => Math.min(1, Math.max(0, (v - a) / (b - a)));
   const field = C.canvas(
     tl,
@@ -655,8 +957,8 @@ export function build(tl, S, T) {
   fadeOut(chipL, zoomIn.start, 0.5);
 
   // back to rest, so the last frame is the first
-  fadeOut(gridL, END - 1.2);
-  fadeOut([answer, goldDigit, ...digits, winner, trails], tReset, 0.8);
+  fadeOut(letPanel, END - 1.2);
+  fadeOut([letAnswer, letWinner, trails], tReset, 0.8);
   tl.to(logo, { opacity: (i) => logoRest[i] }, tReset + 0.6, { dur: 0.8 });
 
   // ------------------------------------------------- the apparatus, each frame
@@ -695,9 +997,19 @@ export function build(tl, S, T) {
       "d",
       swept > 0.1 ? `M0 -592A592 592 0 ${swept > 180 ? 1 : 0} 1 ${hx} ${hy}` : "",
     );
+    const f = fastStep(t);
     const inRun2 = t >= run2.start - 0.5;
-    count.textContent = String(inRun2 ? Math.min(60, step2(t)) : Math.min(216, step1(t)));
-    countLabel.textContent = inRun2 ? "of 60 more" : "of 216 multiplications";
+    count.textContent = String(
+      f ? f.n1 + f.n2 : inRun2 ? Math.min(60, step2(t)) : Math.min(216, step1(t)),
+    );
+    countLabel.textContent = f ? "of 276 steps" : inRun2 ? "of 60 more" : "of 216 multiplications";
+    for (const { rows, task } of [zooBars, letBars])
+      rows.forEach(({ bar }, k) => {
+        const width = `${((Math.max(0, st.e[k]) / 5) * BAR.w).toFixed(1)}px`;
+        if (task === (t < tClear2 + 0.4 ? ZOO : LET) && bar.style.width !== width) {
+          bar.style.width = width;
+        }
+      });
     sliders.forEach((c, n) => {
       const lag = (n / sliders.length) * GLINT.spread;
       const u = tGlint.map((t0) => (t - t0 - lag) / GLINT.dur).find((v) => v > 0 && v < 1);

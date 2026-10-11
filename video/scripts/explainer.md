@@ -6,14 +6,20 @@ visitors and passers-by when nobody who knows the apparatus is around.
 ## Key idea
 
 This table is a working neural network: the same multiply-and-add that underpins
-modern AI, slowed down and scaled up until you can watch every step.
+modern AI, slowed down and scaled up until you can watch every step. What it
+does depends only on where its weight sliders are set.
 
 ## One example
 
 A handwritten 7 (`sampleDigits` in `js/src/widgets/sample-digits.ts`) through
-the bundled MNIST weights. Every slider position and every number on screen
-comes from `computeTrace`; the network really does answer 7 (E7 = 0.92, next
-highest 0.11).
+the bundled MNIST weights, followed slowly. Every slider position and every
+number on screen comes from `computeTrace`; the network really does answer 7
+(E7 = 2.82, next highest 1.78).
+
+Two more passes then run fast on the same table with the other bundled weights:
+the dog from `ZOO_EXAMPLES` through the animal weights (mammal = 5.01, next
+highest 2.49), and the context "␣th" through the next-letter weights (e = 1.88,
+next highest 1.47).
 
 ## Script
 
@@ -43,7 +49,7 @@ ink, the further it slides. [beat 1.2]
 _Visual:_ a 7 is written, then becomes its 6×6 grid of ink values. The squares
 light in turn as their sliders on ring A slide out. The camera walks round the
 table and pushes in on three neighbouring sliders, which slide in turn as their
-three squares light: dark, bright, mid.
+three squares light: empty, inked, more heavily inked.
 
 _Reads (draft):_ 1. the digit becomes 36 squares; 2. each square owns one
 slider; 3. a darker square pushes its slider further.
@@ -80,7 +86,7 @@ them; 3. the hidden sliders end up somewhere.
 
 **VO:** Anything that ends up below zero goes back to zero. [beat 1.4]
 
-_Visual:_ push in on the hidden ring; the three sliders sitting below zero are
+_Visual:_ push in on the hidden ring; the two sliders sitting below zero are
 marked, then slide back to zero.
 
 _Reads (draft):_ 1. some hidden sliders are below zero; 2. those return to zero,
@@ -97,8 +103,46 @@ turns gold and a 7 lands in the centre of the table.
 _Reads (draft):_ 1. a second set of weights, 60 more steps; 2. ten sliders, one
 per digit; 3. slider 7 is furthest; 4. the answer is 7, the digit that went in.
 
-**VO:** By hand, that takes the best part of an hour. [beat 1.0] A chip in a
-data centre does the same sums trillions of times a second. [beat 1.2]
+**VO:** Those weights make it read digits. [beat 0.6] Slide them to new
+positions, [beat 2.0] and the same table does a different job. [beat 1.0]
+
+_Visual:_ the 7, the grid and the output labels clear, and the input, hidden and
+output sliders return to rest. Rings B and D light, and all 276 weight sliders
+glide to the animal weights.
+
+_Reads (draft):_ 1. the digit task is over; 2. only the weight sliders move; 3.
+nothing else about the table has changed.
+
+**VO:** Now each input slider answers a yes-or-no question about an animal.
+[beat 0.6] Hair: yes. [beat 0.4] Feathers: no. [beat 0.4] Milk: yes. [beat 1.2]
+The same two hundred and seventy-six steps, [beat 2.6] and it says mammal. [beat
+1.8]
+
+_Visual:_ beside the table, the dog's 21 yes-or-no answers appear as a
+checklist; each yes sends its slider on ring A out. The pass runs fast to a
+counter, then seven bars, one per kind of animal, show how far each output
+slider has travelled. Mammal is furthest; it turns gold and the word lands in
+the centre of the table.
+
+_Reads (draft):_ 1. the inputs are now facts about one animal; 2. each fact is
+one slider, in or out; 3. the same steps run; 4. each output is a kind of
+animal, and mammal has gone furthest.
+
+**VO:** Move the weights once more, [beat 2.0] and it guesses the next letter.
+[beat 0.8] After T, H: [beat 2.6] E. [beat 1.8]
+
+_Visual:_ the checklist clears and the weight sliders glide to the next-letter
+weights. Beside the table, three boxes hold a space, t and h, and a fourth
+waits. Three input sliders slide out, the pass runs fast, and ten bars, one per
+symbol, show the outputs. E is furthest; it turns gold and fills the fourth box
+and the centre of the table.
+
+_Reads (draft):_ 1. the weights move again; 2. the input is now the last three
+symbols; 3. each output is a possible next symbol; 4. e has gone furthest, so
+the guess is e.
+
+**VO:** By hand, each answer takes the best part of an hour. [beat 1.0] A chip
+in a data centre does the same sums trillions of times a second. [beat 1.2]
 
 _Visual:_ a clock hand sweeps most of the way round the table's rim. Then the
 table shrinks, logarithmically, into one of thousands of identical tiny tables
@@ -111,7 +155,7 @@ tiny and vastly multiplied.
 multiplying and adding, all the way down. [beat 1.2] Here, you can watch every
 step. [beat 1.5]
 
-_Visual:_ push back in through the chip to the one table, its answer still
+_Visual:_ push back in through the chip to the one table, its last answer still
 standing. Hold.
 
 _Reads (draft):_ 1. inside the chip is this same table; 2. this one is the one

@@ -60,20 +60,59 @@ and the ten inner sliders hold the answer.
 00:01:15.881 --> 00:01:18.157
 The one that has travelled furthest wins.
 
-00:01:19.057 --> 00:01:20.218
+00:01:19.057 --> 00:01:20.171
 It's a seven.
 
-00:01:22.418 --> 00:01:25.343
-By hand, that takes the best part of an hour.
+00:01:22.371 --> 00:01:24.647
+Those weights make it read digits.
 
-00:01:26.343 --> 00:01:31.545
+00:01:25.247 --> 00:01:27.011
+Slide them to new positions,
+
+00:01:29.011 --> 00:01:31.659
+and the same table does a different job.
+
+00:01:32.659 --> 00:01:37.024
+Now each input slider answers a yes-or-no question about an animal.
+
+00:01:37.624 --> 00:01:38.831
+Hair: yes.
+
+00:01:39.231 --> 00:01:40.810
+Feathers: no.
+
+00:01:41.210 --> 00:01:42.232
+Milk: yes.
+
+00:01:43.432 --> 00:01:46.172
+The same two hundred and seventy-six steps,
+
+00:01:48.772 --> 00:01:50.862
+and it says mammal.
+
+00:01:52.662 --> 00:01:53.962
+Move the weights once more,
+
+00:01:55.962 --> 00:01:58.052
+and it guesses the next letter.
+
+00:01:58.852 --> 00:02:00.709
+After T, H:
+
+00:02:03.309 --> 00:02:04.006
+E.
+
+00:02:05.806 --> 00:02:08.778
+By hand, each answer takes the best part of an hour.
+
+00:02:09.778 --> 00:02:14.747
 A chip in a data centre does the same sums trillions of times a second.
 
-00:01:32.745 --> 00:01:35.020
+00:02:15.947 --> 00:02:18.223
 But nothing different is happening in there.
 
-00:01:35.520 --> 00:01:38.539
+00:02:18.723 --> 00:02:21.741
 It is multiplying and adding, all the way down.
 
-00:01:39.739 --> 00:01:42.014
+00:02:22.941 --> 00:02:25.217
 Here, you can watch every step.
