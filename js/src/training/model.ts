@@ -11,9 +11,12 @@ import {
   adamInit,
   adamUpdate,
   noiseFactors,
+  gaussian,
   multiply,
   randomMatrix,
 } from "./math.js";
+import { HIDDEN_MAX, OUTPUT_MAX } from "./weights.js";
+import { WEIGHT_MAX, type WeightScale } from "../utils.js";
 
 export interface MLPWeights {
   B: Matrix;
@@ -35,6 +38,48 @@ export interface ForwardCache {
   noise?: MLPWeights;
 }
 
+// The weights with a random offset on every one, the same size on the apparatus
+// for all of them: `level` is its standard deviation as a fraction of the
+// slot's length. What one unit on the apparatus is in each layer's weights as
+// trained is estimated from this batch, as fitWeightsToApparatus would rescale
+// them.
+function offsetWeights(weights: MLPWeights, input: Matrix, level: number): MLPWeights {
+  const tiny = 1e-6;
+  const { B, D } = weights;
+  const hiddenPre = matMul(input, B);
+  const hiddenScale = Array.from({ length: B.cols }, (_, j) => {
+    const peak = Math.max(tiny, ...hiddenPre.data.map((row) => Math.abs(row[j])));
+    const largest = Math.max(tiny, ...B.data.map((row) => Math.abs(row[j])));
+    return Math.min(HIDDEN_MAX / peak, WEIGHT_MAX / largest);
+  });
+
+  const fittedD = D.data.map((row, j) => row.map((v) => v / hiddenScale[j]));
+  let outputPeak = tiny;
+  for (const row of hiddenPre.data) {
+    for (let k = 0; k < D.cols; k++) {
+      let out = 0;
+      for (let j = 0; j < B.cols; j++) out += Math.max(0, row[j] * hiddenScale[j]) * fittedD[j][k];
+      outputPeak = Math.max(outputPeak, Math.abs(out));
+    }
+  }
+  const largestD = Math.max(tiny, ...fittedD.flat().map(Math.abs));
+  const outputScale = Math.min(OUTPUT_MAX / outputPeak, WEIGHT_MAX / largestD);
+
+  const slot = 2 * WEIGHT_MAX * level;
+  return {
+    B: {
+      ...B,
+      data: B.data.map((row) => row.map((v, j) => v + (gaussian() * slot) / hiddenScale[j])),
+    },
+    D: {
+      ...D,
+      data: D.data.map((row, j) =>
+        row.map((v) => v + (gaussian() * slot * hiddenScale[j]) / outputScale),
+      ),
+    },
+  };
+}
+
 export class MLP {
   weights: MLPWeights;
   private adamB: AdamState;
@@ -52,10 +97,20 @@ export class MLP {
     this.adamD = adamInit(hiddenSize, outputSize);
   }
 
-  // With weightNoise, every weight is multiplied by a fresh random factor whose
-  // log has that standard deviation, so training favours weights that still work
-  // when a slider is set slightly off.
-  forward(input: Matrix, weightNoise = 0): ForwardCache {
+  // With weightNoise, every weight is perturbed afresh, so training favours
+  // weights that still work when a slider is set slightly off. On the linear
+  // scale a slider is off by the same distance wherever it sits, so the noise is
+  // an offset whose standard deviation is that fraction of the slot's length. On
+  // the log scale it is off by the same ratio, so the noise is a factor whose
+  // log has that standard deviation.
+  forward(input: Matrix, weightNoise = 0, weightScale: WeightScale = "linear"): ForwardCache {
+    if (weightNoise > 0 && weightScale === "linear") {
+      const weights = offsetWeights(this.weights, input, weightNoise);
+      const hiddenPre = matMul(input, weights.B);
+      const hidden = relu(hiddenPre);
+      return { input, hiddenPre, hidden, output: matMul(hidden, weights.D), weights };
+    }
+
     const noise =
       weightNoise > 0
         ? {

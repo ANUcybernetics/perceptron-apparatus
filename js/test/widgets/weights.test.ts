@@ -62,10 +62,10 @@ describe("bundled weights", () => {
     expect(next("the")).toBe(" ");
   });
 
-  it("mnist weights recognise most of the sample digits", () => {
-    const correct = sampleDigits.filter(
-      (digit) => predict(digit.pixels, mnistWeights).prediction === digit.label,
-    );
-    expect(correct.length).toBeGreaterThanOrEqual(sampleDigits.length / 2);
+  it("mnist weights recognise every sample digit", () => {
+    expect(sampleDigits.length).toBeGreaterThanOrEqual(5);
+    for (const digit of sampleDigits) {
+      expect(predict(digit.pixels, mnistWeights).prediction).toBe(digit.label);
+    }
   });
 });

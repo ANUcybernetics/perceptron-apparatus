@@ -1,4 +1,4 @@
-import { a as weightRule, i as newRule, n as deg2rad, o as weightScaleFraction, r as formatNumber } from "./utils-CRyXLAoU.mjs";
+import { a as weightRule, i as newRule, n as deg2rad, o as weightScaleFraction, r as formatNumber } from "./utils-DEaGbdjE.mjs";
 //#region src/vnode.ts
 function el(tag, attrs = {}, children = []) {
 	return {
@@ -233,11 +233,11 @@ function buildGroup(radius, width, slidersPerGroup, thetaSweep, groupIndex, laye
 	}));
 	return nodes;
 }
-function buildGuides(radius, width, groups, rule) {
+function buildGuides(radius, width, groups, rule, scale) {
 	const thetaSweep = 360 / groups;
 	const radii = rule.map(({ label, value }) => ({
 		label,
-		r: radius - width * weightScaleFraction(value)
+		r: radius - width * weightScaleFraction(value, scale)
 	}));
 	const nodes = [];
 	for (const { label, r } of radii) {
@@ -273,17 +273,17 @@ function buildGuides(radius, width, groups, rule) {
 	}
 	return nodes;
 }
-function buildRadialRing(groups, slidersPerGroup, rule, ctx) {
+function buildRadialRing(groups, slidersPerGroup, rule, ctx, scale = "linear") {
 	const radius = ctx.radius - 5;
 	const width = ctx.ringWidth - 10;
 	const thetaSweep = 360 / groups;
-	const children = [...buildGuides(radius, width, groups, rule)];
+	const children = [...buildGuides(radius, width, groups, rule, scale)];
 	for (let i = 0; i < groups; i++) children.push(...buildGroup(radius, width, slidersPerGroup, thetaSweep, i, ctx.layerIndex));
 	return el("g", { "data-ring-type": "radial" }, children);
 }
 //#endregion
 //#region src/board.ts
-function createRingSequence(nInput, nHidden, nOutput) {
+function createRingSequence(nInput, nHidden, nOutput, weightScale) {
 	return [
 		{
 			type: "rule",
@@ -301,7 +301,7 @@ function createRingSequence(nInput, nHidden, nOutput) {
 			fixedWidth: 25,
 			groups: nHidden,
 			slidersPerGroup: nInput,
-			rule: weightRule()
+			rule: weightRule(weightScale)
 		},
 		{
 			type: "azimuthal",
@@ -314,7 +314,7 @@ function createRingSequence(nInput, nHidden, nOutput) {
 			fixedWidth: 25,
 			groups: nOutput,
 			slidersPerGroup: nHidden,
-			rule: weightRule()
+			rule: weightRule(weightScale)
 		},
 		{
 			type: "azimuthal",
@@ -346,7 +346,7 @@ function buildBoard(config) {
 		r: String(radius),
 		"stroke-width": "2"
 	})];
-	const rings = createRingSequence(config.nInput, config.nHidden, config.nOutput);
+	const rings = createRingSequence(config.nInput, config.nHidden, config.nOutput, config.weightScale ?? "linear");
 	const widths = calculateRingWidths(rings, radius, radialPadding, centerSpace);
 	let currentRadius = radius - radialPadding;
 	let layerIndex = 1;
@@ -371,7 +371,7 @@ function buildBoard(config) {
 				radius: currentRadius,
 				layerIndex,
 				ringWidth
-			}));
+			}, config.weightScale));
 			layerIndex++;
 		}
 		currentRadius -= ringWidth + radialPadding;
@@ -506,6 +506,7 @@ var PerceptronApparatus = class {
 	constructor(container, config) {
 		this.config = {
 			size: 1200,
+			weightScale: "linear",
 			...config
 		};
 		this.svg = renderBoard(this.config, container);
@@ -548,8 +549,8 @@ var PerceptronApparatus = class {
 		const thetaSweep = 360 / ringDef.groups;
 		const theta = thetaSweep * groupIndex + (sliderIndex + 1) * (thetaSweep / (ringDef.slidersPerGroup + 1));
 		const midRadius = radius - width / 2;
-		const radialOffset = radius - width * weightScaleFraction(value) - midRadius;
-		el.setAttribute("data-sign", value < 0 ? "negative" : "positive");
+		const radialOffset = radius - width * weightScaleFraction(value, this.config.weightScale) - midRadius;
+		if (this.config.weightScale === "log") el.setAttribute("data-sign", value < 0 ? "negative" : "positive");
 		return applyTransform(el, `translate(${radialOffset * Math.sin(deg2rad(theta))}px, ${radialOffset * Math.cos(deg2rad(theta))}px)`, opts);
 	}
 	findAzimuthalRing(layerIndex) {

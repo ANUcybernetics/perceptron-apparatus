@@ -1,4 +1,4 @@
-import { deg2rad, weightScaleFraction, type RuleTick } from "./utils.js";
+import { deg2rad, weightScaleFraction, type RuleTick, type WeightScale } from "./utils.js";
 import { el, textEl, type VNode } from "./vnode.js";
 
 export interface RadialRingContext {
@@ -70,12 +70,18 @@ function buildGroup(
   return nodes;
 }
 
-function buildGuides(radius: number, width: number, groups: number, rule: RuleTick[]): VNode[] {
+function buildGuides(
+  radius: number,
+  width: number,
+  groups: number,
+  rule: RuleTick[],
+  scale: WeightScale,
+): VNode[] {
   const thetaSweep = 360 / groups;
 
   const radii = rule.map(({ label, value }) => ({
     label,
-    r: radius - width * weightScaleFraction(value),
+    r: radius - width * weightScaleFraction(value, scale),
   }));
 
   const nodes: VNode[] = [];
@@ -119,12 +125,13 @@ export function buildRadialRing(
   slidersPerGroup: number,
   rule: RuleTick[],
   ctx: RadialRingContext,
+  scale: WeightScale = "linear",
 ): VNode {
   const radius = ctx.radius - 5;
   const width = ctx.ringWidth - 10;
   const thetaSweep = 360 / groups;
 
-  const children: VNode[] = [...buildGuides(radius, width, groups, rule)];
+  const children: VNode[] = [...buildGuides(radius, width, groups, rule, scale)];
 
   for (let i = 0; i < groups; i++) {
     children.push(...buildGroup(radius, width, slidersPerGroup, thetaSweep, i, ctx.layerIndex));

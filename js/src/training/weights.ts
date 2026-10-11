@@ -6,8 +6,8 @@ export interface ExportedWeights {
   D: number[][];
 }
 
-const HIDDEN_MAX = 5;
-const OUTPUT_MAX = 5;
+export const HIDDEN_MAX = 5;
+export const OUTPUT_MAX = 5;
 const FIT_SAMPLE = 10_000;
 
 export function extractWeights(weights: MLPWeights): ExportedWeights {

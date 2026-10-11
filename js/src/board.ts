@@ -3,13 +3,15 @@ import { logRule, buildRuleRing, type LogRuleTick } from "./rule-ring.js";
 import { buildAzimuthalRing } from "./azimuthal-ring.js";
 import { buildRadialRing } from "./radial-ring.js";
 import { el, textEl, render, type VNode } from "./vnode.js";
-import type { RuleTick } from "./utils.js";
+import type { RuleTick, WeightScale } from "./utils.js";
 
 export interface BoardConfig {
   size?: number;
   nInput: number;
   nHidden: number;
   nOutput: number;
+  // the scale engraved on the weight rings (default "linear")
+  weightScale?: WeightScale;
 }
 
 interface RingDef {
@@ -21,7 +23,12 @@ interface RingDef {
   slidersPerGroup?: number;
 }
 
-function createRingSequence(nInput: number, nHidden: number, nOutput: number): RingDef[] {
+function createRingSequence(
+  nInput: number,
+  nHidden: number,
+  nOutput: number,
+  weightScale: WeightScale,
+): RingDef[] {
   return [
     { type: "rule", fixedWidth: 30, rule: logRule() },
     {
@@ -35,7 +42,7 @@ function createRingSequence(nInput: number, nHidden: number, nOutput: number): R
       fixedWidth: 25,
       groups: nHidden,
       slidersPerGroup: nInput,
-      rule: weightRule(),
+      rule: weightRule(weightScale),
     },
     {
       type: "azimuthal",
@@ -48,7 +55,7 @@ function createRingSequence(nInput: number, nHidden: number, nOutput: number): R
       fixedWidth: 25,
       groups: nOutput,
       slidersPerGroup: nHidden,
-      rule: weightRule(),
+      rule: weightRule(weightScale),
     },
     {
       type: "azimuthal",
@@ -95,7 +102,12 @@ export function buildBoard(config: BoardConfig): VNode {
     }),
   ];
 
-  const rings = createRingSequence(config.nInput, config.nHidden, config.nOutput);
+  const rings = createRingSequence(
+    config.nInput,
+    config.nHidden,
+    config.nOutput,
+    config.weightScale ?? "linear",
+  );
   const widths = calculateRingWidths(rings, radius, radialPadding, centerSpace);
 
   let currentRadius = radius - radialPadding;
@@ -131,11 +143,13 @@ export function buildBoard(config: BoardConfig): VNode {
       layerIndex++;
     } else if (ring.type === "radial") {
       children.push(
-        buildRadialRing(ring.groups!, ring.slidersPerGroup!, ring.rule as RuleTick[], {
-          radius: currentRadius,
-          layerIndex,
-          ringWidth,
-        }),
+        buildRadialRing(
+          ring.groups!,
+          ring.slidersPerGroup!,
+          ring.rule as RuleTick[],
+          { radius: currentRadius, layerIndex, ringWidth },
+          config.weightScale,
+        ),
       );
       layerIndex++;
     }

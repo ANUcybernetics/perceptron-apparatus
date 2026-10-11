@@ -123,10 +123,12 @@ export function adamUpdate(
   return result;
 }
 
+export function gaussian(): number {
+  return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+}
+
 // A random factor for every entry, log-normally distributed around 1.
 export function noiseFactors(rows: number, cols: number, logStd: number): Matrix {
-  const gaussian = () =>
-    Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
   const data = Array.from({ length: rows }, () =>
     Array.from({ length: cols }, () => Math.exp(logStd * gaussian())),
   );

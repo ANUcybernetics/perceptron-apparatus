@@ -2,6 +2,7 @@ import { type Matrix, matrix } from "./math.js";
 import { MLP } from "./model.js";
 import { loadMnist, loadFromJson, type MnistData } from "./data.js";
 import { extractWeights, fitWeightsToApparatus, type ExportedWeights } from "./weights.js";
+import type { WeightScale } from "../utils.js";
 
 export type { ExportedWeights } from "./weights.js";
 export type { MnistData } from "./data.js";
@@ -14,6 +15,9 @@ export interface TrainOptions {
   batchSize?: number;
   learningRate?: number;
   nonnegativeOutput?: boolean;
+  // the scale the weights will be set on, which decides the kind of weight noise
+  weightScale?: WeightScale;
+  // default 0.01 (of the slot's length) on the linear scale, 0.1 (log) on the log scale
   weightNoise?: number;
   onEpochEnd?: (epoch: number, loss: number, accuracy: number) => void;
 }
@@ -72,7 +76,8 @@ export async function trainMnist(
     batchSize = 128,
     learningRate = 0.005,
     nonnegativeOutput = true,
-    weightNoise = 0.1,
+    weightScale = "linear",
+    weightNoise = weightScale === "log" ? 0.1 : 0.01,
     onEpochEnd,
   } = opts;
 
@@ -87,7 +92,7 @@ export async function trainMnist(
     for (const batch of batches) {
       const xBatch = selectRows(data.trainImages, batch);
       const yBatch = selectRows(data.trainLabels, batch);
-      const cache = model.forward(xBatch, weightNoise);
+      const cache = model.forward(xBatch, weightNoise, weightScale);
       const loss = model.loss(cache, yBatch);
       const grads = model.backward(cache, yBatch);
       model.step(grads, learningRate, nonnegativeOutput);

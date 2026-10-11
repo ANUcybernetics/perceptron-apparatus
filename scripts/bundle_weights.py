@@ -13,7 +13,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 TASKS = ("mnist", "zoo", "letters")
 HEADER = """// Generated from docs/*-weights.json by scripts/bundle_weights.py.
-// Every set is padded with zeros to the 36-input, 10-output board.
+// Every set is padded with zeros to the 36-input, 10-output board, and rounded
+// to six significant figures.
 
 export interface Weights {
   B: number[][];
@@ -24,7 +25,7 @@ export interface Weights {
 
 def matrix(rows: list[list[float]]) -> str:
     lines = [
-        "    [" + ", ".join("0" if v == 0 else repr(float(v)) for v in row) + "],"
+        "    [" + ", ".join("0" if v == 0 else f"{v:.6g}" for v in row) + "],"
         for row in rows
     ]
     return "\n".join(lines)

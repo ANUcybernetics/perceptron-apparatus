@@ -56,7 +56,10 @@ describe("MLP", () => {
     expect(loss2).toBeLessThan(loss1);
   });
 
-  it("still learns when every weight is perturbed on each pass", () => {
+  it.each([
+    ["linear", 0.01],
+    ["log", 0.1],
+  ] as const)("still learns when every weight is perturbed as on the %s scale", (scale, noise) => {
     const model = new MLP(4, 3, 2);
     const input = matrix([
       [1, 0, 0, 0],
@@ -73,7 +76,7 @@ describe("MLP", () => {
     const before = model.loss(model.forward(input), target);
 
     for (let i = 0; i < 200; i++) {
-      const cache = model.forward(input, 0.1);
+      const cache = model.forward(input, noise, scale);
       model.step(model.backward(cache, target), 0.01, false);
     }
 

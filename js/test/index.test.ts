@@ -120,16 +120,17 @@ describe("setSlider (radial)", () => {
     expect(getStyle(slider!).transform).toMatch(/^translate\(/);
   });
 
-  it("moves a radial slider to its value on the engraved scale", async () => {
-    const container = makeContainer();
-    const apparatus = new PerceptronApparatus(container, {
+  // the radius a weight slider ends up at for each value it is set to
+  const radiusFor = (weightScale?: "linear" | "log") => {
+    const apparatus = new PerceptronApparatus(makeContainer(), {
       nInput: 36,
       nHidden: 6,
       nOutput: 10,
+      weightScale,
     });
     const slider = apparatus.svg.querySelector("[data-slider='B0-0']")!;
     const circle = slider.querySelector("circle")!;
-    const radiusAt = async (value: number) => {
+    return async (value: number) => {
       await apparatus.setSlider("B0-0", value);
       const [dx, dy] = getStyle(slider)
         .transform.match(/-?[\d.]+(?:e-?\d+)?/g)!
@@ -139,6 +140,20 @@ describe("setSlider (radial)", () => {
         Number(circle.getAttribute("cy")) + dy,
       );
     };
+  };
+
+  it("moves a radial slider along the linear scale by default", async () => {
+    const radiusAt = radiusFor();
+
+    // -5 at the outside of the ring, zero in the middle, 5 at the inside
+    expect(await radiusAt(-5)).toBeCloseTo(465);
+    expect(await radiusAt(0)).toBeCloseTo(410);
+    expect(await radiusAt(5)).toBeCloseTo(355);
+    expect(await radiusAt(2.5)).toBeCloseTo(382.5);
+  });
+
+  it("moves a radial slider along the log scale when the board has one", async () => {
+    const radiusAt = radiusFor("log");
 
     // zero parks at the outside of the ring and the largest magnitude sits at
     // the inside, whatever the sign
@@ -154,12 +169,13 @@ describe("setSlider (radial)", () => {
     expect(await radiusAt(0.01)).toBeCloseTo(465);
   });
 
-  it("shows a weight's sign on the slider marker", async () => {
+  it("shows a weight's sign on the slider marker on the log scale", async () => {
     const container = makeContainer();
     const apparatus = new PerceptronApparatus(container, {
       nInput: 3,
       nHidden: 2,
       nOutput: 2,
+      weightScale: "log",
     });
     const slider = apparatus.svg.querySelector("[data-slider='B0-0']")!;
 
@@ -168,6 +184,19 @@ describe("setSlider (radial)", () => {
 
     await apparatus.setSlider("B0-0", 1.5);
     expect(slider.getAttribute("data-sign")).toBe("positive");
+  });
+
+  it("leaves the marker alone on the linear scale, where position shows the sign", async () => {
+    const apparatus = new PerceptronApparatus(makeContainer(), {
+      nInput: 3,
+      nHidden: 2,
+      nOutput: 2,
+    });
+
+    await apparatus.setSlider("B0-0", -1.5);
+    expect(apparatus.svg.querySelector("[data-slider='B0-0']")!.hasAttribute("data-sign")).toBe(
+      false,
+    );
   });
 });
 

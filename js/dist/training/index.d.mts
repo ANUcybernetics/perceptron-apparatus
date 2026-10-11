@@ -1,3 +1,5 @@
+import { t as WeightScale } from "../utils-D6vtFthk.mjs";
+
 //#region src/training/math.d.ts
 type Matrix = {
   data: number[][];
@@ -41,7 +43,7 @@ declare class MLP {
   private adamD;
   private t;
   constructor(inputSize?: number, hiddenSize?: number, outputSize?: number);
-  forward(input: Matrix, weightNoise?: number): ForwardCache;
+  forward(input: Matrix, weightNoise?: number, weightScale?: WeightScale): ForwardCache;
   backward(cache: ForwardCache, target: Matrix): MLPGradients;
   step(grads: MLPGradients, lr: number, nonnegativeOutput?: boolean): void;
   loss(cache: ForwardCache, target: Matrix): number;
@@ -60,6 +62,7 @@ interface TrainOptions {
   batchSize?: number;
   learningRate?: number;
   nonnegativeOutput?: boolean;
+  weightScale?: WeightScale;
   weightNoise?: number;
   onEpochEnd?: (epoch: number, loss: number, accuracy: number) => void;
 }

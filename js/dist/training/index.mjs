@@ -1,4 +1,4 @@
-import "../utils-CRyXLAoU.mjs";
+import "../utils-DEaGbdjE.mjs";
 import { gunzipSync } from "node:zlib";
 //#region src/training/math.ts
 function matrix(data) {
@@ -90,8 +90,10 @@ function adamUpdate(param, grad, state, lr, t, beta1 = .9, beta2 = .999, eps = 1
 	}
 	return result;
 }
+function gaussian() {
+	return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+}
 function noiseFactors(rows, cols, logStd) {
-	const gaussian = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
 	return {
 		data: Array.from({ length: rows }, () => Array.from({ length: cols }, () => Math.exp(logStd * gaussian()))),
 		rows,
@@ -112,8 +114,82 @@ function randomMatrix(rows, cols, scale) {
 		cols
 	};
 }
+const FIT_SAMPLE = 1e4;
+function extractWeights(weights) {
+	return {
+		B: weights.B.data.map((row) => [...row]),
+		D: weights.D.data.map((row) => [...row])
+	};
+}
+function accumulationPeaks(values, weights) {
+	const peaks = Array.from({ length: weights[0].length }, () => 0);
+	for (const row of values) for (let j = 0; j < peaks.length; j++) {
+		let acc = 0;
+		for (let i = 0; i < weights.length; i++) {
+			acc += row[i] * weights[i][j];
+			if (Math.abs(acc) > peaks[j]) peaks[j] = Math.abs(acc);
+		}
+	}
+	return peaks;
+}
+function boundRatio(bound, peak) {
+	return peak > 0 ? bound / peak : Infinity;
+}
+function settable(matrix) {
+	return matrix.map((row) => row.map((v) => Math.abs(v) < .02 ? 0 : v));
+}
+function fitWeightsToApparatus(weights, inputs) {
+	const x = inputs.slice(0, FIT_SAMPLE);
+	const nHidden = weights.B[0].length;
+	const hiddenScale = accumulationPeaks(x, weights.B).map((peak, j) => {
+		const columnMax = Math.max(...weights.B.map((row) => Math.abs(row[j])));
+		const scale = Math.min(boundRatio(5, peak), boundRatio(5, columnMax));
+		return Number.isFinite(scale) ? scale : 1;
+	});
+	const b = weights.B.map((row) => row.map((v, j) => v * hiddenScale[j]));
+	const dBalanced = weights.D.map((row, j) => row.map((v) => v / hiddenScale[j]));
+	const hidden = x.map((row) => Array.from({ length: nHidden }, (_, j) => Math.max(0, row.reduce((acc, v, i) => acc + v * b[i][j], 0))));
+	const outputPeak = Math.max(...accumulationPeaks(hidden, dBalanced));
+	const dMax = Math.max(...dBalanced.flat().map(Math.abs));
+	const outputScale = Math.min(boundRatio(5, outputPeak), boundRatio(5, dMax));
+	const d = dBalanced.map((row) => row.map((v) => v * (Number.isFinite(outputScale) ? outputScale : 1)));
+	return {
+		B: settable(b),
+		D: settable(d)
+	};
+}
 //#endregion
 //#region src/training/model.ts
+function offsetWeights(weights, input, level) {
+	const tiny = 1e-6;
+	const { B, D } = weights;
+	const hiddenPre = matMul(input, B);
+	const hiddenScale = Array.from({ length: B.cols }, (_, j) => {
+		const peak = Math.max(tiny, ...hiddenPre.data.map((row) => Math.abs(row[j])));
+		const largest = Math.max(tiny, ...B.data.map((row) => Math.abs(row[j])));
+		return Math.min(5 / peak, 5 / largest);
+	});
+	const fittedD = D.data.map((row, j) => row.map((v) => v / hiddenScale[j]));
+	let outputPeak = tiny;
+	for (const row of hiddenPre.data) for (let k = 0; k < D.cols; k++) {
+		let out = 0;
+		for (let j = 0; j < B.cols; j++) out += Math.max(0, row[j] * hiddenScale[j]) * fittedD[j][k];
+		outputPeak = Math.max(outputPeak, Math.abs(out));
+	}
+	const largestD = Math.max(tiny, ...fittedD.flat().map(Math.abs));
+	const outputScale = Math.min(5 / outputPeak, 5 / largestD);
+	const slot = 10 * level;
+	return {
+		B: {
+			...B,
+			data: B.data.map((row) => row.map((v, j) => v + gaussian() * slot / hiddenScale[j]))
+		},
+		D: {
+			...D,
+			data: D.data.map((row, j) => row.map((v) => v + gaussian() * slot * hiddenScale[j] / outputScale))
+		}
+	};
+}
 var MLP = class {
 	weights;
 	adamB;
@@ -129,7 +205,19 @@ var MLP = class {
 		this.adamB = adamInit(inputSize, hiddenSize);
 		this.adamD = adamInit(hiddenSize, outputSize);
 	}
-	forward(input, weightNoise = 0) {
+	forward(input, weightNoise = 0, weightScale = "linear") {
+		if (weightNoise > 0 && weightScale === "linear") {
+			const weights = offsetWeights(this.weights, input, weightNoise);
+			const hiddenPre = matMul(input, weights.B);
+			const hidden = relu(hiddenPre);
+			return {
+				input,
+				hiddenPre,
+				hidden,
+				output: matMul(hidden, weights.D),
+				weights
+			};
+		}
 		const noise = weightNoise > 0 ? {
 			B: noiseFactors(this.weights.B.rows, this.weights.B.cols, weightNoise),
 			D: noiseFactors(this.weights.D.rows, this.weights.D.cols, weightNoise)
@@ -240,54 +328,6 @@ function loadFromJson(json) {
 	};
 }
 //#endregion
-//#region src/training/weights.ts
-const HIDDEN_MAX = 5;
-const OUTPUT_MAX = 5;
-const FIT_SAMPLE = 1e4;
-function extractWeights(weights) {
-	return {
-		B: weights.B.data.map((row) => [...row]),
-		D: weights.D.data.map((row) => [...row])
-	};
-}
-function accumulationPeaks(values, weights) {
-	const peaks = Array.from({ length: weights[0].length }, () => 0);
-	for (const row of values) for (let j = 0; j < peaks.length; j++) {
-		let acc = 0;
-		for (let i = 0; i < weights.length; i++) {
-			acc += row[i] * weights[i][j];
-			if (Math.abs(acc) > peaks[j]) peaks[j] = Math.abs(acc);
-		}
-	}
-	return peaks;
-}
-function boundRatio(bound, peak) {
-	return peak > 0 ? bound / peak : Infinity;
-}
-function settable(matrix) {
-	return matrix.map((row) => row.map((v) => Math.abs(v) < .02 ? 0 : v));
-}
-function fitWeightsToApparatus(weights, inputs) {
-	const x = inputs.slice(0, FIT_SAMPLE);
-	const nHidden = weights.B[0].length;
-	const hiddenScale = accumulationPeaks(x, weights.B).map((peak, j) => {
-		const columnMax = Math.max(...weights.B.map((row) => Math.abs(row[j])));
-		const scale = Math.min(boundRatio(HIDDEN_MAX, peak), boundRatio(5, columnMax));
-		return Number.isFinite(scale) ? scale : 1;
-	});
-	const b = weights.B.map((row) => row.map((v, j) => v * hiddenScale[j]));
-	const dBalanced = weights.D.map((row, j) => row.map((v) => v / hiddenScale[j]));
-	const hidden = x.map((row) => Array.from({ length: nHidden }, (_, j) => Math.max(0, row.reduce((acc, v, i) => acc + v * b[i][j], 0))));
-	const outputPeak = Math.max(...accumulationPeaks(hidden, dBalanced));
-	const dMax = Math.max(...dBalanced.flat().map(Math.abs));
-	const outputScale = Math.min(boundRatio(OUTPUT_MAX, outputPeak), boundRatio(5, dMax));
-	const d = dBalanced.map((row) => row.map((v) => v * (Number.isFinite(outputScale) ? outputScale : 1)));
-	return {
-		B: settable(b),
-		D: settable(d)
-	};
-}
-//#endregion
 //#region src/training/index.ts
 function shuffle(arr) {
 	const a = [...arr];
@@ -325,7 +365,7 @@ function accuracy(model, images, labels) {
 	return correct / images.rows;
 }
 async function trainMnist(opts = {}) {
-	const { epochs = 5, batchSize = 128, learningRate = .005, nonnegativeOutput = true, weightNoise = .1, onEpochEnd } = opts;
+	const { epochs = 5, batchSize = 128, learningRate = .005, nonnegativeOutput = true, weightScale = "linear", weightNoise = weightScale === "log" ? .1 : .01, onEpochEnd } = opts;
 	const data = opts.data ?? await loadMnist();
 	const model = new MLP(36, 6, 10);
 	for (let epoch = 1; epoch <= epochs; epoch++) {
@@ -335,7 +375,7 @@ async function trainMnist(opts = {}) {
 		for (const batch of batches) {
 			const xBatch = selectRows(data.trainImages, batch);
 			const yBatch = selectRows(data.trainLabels, batch);
-			const cache = model.forward(xBatch, weightNoise);
+			const cache = model.forward(xBatch, weightNoise, weightScale);
 			const loss = model.loss(cache, yBatch);
 			const grads = model.backward(cache, yBatch);
 			model.step(grads, learningRate, nonnegativeOutput);

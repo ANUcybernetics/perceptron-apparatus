@@ -3,6 +3,7 @@ import { deg2rad, weightScaleFraction } from "./utils.js";
 import type { MultiplyAccumulateStep } from "./widgets/trace.js";
 
 export type { BoardConfig } from "./board.js";
+export type { WeightScale } from "./utils.js";
 export type { VNode } from "./vnode.js";
 export { el, textEl, findAll, find, render } from "./vnode.js";
 
@@ -17,7 +18,7 @@ export class PerceptronApparatus {
   private readonly config: Required<BoardConfig>;
 
   constructor(container: Element, config: BoardConfig) {
-    this.config = { size: 1200, ...config };
+    this.config = { size: 1200, weightScale: "linear", ...config };
     this.svg = renderBoard(this.config, container);
   }
 
@@ -92,10 +93,13 @@ export class PerceptronApparatus {
     const theta = thetaOffset + (sliderIndex + 1) * (thetaSweep / (ringDef.slidersPerGroup + 1));
 
     const midRadius = radius - width / 2;
-    const valueRadius = radius - width * weightScaleFraction(value);
+    const valueRadius = radius - width * weightScaleFraction(value, this.config.weightScale);
     const radialOffset = valueRadius - midRadius;
 
-    el.setAttribute("data-sign", value < 0 ? "negative" : "positive");
+    // on the log scale position gives only the magnitude, so the marker carries the sign
+    if (this.config.weightScale === "log") {
+      el.setAttribute("data-sign", value < 0 ? "negative" : "positive");
+    }
 
     const offsetX = radialOffset * Math.sin(deg2rad(theta));
     const offsetY = radialOffset * Math.cos(deg2rad(theta));

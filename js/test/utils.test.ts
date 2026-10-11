@@ -72,9 +72,9 @@ describe("newRule", () => {
   });
 });
 
-describe("weightRule", () => {
+describe("weightRule on the log scale", () => {
   it("runs from zero to the maximum with a tick at every leading digit", () => {
-    const values = weightRule().map((t) => t.value);
+    const values = weightRule("log").map((t) => t.value);
     expect(values[0]).toBe(0);
     expect(values[1]).toBe(0.02);
     expect(values[values.length - 1]).toBe(5);
@@ -85,27 +85,48 @@ describe("weightRule", () => {
   });
 });
 
-describe("weightScaleFraction", () => {
+describe("weightScaleFraction on the log scale", () => {
   it("puts zero at one end and the maximum at the other", () => {
-    expect(weightScaleFraction(0)).toBe(0);
-    expect(weightScaleFraction(5)).toBeCloseTo(1);
+    expect(weightScaleFraction(0, "log")).toBe(0);
+    expect(weightScaleFraction(5, "log")).toBeCloseTo(1);
   });
 
   it("ignores sign", () => {
-    expect(weightScaleFraction(-0.3)).toBe(weightScaleFraction(0.3));
+    expect(weightScaleFraction(-0.3, "log")).toBe(weightScaleFraction(0.3, "log"));
   });
 
   it("leaves a gap between zero and the smallest marked magnitude", () => {
-    expect(weightScaleFraction(0.02)).toBeGreaterThan(0);
-    expect(weightScaleFraction(0.019)).toBe(0);
+    expect(weightScaleFraction(0.02, "log")).toBeGreaterThan(0);
+    expect(weightScaleFraction(0.019, "log")).toBe(0);
   });
 
   it("clamps magnitudes beyond the maximum", () => {
-    expect(weightScaleFraction(50)).toBeCloseTo(1);
+    expect(weightScaleFraction(50, "log")).toBeCloseTo(1);
   });
 
   it("is logarithmic above the minimum", () => {
-    const ratio = (a: number, b: number) => weightScaleFraction(b) - weightScaleFraction(a);
+    const ratio = (a: number, b: number) =>
+      weightScaleFraction(b, "log") - weightScaleFraction(a, "log");
     expect(ratio(0.02, 0.2)).toBeCloseTo(ratio(0.5, 5));
+  });
+});
+
+describe("the linear weight scale", () => {
+  it("is the default", () => {
+    expect(weightRule()).toEqual(weightRule("linear"));
+    expect(weightScaleFraction(2.5)).toBe(weightScaleFraction(2.5, "linear"));
+  });
+
+  it("runs from -5 to 5 with a tick at every whole number", () => {
+    const rule = weightRule("linear");
+    expect(rule.map((t) => t.value)).toEqual([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
+    expect(rule.filter((t) => t.label != null).map((t) => t.label)).toEqual(["-5", "0", "5"]);
+  });
+
+  it("puts -5 at the outer end of the slot, zero in the middle and 5 at the inner end", () => {
+    expect(weightScaleFraction(-5, "linear")).toBe(0);
+    expect(weightScaleFraction(0, "linear")).toBe(0.5);
+    expect(weightScaleFraction(5, "linear")).toBe(1);
+    expect(weightScaleFraction(-50, "linear")).toBe(0);
   });
 });

@@ -27,7 +27,8 @@ const WEIGHT_LABELLED = [
 	2,
 	5
 ];
-function weightRule() {
+function weightRule(scale = "linear") {
+	if (scale === "linear") return newRule(-5, 5, 1, 5);
 	const ticks = [{
 		label: "0",
 		value: 0
@@ -46,7 +47,8 @@ function weightRule() {
 	}
 	return ticks;
 }
-function weightScaleFraction(value) {
+function weightScaleFraction(value, scale = "linear") {
+	if (scale === "linear") return (Math.min(Math.max(value, -5), 5) + 5) / 10;
 	const magnitude = Math.min(Math.abs(value), 5);
 	if (magnitude < .02) return 0;
 	const logFraction = Math.log(magnitude / WEIGHT_MIN) / Math.log(5 / WEIGHT_MIN);

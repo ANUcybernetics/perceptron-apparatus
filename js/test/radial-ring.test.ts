@@ -92,18 +92,19 @@ describe("buildRadialRing", () => {
     expect(circles.length).toBe(6);
   });
 
-  it("labels the guide arcs with the 1-2-5 series from zero up to the maximum", () => {
-    const tree = buildRadialRing(1, 2, rule, {
-      radius: 300,
-      layerIndex: 2,
-      ringWidth: 100,
-    });
+  const guideLabels = (tree: ReturnType<typeof buildRadialRing>) =>
+    findAll(tree, (n) => n.tag === "text" && !(n.attrs["class"] ?? "").includes("indices")).map(
+      (n) => n.text,
+    );
+  const ctx = { radius: 300, layerIndex: 2, ringWidth: 100 };
 
-    const labels = findAll(
-      tree,
-      (n) => n.tag === "text" && !(n.attrs["class"] ?? "").includes("indices"),
-    ).map((n) => n.text);
-    expect(labels).toEqual(["0", "0.02", "0.05", "0.1", "0.2", "0.5", "1", "2", "5"]);
+  it("labels the guide arcs -5, 0 and 5 on the linear scale", () => {
+    expect(guideLabels(buildRadialRing(1, 2, rule, ctx))).toEqual(["-5", "0", "5"]);
+  });
+
+  it("labels the guide arcs with the 1-2-5 series from zero up on the log scale", () => {
+    const tree = buildRadialRing(1, 2, weightRule("log"), ctx, "log");
+    expect(guideLabels(tree)).toEqual(["0", "0.02", "0.05", "0.1", "0.2", "0.5", "1", "2", "5"]);
   });
 
   it("has data-ring-type attribute on root", () => {

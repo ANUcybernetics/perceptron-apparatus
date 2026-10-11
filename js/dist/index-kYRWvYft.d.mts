@@ -1,3 +1,5 @@
+import { t as WeightScale } from "./utils-D6vtFthk.mjs";
+
 //#region src/vnode.d.ts
 interface VNode {
   tag: string;
@@ -17,6 +19,7 @@ interface BoardConfig {
   nInput: number;
   nHidden: number;
   nOutput: number;
+  weightScale?: WeightScale;
 }
 declare function buildBoard(config: BoardConfig): VNode;
 declare function renderBoard(config: BoardConfig, parent: SVGElement | Element): SVGSVGElement;
