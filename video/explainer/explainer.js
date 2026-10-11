@@ -411,7 +411,6 @@ export function build(tl, S, T) {
   creditL.innerHTML = `
     <div class="credit"><b>Cybernetic Studio</b> · ANU School of Cybernetics</div>
     <div class="credit">Designed by Ben Swift · fabricated with Sam Shellard, UC Workshop7</div>
-    <div class="credit">Photographs by Andrew Meares</div>
     <div class="credit">github.com/ANUcybernetics/perceptron-apparatus</div>`;
   M.set([titleL, creditL], { opacity: 0 });
   fadeIn(titleL, 0.1, 0.6);
