@@ -27,7 +27,8 @@ interface Weights {
   D: number[][];
 }
 declare const mnistWeights: Weights;
-declare const pokerWeights: Weights;
+declare const zooWeights: Weights;
+declare const lettersWeights: Weights;
 //#endregion
 //#region src/widgets/trace.d.ts
 type ComputationStep = SetInputStep | MultiplyAccumulateStep | ReluStep | ArgmaxStep;
@@ -97,4 +98,4 @@ declare class PerceptronApparatus {
   clearSlideRuleMarkers(): void;
 }
 //#endregion
-export { textEl as C, render as S, renderBoard as _, ArgmaxStep as a, find as b, ReluStep as c, traceResult as d, Weights as f, buildBoard as g, BoardConfig as h, reluRule as i, SetInputStep as l, pokerWeights as m, PerceptronApparatus as n, ComputationStep as o, mnistWeights as p, logRule as r, MultiplyAccumulateStep as s, AnimationOptions as t, computeTrace as u, VNode as v, findAll as x, el as y };
+export { render as C, findAll as S, buildBoard as _, ArgmaxStep as a, el as b, ReluStep as c, traceResult as d, Weights as f, BoardConfig as g, zooWeights as h, reluRule as i, SetInputStep as l, mnistWeights as m, PerceptronApparatus as n, ComputationStep as o, lettersWeights as p, logRule as r, MultiplyAccumulateStep as s, AnimationOptions as t, computeTrace as u, renderBoard as v, textEl as w, find as x, VNode as y };

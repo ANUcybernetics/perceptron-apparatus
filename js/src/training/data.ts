@@ -1,4 +1,4 @@
-import { inflateSync } from "node:zlib";
+import { gunzipSync } from "node:zlib";
 import { type Matrix, matrix } from "./math.js";
 
 export interface MnistData {
@@ -16,7 +16,7 @@ async function fetchGz(url: string): Promise<Buffer> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
   const compressed = Buffer.from(await res.arrayBuffer());
-  return inflateSync(compressed, { windowBits: 16 + 15 });
+  return gunzipSync(compressed);
 }
 
 function parseImages(buf: Buffer): number[][] {

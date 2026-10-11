@@ -8,27 +8,22 @@ import { loadFromJson } from "../../src/training/data.js";
 const fixture = JSON.parse(readFileSync(join(__dirname, "../fixtures/mnist-sample.json"), "utf-8"));
 
 describe("integration: train on fixture data", () => {
-  it("trains with weights in range and correct shapes", async () => {
+  it("returns weights that can be set on the apparatus", async () => {
     const data = loadFromJson(fixture);
     const result = await trainMnist({
       data,
       epochs: 3,
       batchSize: 32,
       learningRate: 0.005,
-      weightClamp: [-5, 5],
     });
 
-    for (const row of result.weights.B) {
-      for (const v of row) {
-        expect(v).toBeGreaterThanOrEqual(-5);
-        expect(v).toBeLessThanOrEqual(5);
-      }
+    for (const v of result.weights.B.flat()) {
+      expect(Math.abs(v)).toBeLessThanOrEqual(5.001);
     }
-    for (const row of result.weights.D) {
-      for (const v of row) {
-        expect(v).toBeGreaterThanOrEqual(-5);
-        expect(v).toBeLessThanOrEqual(5);
-      }
+    // output weights are non-negative, so outputs only ever accumulate upwards
+    for (const v of result.weights.D.flat()) {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(5.001);
     }
 
     expect(result.weights.B.length).toBe(36);

@@ -1,11 +1,6 @@
 import type { PerceptronApparatus, AnimationOptions } from "../index.js";
 import type { Weights } from "./weights.js";
-import {
-  computeTrace,
-  traceResult,
-  type ComputationStep,
-  type MultiplyAccumulateStep,
-} from "./trace.js";
+import { computeTrace, type ComputationStep, type MultiplyAccumulateStep } from "./trace.js";
 
 export interface ComputeOptions {
   mode?: "step" | "neuron" | "fast";

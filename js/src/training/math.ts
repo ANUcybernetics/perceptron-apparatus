@@ -50,31 +50,40 @@ export function reluBackward(preActivation: Matrix, gradOutput: Matrix): Matrix 
   };
 }
 
-export function mseLoss(pred: Matrix, target: Matrix): number {
-  let sum = 0;
-  for (let i = 0; i < pred.rows; i++) {
-    for (let j = 0; j < pred.cols; j++) {
-      const diff = pred.data[i][j] - target.data[i][j];
-      sum += diff * diff;
-    }
-  }
-  return sum / (pred.rows * pred.cols);
+function softmax(row: number[]): number[] {
+  const max = Math.max(...row);
+  const exps = row.map((v) => Math.exp(v - max));
+  const sum = exps.reduce((acc, v) => acc + v, 0);
+  return exps.map((v) => v / sum);
 }
 
-export function mseGrad(pred: Matrix, target: Matrix): Matrix {
-  const scale = 2 / (pred.rows * pred.cols);
+// Softmax cross-entropy of raw outputs against one-hot targets, averaged over rows.
+export function crossEntropyLoss(logits: Matrix, target: Matrix): number {
+  let sum = 0;
+  for (let i = 0; i < logits.rows; i++) {
+    const probs = softmax(logits.data[i]);
+    for (let j = 0; j < logits.cols; j++) {
+      if (target.data[i][j] > 0) sum -= target.data[i][j] * Math.log(probs[j] + 1e-12);
+    }
+  }
+  return sum / logits.rows;
+}
+
+export function crossEntropyGrad(logits: Matrix, target: Matrix): Matrix {
   return {
-    rows: pred.rows,
-    cols: pred.cols,
-    data: pred.data.map((row, i) => row.map((v, j) => (v - target.data[i][j]) * scale)),
+    rows: logits.rows,
+    cols: logits.cols,
+    data: logits.data.map((row, i) =>
+      softmax(row).map((p, j) => (p - target.data[i][j]) / logits.rows),
+    ),
   };
 }
 
-export function clamp(m: Matrix, min: number, max: number): Matrix {
+export function clampMin(m: Matrix, min: number): Matrix {
   return {
     rows: m.rows,
     cols: m.cols,
-    data: m.data.map((row) => row.map((v) => Math.min(max, Math.max(min, v)))),
+    data: m.data.map((row) => row.map((v) => Math.max(min, v))),
   };
 }
 
@@ -112,6 +121,24 @@ export function adamUpdate(
     }
   }
   return result;
+}
+
+// A random factor for every entry, log-normally distributed around 1.
+export function noiseFactors(rows: number, cols: number, logStd: number): Matrix {
+  const gaussian = () =>
+    Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+  const data = Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => Math.exp(logStd * gaussian())),
+  );
+  return { data, rows, cols };
+}
+
+export function multiply(a: Matrix, b: Matrix): Matrix {
+  return {
+    rows: a.rows,
+    cols: a.cols,
+    data: a.data.map((row, i) => row.map((v, j) => v * b.data[i][j])),
+  };
 }
 
 export function randomMatrix(rows: number, cols: number, scale: number): Matrix {

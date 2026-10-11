@@ -1,19 +1,20 @@
 import { type Matrix, matrix } from "./math.js";
 import { MLP } from "./model.js";
 import { loadMnist, loadFromJson, type MnistData } from "./data.js";
-import { extractWeights, scaleWeights, type ExportedWeights } from "./weights.js";
+import { extractWeights, fitWeightsToApparatus, type ExportedWeights } from "./weights.js";
 
 export type { ExportedWeights } from "./weights.js";
 export type { MnistData } from "./data.js";
 export { loadMnist, loadFromJson } from "./data.js";
-export { scaleWeights } from "./weights.js";
+export { fitWeightsToApparatus } from "./weights.js";
 export { MLP } from "./model.js";
 
 export interface TrainOptions {
   epochs?: number;
   batchSize?: number;
   learningRate?: number;
-  weightClamp?: [number, number];
+  nonnegativeOutput?: boolean;
+  weightNoise?: number;
   onEpochEnd?: (epoch: number, loss: number, accuracy: number) => void;
 }
 
@@ -70,7 +71,8 @@ export async function trainMnist(
     epochs = 5,
     batchSize = 128,
     learningRate = 0.005,
-    weightClamp = [-5, 5] as [number, number],
+    nonnegativeOutput = true,
+    weightNoise = 0.1,
     onEpochEnd,
   } = opts;
 
@@ -85,10 +87,10 @@ export async function trainMnist(
     for (const batch of batches) {
       const xBatch = selectRows(data.trainImages, batch);
       const yBatch = selectRows(data.trainLabels, batch);
-      const cache = model.forward(xBatch);
+      const cache = model.forward(xBatch, weightNoise);
       const loss = model.loss(cache, yBatch);
       const grads = model.backward(cache, yBatch);
-      model.step(grads, learningRate, weightClamp);
+      model.step(grads, learningRate, nonnegativeOutput);
       epochLoss += loss;
       batchCount++;
     }
@@ -99,10 +101,12 @@ export async function trainMnist(
     }
   }
 
-  const testAcc = accuracy(model, data.testImages, data.testLabels);
+  // report the accuracy of the weights as they would be set on the apparatus
+  const weights = fitWeightsToApparatus(extractWeights(model.weights), data.trainImages.data);
+  model.weights = { B: matrix(weights.B), D: matrix(weights.D) };
 
   return {
-    weights: extractWeights(model.weights),
-    testAccuracy: testAcc,
+    weights,
+    testAccuracy: accuracy(model, data.testImages, data.testLabels),
   };
 }

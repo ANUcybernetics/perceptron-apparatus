@@ -1,4 +1,5 @@
-import { inflateSync } from "node:zlib";
+import "../utils-CRyXLAoU.mjs";
+import { gunzipSync } from "node:zlib";
 //#region src/training/math.ts
 function matrix(data) {
 	return {
@@ -41,27 +42,32 @@ function reluBackward(preActivation, gradOutput) {
 		data: preActivation.data.map((row, i) => row.map((v, j) => v > 0 ? gradOutput.data[i][j] : 0))
 	};
 }
-function mseLoss(pred, target) {
-	let sum = 0;
-	for (let i = 0; i < pred.rows; i++) for (let j = 0; j < pred.cols; j++) {
-		const diff = pred.data[i][j] - target.data[i][j];
-		sum += diff * diff;
-	}
-	return sum / (pred.rows * pred.cols);
+function softmax(row) {
+	const max = Math.max(...row);
+	const exps = row.map((v) => Math.exp(v - max));
+	const sum = exps.reduce((acc, v) => acc + v, 0);
+	return exps.map((v) => v / sum);
 }
-function mseGrad(pred, target) {
-	const scale = 2 / (pred.rows * pred.cols);
+function crossEntropyLoss(logits, target) {
+	let sum = 0;
+	for (let i = 0; i < logits.rows; i++) {
+		const probs = softmax(logits.data[i]);
+		for (let j = 0; j < logits.cols; j++) if (target.data[i][j] > 0) sum -= target.data[i][j] * Math.log(probs[j] + 1e-12);
+	}
+	return sum / logits.rows;
+}
+function crossEntropyGrad(logits, target) {
 	return {
-		rows: pred.rows,
-		cols: pred.cols,
-		data: pred.data.map((row, i) => row.map((v, j) => (v - target.data[i][j]) * scale))
+		rows: logits.rows,
+		cols: logits.cols,
+		data: logits.data.map((row, i) => softmax(row).map((p, j) => (p - target.data[i][j]) / logits.rows))
 	};
 }
-function clamp(m, min, max) {
+function clampMin(m, min) {
 	return {
 		rows: m.rows,
 		cols: m.cols,
-		data: m.data.map((row) => row.map((v) => Math.min(max, Math.max(min, v))))
+		data: m.data.map((row) => row.map((v) => Math.max(min, v)))
 	};
 }
 function adamInit(rows, cols) {
@@ -83,6 +89,21 @@ function adamUpdate(param, grad, state, lr, t, beta1 = .9, beta2 = .999, eps = 1
 		result.data[i][j] = param.data[i][j] - lr * mHat / (Math.sqrt(vHat) + eps);
 	}
 	return result;
+}
+function noiseFactors(rows, cols, logStd) {
+	const gaussian = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+	return {
+		data: Array.from({ length: rows }, () => Array.from({ length: cols }, () => Math.exp(logStd * gaussian()))),
+		rows,
+		cols
+	};
+}
+function multiply(a, b) {
+	return {
+		rows: a.rows,
+		cols: a.cols,
+		data: a.data.map((row, i) => row.map((v, j) => v * b.data[i][j]))
+	};
 }
 function randomMatrix(rows, cols, scale) {
 	return {
@@ -108,33 +129,48 @@ var MLP = class {
 		this.adamB = adamInit(inputSize, hiddenSize);
 		this.adamD = adamInit(hiddenSize, outputSize);
 	}
-	forward(input) {
-		const hiddenPre = matMul(input, this.weights.B);
+	forward(input, weightNoise = 0) {
+		const noise = weightNoise > 0 ? {
+			B: noiseFactors(this.weights.B.rows, this.weights.B.cols, weightNoise),
+			D: noiseFactors(this.weights.D.rows, this.weights.D.cols, weightNoise)
+		} : void 0;
+		const weights = noise ? {
+			B: multiply(this.weights.B, noise.B),
+			D: multiply(this.weights.D, noise.D)
+		} : this.weights;
+		const hiddenPre = matMul(input, weights.B);
 		const hidden = relu(hiddenPre);
 		return {
 			input,
 			hiddenPre,
 			hidden,
-			output: matMul(hidden, this.weights.D)
+			output: matMul(hidden, weights.D),
+			weights,
+			noise
 		};
 	}
 	backward(cache, target) {
-		const dOutput = mseGrad(cache.output, target);
+		const dOutput = crossEntropyGrad(cache.output, target);
 		const dD = matMul(transpose(cache.hidden), dOutput);
-		const dHidden = matMul(dOutput, transpose(this.weights.D));
+		const dHidden = matMul(dOutput, transpose(cache.weights.D));
 		const dHiddenPre = reluBackward(cache.hiddenPre, dHidden);
-		return {
-			dB: matMul(transpose(cache.input), dHiddenPre),
+		const dB = matMul(transpose(cache.input), dHiddenPre);
+		return cache.noise ? {
+			dB: multiply(dB, cache.noise.B),
+			dD: multiply(dD, cache.noise.D)
+		} : {
+			dB,
 			dD
 		};
 	}
-	step(grads, lr, weightClamp) {
+	step(grads, lr, nonnegativeOutput = true) {
 		this.t++;
-		this.weights.B = clamp(adamUpdate(this.weights.B, grads.dB, this.adamB, lr, this.t), weightClamp[0], weightClamp[1]);
-		this.weights.D = clamp(adamUpdate(this.weights.D, grads.dD, this.adamD, lr, this.t), weightClamp[0], weightClamp[1]);
+		this.weights.B = adamUpdate(this.weights.B, grads.dB, this.adamB, lr, this.t);
+		const d = adamUpdate(this.weights.D, grads.dD, this.adamD, lr, this.t);
+		this.weights.D = nonnegativeOutput ? clampMin(d, 0) : d;
 	}
 	loss(cache, target) {
-		return mseLoss(cache.output, target);
+		return crossEntropyLoss(cache.output, target);
 	}
 };
 //#endregion
@@ -151,7 +187,7 @@ const SAMPLE_INDICES = [
 async function fetchGz(url) {
 	const res = await fetch(url);
 	if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
-	return inflateSync(Buffer.from(await res.arrayBuffer()), { windowBits: 31 });
+	return gunzipSync(Buffer.from(await res.arrayBuffer()));
 }
 function parseImages(buf) {
 	const count = buf.readUInt32BE(4);
@@ -205,38 +241,50 @@ function loadFromJson(json) {
 }
 //#endregion
 //#region src/training/weights.ts
+const HIDDEN_MAX = 5;
+const OUTPUT_MAX = 5;
+const FIT_SAMPLE = 1e4;
 function extractWeights(weights) {
 	return {
 		B: weights.B.data.map((row) => [...row]),
 		D: weights.D.data.map((row) => [...row])
 	};
 }
-function maxAbs(matrix) {
-	let max = 0;
-	for (const row of matrix) for (const v of row) {
-		const a = Math.abs(v);
-		if (a > max) max = a;
+function accumulationPeaks(values, weights) {
+	const peaks = Array.from({ length: weights[0].length }, () => 0);
+	for (const row of values) for (let j = 0; j < peaks.length; j++) {
+		let acc = 0;
+		for (let i = 0; i < weights.length; i++) {
+			acc += row[i] * weights[i][j];
+			if (Math.abs(acc) > peaks[j]) peaks[j] = Math.abs(acc);
+		}
 	}
-	return max;
+	return peaks;
 }
-function scaleMatrix(m, factor) {
-	return m.map((row) => row.map((v) => v * factor));
+function boundRatio(bound, peak) {
+	return peak > 0 ? bound / peak : Infinity;
 }
-function scaleWeights(weights, targetMax = 5) {
-	const bMax = maxAbs(weights.B);
-	const dMax = maxAbs(weights.D);
-	if (bMax === 0 || dMax === 0) return weights;
-	const bScaleNeeded = targetMax / bMax;
-	const dScaleNeeded = targetMax / dMax;
-	const beta = Math.sqrt(bScaleNeeded / dScaleNeeded);
-	const bScaled = scaleMatrix(weights.B, beta);
-	const dScaled = scaleMatrix(weights.D, 1 / beta);
-	const bMaxAfter = maxAbs(bScaled);
-	const dMaxAfter = maxAbs(dScaled);
-	const finalScale = targetMax / Math.max(bMaxAfter, dMaxAfter);
+function settable(matrix) {
+	return matrix.map((row) => row.map((v) => Math.abs(v) < .02 ? 0 : v));
+}
+function fitWeightsToApparatus(weights, inputs) {
+	const x = inputs.slice(0, FIT_SAMPLE);
+	const nHidden = weights.B[0].length;
+	const hiddenScale = accumulationPeaks(x, weights.B).map((peak, j) => {
+		const columnMax = Math.max(...weights.B.map((row) => Math.abs(row[j])));
+		const scale = Math.min(boundRatio(HIDDEN_MAX, peak), boundRatio(5, columnMax));
+		return Number.isFinite(scale) ? scale : 1;
+	});
+	const b = weights.B.map((row) => row.map((v, j) => v * hiddenScale[j]));
+	const dBalanced = weights.D.map((row, j) => row.map((v) => v / hiddenScale[j]));
+	const hidden = x.map((row) => Array.from({ length: nHidden }, (_, j) => Math.max(0, row.reduce((acc, v, i) => acc + v * b[i][j], 0))));
+	const outputPeak = Math.max(...accumulationPeaks(hidden, dBalanced));
+	const dMax = Math.max(...dBalanced.flat().map(Math.abs));
+	const outputScale = Math.min(boundRatio(OUTPUT_MAX, outputPeak), boundRatio(5, dMax));
+	const d = dBalanced.map((row) => row.map((v) => v * (Number.isFinite(outputScale) ? outputScale : 1)));
 	return {
-		B: scaleMatrix(bScaled, finalScale),
-		D: scaleMatrix(dScaled, finalScale)
+		B: settable(b),
+		D: settable(d)
 	};
 }
 //#endregion
@@ -277,7 +325,7 @@ function accuracy(model, images, labels) {
 	return correct / images.rows;
 }
 async function trainMnist(opts = {}) {
-	const { epochs = 5, batchSize = 128, learningRate = .005, weightClamp = [-5, 5], onEpochEnd } = opts;
+	const { epochs = 5, batchSize = 128, learningRate = .005, nonnegativeOutput = true, weightNoise = .1, onEpochEnd } = opts;
 	const data = opts.data ?? await loadMnist();
 	const model = new MLP(36, 6, 10);
 	for (let epoch = 1; epoch <= epochs; epoch++) {
@@ -287,10 +335,10 @@ async function trainMnist(opts = {}) {
 		for (const batch of batches) {
 			const xBatch = selectRows(data.trainImages, batch);
 			const yBatch = selectRows(data.trainLabels, batch);
-			const cache = model.forward(xBatch);
+			const cache = model.forward(xBatch, weightNoise);
 			const loss = model.loss(cache, yBatch);
 			const grads = model.backward(cache, yBatch);
-			model.step(grads, learningRate, weightClamp);
+			model.step(grads, learningRate, nonnegativeOutput);
 			epochLoss += loss;
 			batchCount++;
 		}
@@ -299,11 +347,15 @@ async function trainMnist(opts = {}) {
 			onEpochEnd(epoch, epochLoss / batchCount, acc);
 		}
 	}
-	const testAcc = accuracy(model, data.testImages, data.testLabels);
+	const weights = fitWeightsToApparatus(extractWeights(model.weights), data.trainImages.data);
+	model.weights = {
+		B: matrix(weights.B),
+		D: matrix(weights.D)
+	};
 	return {
-		weights: extractWeights(model.weights),
-		testAccuracy: testAcc
+		weights,
+		testAccuracy: accuracy(model, data.testImages, data.testLabels)
 	};
 }
 //#endregion
-export { MLP, loadFromJson, loadMnist, scaleWeights, trainMnist };
+export { MLP, fitWeightsToApparatus, loadFromJson, loadMnist, trainMnist };

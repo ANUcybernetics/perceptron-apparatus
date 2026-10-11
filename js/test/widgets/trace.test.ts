@@ -110,7 +110,7 @@ describe("computeTrace", () => {
 
     const c0Macs = macs.filter((m) => m.target === "C0");
     expect(c0Macs[0].product).toBeCloseTo(0.5 * 1);
-    expect(c0Macs[1].product).toBeCloseTo(0.3 * 0);
+    expect(c0Macs[1].product).toBeCloseTo(0);
     expect(c0Macs[2].product).toBeCloseTo(0.8 * 1);
     expect(c0Macs[3].product).toBeCloseTo(0.1 * 0.5);
   });

@@ -5,11 +5,13 @@ import {
   transpose,
   relu,
   reluBackward,
-  mseLoss,
-  mseGrad,
-  clamp,
+  crossEntropyLoss,
+  crossEntropyGrad,
+  clampMin,
   adamInit,
   adamUpdate,
+  noiseFactors,
+  multiply,
   randomMatrix,
 } from "./math.js";
 
@@ -28,6 +30,9 @@ export interface ForwardCache {
   hiddenPre: Matrix;
   hidden: Matrix;
   output: Matrix;
+  // the weights the pass was computed with, and the factors that perturbed them
+  weights: MLPWeights;
+  noise?: MLPWeights;
 }
 
 export class MLP {
@@ -47,37 +52,48 @@ export class MLP {
     this.adamD = adamInit(hiddenSize, outputSize);
   }
 
-  forward(input: Matrix): ForwardCache {
-    const hiddenPre = matMul(input, this.weights.B);
+  // With weightNoise, every weight is multiplied by a fresh random factor whose
+  // log has that standard deviation, so training favours weights that still work
+  // when a slider is set slightly off.
+  forward(input: Matrix, weightNoise = 0): ForwardCache {
+    const noise =
+      weightNoise > 0
+        ? {
+            B: noiseFactors(this.weights.B.rows, this.weights.B.cols, weightNoise),
+            D: noiseFactors(this.weights.D.rows, this.weights.D.cols, weightNoise),
+          }
+        : undefined;
+    const weights = noise
+      ? { B: multiply(this.weights.B, noise.B), D: multiply(this.weights.D, noise.D) }
+      : this.weights;
+
+    const hiddenPre = matMul(input, weights.B);
     const hidden = relu(hiddenPre);
-    const output = matMul(hidden, this.weights.D);
-    return { input, hiddenPre, hidden, output };
+    const output = matMul(hidden, weights.D);
+    return { input, hiddenPre, hidden, output, weights, noise };
   }
 
   backward(cache: ForwardCache, target: Matrix): MLPGradients {
-    const dOutput = mseGrad(cache.output, target);
+    const dOutput = crossEntropyGrad(cache.output, target);
     const dD = matMul(transpose(cache.hidden), dOutput);
-    const dHidden = matMul(dOutput, transpose(this.weights.D));
+    const dHidden = matMul(dOutput, transpose(cache.weights.D));
     const dHiddenPre = reluBackward(cache.hiddenPre, dHidden);
     const dB = matMul(transpose(cache.input), dHiddenPre);
-    return { dB, dD };
+    return cache.noise
+      ? { dB: multiply(dB, cache.noise.B), dD: multiply(dD, cache.noise.D) }
+      : { dB, dD };
   }
 
-  step(grads: MLPGradients, lr: number, weightClamp: [number, number]): void {
+  // With nonnegativeOutput, D is projected onto zero-or-above after each update,
+  // so every output slider only ever accumulates upwards.
+  step(grads: MLPGradients, lr: number, nonnegativeOutput = true): void {
     this.t++;
-    this.weights.B = clamp(
-      adamUpdate(this.weights.B, grads.dB, this.adamB, lr, this.t),
-      weightClamp[0],
-      weightClamp[1],
-    );
-    this.weights.D = clamp(
-      adamUpdate(this.weights.D, grads.dD, this.adamD, lr, this.t),
-      weightClamp[0],
-      weightClamp[1],
-    );
+    this.weights.B = adamUpdate(this.weights.B, grads.dB, this.adamB, lr, this.t);
+    const d = adamUpdate(this.weights.D, grads.dD, this.adamD, lr, this.t);
+    this.weights.D = nonnegativeOutput ? clampMin(d, 0) : d;
   }
 
   loss(cache: ForwardCache, target: Matrix): number {
-    return mseLoss(cache.output, target);
+    return crossEntropyLoss(cache.output, target);
   }
 }

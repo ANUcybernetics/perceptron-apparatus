@@ -32,6 +32,8 @@ interface ForwardCache {
   hiddenPre: Matrix;
   hidden: Matrix;
   output: Matrix;
+  weights: MLPWeights;
+  noise?: MLPWeights;
 }
 declare class MLP {
   weights: MLPWeights;
@@ -39,9 +41,9 @@ declare class MLP {
   private adamD;
   private t;
   constructor(inputSize?: number, hiddenSize?: number, outputSize?: number);
-  forward(input: Matrix): ForwardCache;
+  forward(input: Matrix, weightNoise?: number): ForwardCache;
   backward(cache: ForwardCache, target: Matrix): MLPGradients;
-  step(grads: MLPGradients, lr: number, weightClamp: [number, number]): void;
+  step(grads: MLPGradients, lr: number, nonnegativeOutput?: boolean): void;
   loss(cache: ForwardCache, target: Matrix): number;
 }
 //#endregion
@@ -50,14 +52,15 @@ interface ExportedWeights {
   B: number[][];
   D: number[][];
 }
-declare function scaleWeights(weights: ExportedWeights, targetMax?: number): ExportedWeights;
+declare function fitWeightsToApparatus(weights: ExportedWeights, inputs: number[][]): ExportedWeights;
 //#endregion
 //#region src/training/index.d.ts
 interface TrainOptions {
   epochs?: number;
   batchSize?: number;
   learningRate?: number;
-  weightClamp?: [number, number];
+  nonnegativeOutput?: boolean;
+  weightNoise?: number;
   onEpochEnd?: (epoch: number, loss: number, accuracy: number) => void;
 }
 interface TrainResult {
@@ -68,4 +71,4 @@ declare function trainMnist(opts?: TrainOptions & {
   data?: MnistData;
 }): Promise<TrainResult>;
 //#endregion
-export { type ExportedWeights, MLP, type MnistData, TrainOptions, TrainResult, loadFromJson, loadMnist, scaleWeights, trainMnist };
+export { type ExportedWeights, MLP, type MnistData, TrainOptions, TrainResult, fitWeightsToApparatus, loadFromJson, loadMnist, trainMnist };

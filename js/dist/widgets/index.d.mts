@@ -1,4 +1,4 @@
-import { a as ArgmaxStep, c as ReluStep, d as traceResult, f as Weights, l as SetInputStep, m as pokerWeights, n as PerceptronApparatus, o as ComputationStep, p as mnistWeights, s as MultiplyAccumulateStep, u as computeTrace } from "../index-Dd-IPsJA.mjs";
+import { a as ArgmaxStep, c as ReluStep, d as traceResult, f as Weights, h as zooWeights, l as SetInputStep, m as mnistWeights, n as PerceptronApparatus, o as ComputationStep, p as lettersWeights, s as MultiplyAccumulateStep, u as computeTrace } from "../index-iWrCMVeP.mjs";
 
 //#region src/widgets/animator.d.ts
 interface ComputeOptions {
@@ -54,29 +54,63 @@ declare class MnistInputWidget {
   private notify;
 }
 //#endregion
-//#region src/widgets/poker-input.d.ts
-interface Card {
-  suit: number;
-  rank: number;
+//#region src/widgets/zoo-input.d.ts
+declare const ZOO_TRAITS: readonly ["hair", "feathers", "eggs", "milk", "airborne", "aquatic", "predator", "toothed", "backbone", "breathes", "venomous", "fins", "tail", "domestic", "catsize"];
+declare const ZOO_LEG_COUNTS: readonly [0, 2, 4, 5, 6, 8];
+declare const ZOO_CLASS_NAMES: readonly ["mammal", "bird", "reptile", "fish", "amphibian", "insect", "invertebrate"];
+type ZooTrait = (typeof ZOO_TRAITS)[number];
+type LegCount = (typeof ZOO_LEG_COUNTS)[number];
+interface Animal {
+  traits: Record<ZooTrait, boolean>;
+  legs: LegCount;
 }
-declare function encodeHand(cards: (Card | null)[]): number[];
-declare class PokerInputWidget {
+interface ZooExample {
+  name: string;
+  animal: Animal;
+  className: (typeof ZOO_CLASS_NAMES)[number];
+}
+declare function encodeAnimal(animal: Animal): number[];
+declare const ZOO_EXAMPLES: readonly ZooExample[];
+declare class ZooInputWidget {
   readonly element: HTMLElement;
-  private readonly cards;
-  private readonly selectors;
+  private readonly checkboxes;
+  private readonly legsSelect;
+  private readonly exampleSelect;
   private listeners;
-  constructor(container: Element);
-  getCards(): (Card | null)[];
-  setCards(cards: (Card | null)[]): void;
+  constructor(container: Element, opts?: {
+    onChange?: (values: number[]) => void;
+  });
+  getAnimal(): Animal;
+  setAnimal(animal: Animal): void;
   getValues(): number[];
-  clear(): void;
   onChange(fn: (values: number[]) => void): void;
   destroy(): void;
-  private createCardSlot;
-  private updateSlotDisplay;
+  private showAnimal;
+  private onUserChange;
+  private onExampleChange;
   private notify;
 }
-declare const POKER_HAND_NAMES: string[];
+//#endregion
+//#region src/widgets/letters-input.d.ts
+declare const LETTERS_ALPHABET = "etaoinshr ";
+declare function symbolName(index: number): string;
+declare function encodeContext(context: string): number[];
+declare class LettersInputWidget {
+  readonly element: HTMLElement;
+  private readonly selects;
+  private listeners;
+  constructor(container: Element, opts?: {
+    onChange?: (values: number[]) => void;
+  });
+  getContext(): string;
+  setContext(context: string): void;
+  append(symbol: string): void;
+  getValues(): number[];
+  onChange(fn: (values: number[]) => void): void;
+  destroy(): void;
+  private onUserChange;
+  private notify;
+}
 //#endregion
 //#region src/widgets/sample-digits.d.ts
 interface SampleDigit {
@@ -85,4 +119,4 @@ interface SampleDigit {
 }
 declare const sampleDigits: SampleDigit[];
 //#endregion
-export { type ArgmaxStep, type Card, ComputationAnimator, type ComputationStep, type ComputeOptions, type ComputeResult, MnistInputWidget, type MultiplyAccumulateStep, POKER_HAND_NAMES, PokerInputWidget, type ReluStep, type SampleDigit, type SetInputStep, type StepInfo, type Weights, computeTrace, encodeHand, mnistWeights, pokerWeights, sampleDigits, traceResult };
+export { type Animal, type ArgmaxStep, ComputationAnimator, type ComputationStep, type ComputeOptions, type ComputeResult, LETTERS_ALPHABET, type LegCount, LettersInputWidget, MnistInputWidget, type MultiplyAccumulateStep, type ReluStep, type SampleDigit, type SetInputStep, type StepInfo, type Weights, ZOO_CLASS_NAMES, ZOO_EXAMPLES, ZOO_LEG_COUNTS, ZOO_TRAITS, type ZooExample, ZooInputWidget, type ZooTrait, computeTrace, encodeAnimal, encodeContext, lettersWeights, mnistWeights, sampleDigits, symbolName, traceResult, zooWeights };

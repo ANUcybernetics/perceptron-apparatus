@@ -6,9 +6,9 @@ import {
   transpose,
   relu,
   reluBackward,
-  mseLoss,
-  mseGrad,
-  clamp,
+  crossEntropyLoss,
+  crossEntropyGrad,
+  clampMin,
   adamInit,
   adamUpdate,
 } from "../../src/training/math.js";
@@ -81,40 +81,40 @@ describe("reluBackward", () => {
   });
 });
 
-describe("mseLoss / mseGrad", () => {
-  it("computes MSE correctly", () => {
-    const pred = matrix([[1, 2, 3]]);
-    const target = matrix([[1, 2, 3]]);
-    expect(mseLoss(pred, target)).toBe(0);
+describe("crossEntropyLoss / crossEntropyGrad", () => {
+  it("is ln(classes) when every output is equal", () => {
+    const logits = matrix([[0, 0, 0, 0]]);
+    const target = matrix([[0, 1, 0, 0]]);
+    expect(crossEntropyLoss(logits, target)).toBeCloseTo(Math.log(4));
   });
 
-  it("computes MSE for non-zero diff", () => {
-    const pred = matrix([[2, 4]]);
-    const target = matrix([[0, 0]]);
-    // MSE = (4 + 16) / 2 = 10
-    expect(mseLoss(pred, target)).toBe(10);
+  it("approaches zero when the labelled output dominates", () => {
+    const logits = matrix([[20, 0, 0]]);
+    const target = matrix([[1, 0, 0]]);
+    expect(crossEntropyLoss(logits, target)).toBeCloseTo(0, 6);
   });
 
-  it("gradient has correct shape", () => {
-    const pred = matrix([
-      [1, 2],
-      [3, 4],
+  it("gradient is softmax minus target, averaged over rows", () => {
+    const logits = matrix([
+      [0, 0],
+      [0, 0],
     ]);
     const target = matrix([
-      [0, 0],
-      [0, 0],
+      [1, 0],
+      [0, 1],
     ]);
-    const g = mseGrad(pred, target);
-    expect(g.rows).toBe(2);
-    expect(g.cols).toBe(2);
+    const g = crossEntropyGrad(logits, target);
+    expect(g.data[0][0]).toBeCloseTo(-0.25);
+    expect(g.data[0][1]).toBeCloseTo(0.25);
+    expect(g.data[1][0]).toBeCloseTo(0.25);
+    expect(g.data[1][1]).toBeCloseTo(-0.25);
   });
 });
 
-describe("clamp", () => {
-  it("clamps values to range", () => {
+describe("clampMin", () => {
+  it("raises values below the minimum", () => {
     const m = matrix([[-10, 0, 10]]);
-    const c = clamp(m, -5, 5);
-    expect(c.data).toEqual([[-5, 0, 5]]);
+    expect(clampMin(m, 0).data).toEqual([[0, 0, 10]]);
   });
 });
 

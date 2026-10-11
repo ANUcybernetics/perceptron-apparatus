@@ -48,11 +48,53 @@ describe("MLP", () => {
     for (let i = 0; i < 50; i++) {
       const cache = model.forward(input);
       const grads = model.backward(cache, target);
-      model.step(grads, 0.01, [-5, 5]);
+      model.step(grads, 0.01);
     }
 
     const cache2 = model.forward(input);
     const loss2 = model.loss(cache2, target);
     expect(loss2).toBeLessThan(loss1);
+  });
+
+  it("still learns when every weight is perturbed on each pass", () => {
+    const model = new MLP(4, 3, 2);
+    const input = matrix([
+      [1, 0, 0, 0],
+      [0, 1, 0, 0],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1],
+    ]);
+    const target = matrix([
+      [1, 0],
+      [0, 1],
+      [1, 0],
+      [0, 1],
+    ]);
+    const before = model.loss(model.forward(input), target);
+
+    for (let i = 0; i < 200; i++) {
+      const cache = model.forward(input, 0.1);
+      model.step(model.backward(cache, target), 0.01, false);
+    }
+
+    expect(model.loss(model.forward(input), target)).toBeLessThan(before);
+  });
+
+  it("keeps output weights non-negative unless told otherwise", () => {
+    const input = matrix([
+      [1, 0],
+      [0, 1],
+    ]);
+    const target = matrix([
+      [1, 0],
+      [0, 1],
+    ]);
+    const model = new MLP(2, 3, 2);
+
+    for (let i = 0; i < 50; i++) {
+      const cache = model.forward(input);
+      model.step(model.backward(cache, target), 0.05);
+      expect(Math.min(...model.weights.D.data.flat())).toBeGreaterThanOrEqual(0);
+    }
   });
 });

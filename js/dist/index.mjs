@@ -1,26 +1,4 @@
-//#region src/utils.ts
-const RAD_IN_DEG = 180 / Math.PI;
-function deg2rad(degrees) {
-	return degrees / RAD_IN_DEG;
-}
-function newRule(start, stop, step, majorStep) {
-	const ticks = [];
-	for (let val = start; val <= stop + step / 1e3; val += step) {
-		const rounded = Math.round(val * 1e3) / 1e3;
-		const label = Math.abs(rounded % majorStep) < step / 2 || Math.abs(rounded % majorStep - majorStep) < step / 2 ? formatNumber(rounded) : null;
-		ticks.push({
-			label,
-			value: rounded
-		});
-	}
-	return ticks;
-}
-function formatNumber(n) {
-	const s = Number(n.toPrecision(10)).toString();
-	if (s === "-0") return "0";
-	return s;
-}
-//#endregion
+import { a as weightRule, i as newRule, n as deg2rad, o as weightScaleFraction, r as formatNumber } from "./utils-CRyXLAoU.mjs";
 //#region src/vnode.ts
 function el(tag, attrs = {}, children = []) {
 	return {
@@ -256,12 +234,10 @@ function buildGroup(radius, width, slidersPerGroup, thetaSweep, groupIndex, laye
 	return nodes;
 }
 function buildGuides(radius, width, groups, rule) {
-	const rangeMin = rule[0].value;
-	const dynamicRange = rule[rule.length - 1].value - rangeMin;
 	const thetaSweep = 360 / groups;
 	const radii = rule.map(({ label, value }) => ({
 		label,
-		r: radius - width * (value - rangeMin) / dynamicRange
+		r: radius - width * weightScaleFraction(value)
 	}));
 	const nodes = [];
 	for (const { label, r } of radii) {
@@ -325,7 +301,7 @@ function createRingSequence(nInput, nHidden, nOutput) {
 			fixedWidth: 25,
 			groups: nHidden,
 			slidersPerGroup: nInput,
-			rule: newRule(-5, 5, 1, 5)
+			rule: weightRule()
 		},
 		{
 			type: "azimuthal",
@@ -338,7 +314,7 @@ function createRingSequence(nInput, nHidden, nOutput) {
 			fixedWidth: 25,
 			groups: nOutput,
 			slidersPerGroup: nHidden,
-			rule: newRule(-5, 5, 1, 5)
+			rule: weightRule()
 		},
 		{
 			type: "azimuthal",
@@ -485,6 +461,9 @@ text {
 .top.slider {
   stroke-width: 1;
 }
+[data-sign="negative"] .slider {
+  fill: var(--pa-negative, transparent);
+}
 .animating .slider {
   scale: 2.5;
   fill: var(--pa-highlight, currentColor);
@@ -563,15 +542,14 @@ var PerceptronApparatus = class {
 		const { layerIndex, groupIndex, sliderIndex } = parseRadialId(id);
 		const ringDef = this.findRadialRing(layerIndex);
 		if (!ringDef) return Promise.resolve();
-		const { rangeMin, rangeMax, ringWidth } = ringDef;
+		const { ringWidth } = ringDef;
 		const radius = this.getRadiusForLayer(layerIndex) - 5;
 		const width = ringWidth - 10;
-		const dynamicRange = rangeMax - rangeMin;
-		const clampedValue = Math.max(rangeMin, Math.min(rangeMax, value));
 		const thetaSweep = 360 / ringDef.groups;
 		const theta = thetaSweep * groupIndex + (sliderIndex + 1) * (thetaSweep / (ringDef.slidersPerGroup + 1));
 		const midRadius = radius - width / 2;
-		const radialOffset = radius - width * (clampedValue - rangeMin) / dynamicRange - midRadius;
+		const radialOffset = radius - width * weightScaleFraction(value) - midRadius;
+		el.setAttribute("data-sign", value < 0 ? "negative" : "positive");
 		return applyTransform(el, `translate(${radialOffset * Math.sin(deg2rad(theta))}px, ${radialOffset * Math.cos(deg2rad(theta))}px)`, opts);
 	}
 	findAzimuthalRing(layerIndex) {
@@ -605,15 +583,11 @@ var PerceptronApparatus = class {
 			2: {
 				groups: this.config.nHidden,
 				slidersPerGroup: this.config.nInput,
-				rangeMin: -5,
-				rangeMax: 5,
 				ringWidth: radialWidth
 			},
 			4: {
 				groups: this.config.nOutput,
 				slidersPerGroup: this.config.nHidden,
-				rangeMin: -5,
-				rangeMax: 5,
 				ringWidth: radialWidth
 			}
 		}[layerIndex] ?? null;

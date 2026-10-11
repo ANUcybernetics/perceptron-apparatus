@@ -15,10 +15,22 @@ export {
 } from "./trace.js";
 export { MnistInputWidget } from "./mnist-input.js";
 export {
-  PokerInputWidget,
-  encodeHand,
-  POKER_HAND_NAMES,
-  type Card,
-} from "./poker-input.js";
+  ZooInputWidget,
+  encodeAnimal,
+  ZOO_TRAITS,
+  ZOO_LEG_COUNTS,
+  ZOO_CLASS_NAMES,
+  ZOO_EXAMPLES,
+  type Animal,
+  type ZooExample,
+  type ZooTrait,
+  type LegCount,
+} from "./zoo-input.js";
+export {
+  LettersInputWidget,
+  LETTERS_ALPHABET,
+  encodeContext,
+  symbolName,
+} from "./letters-input.js";
 export { sampleDigits, type SampleDigit } from "./sample-digits.js";
-export { mnistWeights, pokerWeights, type Weights } from "./weights.js";
+export { mnistWeights, zooWeights, lettersWeights, type Weights } from "./weights.js";
