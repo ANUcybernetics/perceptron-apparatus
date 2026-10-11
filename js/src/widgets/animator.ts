@@ -42,16 +42,8 @@ export class ComputationAnimator {
     this.nOutput = weights.D[0].length;
   }
 
-  async compute(
-    inputs: number[],
-    opts: ComputeOptions = {},
-  ): Promise<ComputeResult> {
-    const {
-      mode = "step",
-      stepDuration = 100,
-      signal,
-      onStep,
-    } = opts;
+  async compute(inputs: number[], opts: ComputeOptions = {}): Promise<ComputeResult> {
+    const { mode = "step", stepDuration = 100, signal, onStep } = opts;
 
     const animate = mode !== "fast";
     const perMultiply = mode === "step";
@@ -69,11 +61,7 @@ export class ComputationAnimator {
       : this.nHidden + this.nOutput;
     let currentStep = 0;
 
-    const emit = (
-      phase: StepInfo["phase"],
-      description: string,
-      step?: ComputationStep,
-    ) => {
+    const emit = (phase: StepInfo["phase"], description: string, step?: ComputationStep) => {
       onStep?.({
         phase,
         description,
@@ -105,11 +93,7 @@ export class ComputationAnimator {
           emit("hidden", `C${j} += A${i} × B${i},${j}`, mac);
           await Promise.all([
             this.apparatus.setLogRingRotation(mac.logRingAngle, animOpts),
-            this.apparatus.setSlider(
-              `C${j}`,
-              Math.max(0, acc),
-              animOpts,
-            ),
+            this.apparatus.setSlider(`C${j}`, Math.max(0, acc), animOpts),
             this.apparatus.setSlideRuleMarkers?.(mac, animOpts),
           ]);
         }

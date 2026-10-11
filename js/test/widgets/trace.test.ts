@@ -23,10 +23,7 @@ const testWeights: Weights = {
   ],
 };
 
-function stepsOfType<T extends ComputationStep>(
-  steps: ComputationStep[],
-  type: T["type"],
-): T[] {
+function stepsOfType<T extends ComputationStep>(steps: ComputationStep[], type: T["type"]): T[] {
   return steps.filter((s) => s.type === type) as T[];
 }
 
@@ -44,10 +41,7 @@ describe("computeTrace", () => {
 
   it("generates correct number of multiply-accumulate steps", () => {
     const trace = computeTrace([1, 0, 0, 0], testWeights);
-    const macs = stepsOfType<MultiplyAccumulateStep>(
-      trace,
-      "multiply-accumulate",
-    );
+    const macs = stepsOfType<MultiplyAccumulateStep>(trace, "multiply-accumulate");
     // 4 inputs × 2 hidden + 2 hidden × 3 output = 8 + 6 = 14
     expect(macs).toHaveLength(14);
   });
@@ -98,10 +92,7 @@ describe("computeTrace", () => {
 
   it("accumulator tracks running sum correctly", () => {
     const trace = computeTrace([0.5, 0.3, 0.8, 0.1], testWeights);
-    const macs = stepsOfType<MultiplyAccumulateStep>(
-      trace,
-      "multiply-accumulate",
-    );
+    const macs = stepsOfType<MultiplyAccumulateStep>(trace, "multiply-accumulate");
 
     // First hidden neuron (C0): weights are [1, 0, 1, 0.5]
     // acc after each step: 0.5, 0.5, 1.3, 1.35
@@ -115,10 +106,7 @@ describe("computeTrace", () => {
 
   it("tracks product values correctly", () => {
     const trace = computeTrace([0.5, 0.3, 0.8, 0.1], testWeights);
-    const macs = stepsOfType<MultiplyAccumulateStep>(
-      trace,
-      "multiply-accumulate",
-    );
+    const macs = stepsOfType<MultiplyAccumulateStep>(trace, "multiply-accumulate");
 
     const c0Macs = macs.filter((m) => m.target === "C0");
     expect(c0Macs[0].product).toBeCloseTo(0.5 * 1);
@@ -129,10 +117,7 @@ describe("computeTrace", () => {
 
   it("sets productSign correctly for positive × positive", () => {
     const trace = computeTrace([1, 0, 0, 0], testWeights);
-    const macs = stepsOfType<MultiplyAccumulateStep>(
-      trace,
-      "multiply-accumulate",
-    );
+    const macs = stepsOfType<MultiplyAccumulateStep>(trace, "multiply-accumulate");
     // A0 (1) × B0,0 (1) → positive
     expect(macs[0].productSign).toBe(1);
   });
@@ -140,10 +125,7 @@ describe("computeTrace", () => {
   it("sets productSign correctly for positive × negative", () => {
     // B[2][1] = -1, input[2] = 1
     const trace = computeTrace([0, 0, 1, 0], testWeights);
-    const macs = stepsOfType<MultiplyAccumulateStep>(
-      trace,
-      "multiply-accumulate",
-    );
+    const macs = stepsOfType<MultiplyAccumulateStep>(trace, "multiply-accumulate");
     // C1 macs: A0×B1-0, A1×B1-1, A2×B1-2, A3×B1-3
     // A2×B1-2 = 1 × (-1), productSign should be -1
     const c1Macs = macs.filter((m) => m.target === "C1");
@@ -152,29 +134,20 @@ describe("computeTrace", () => {
 
   it("sets logRingAngle based on absolute input value", () => {
     const trace = computeTrace([0.5, 0, 0, 0], testWeights);
-    const macs = stepsOfType<MultiplyAccumulateStep>(
-      trace,
-      "multiply-accumulate",
-    );
+    const macs = stepsOfType<MultiplyAccumulateStep>(trace, "multiply-accumulate");
     // log10(0.5) in the mantissa: 0.5 → mantissa is 5.0, log10(5) * 360 ≈ 251.5°
     expect(macs[0].logRingAngle).toBeCloseTo(Math.log10(5) * 360);
   });
 
   it("sets logRingAngle to 0 for zero input", () => {
     const trace = computeTrace([0, 1, 0, 0], testWeights);
-    const macs = stepsOfType<MultiplyAccumulateStep>(
-      trace,
-      "multiply-accumulate",
-    );
+    const macs = stepsOfType<MultiplyAccumulateStep>(trace, "multiply-accumulate");
     expect(macs[0].logRingAngle).toBe(0);
   });
 
   it("references correct slider IDs", () => {
     const trace = computeTrace([1, 0, 0, 0], testWeights);
-    const macs = stepsOfType<MultiplyAccumulateStep>(
-      trace,
-      "multiply-accumulate",
-    );
+    const macs = stepsOfType<MultiplyAccumulateStep>(trace, "multiply-accumulate");
 
     // First MAC: A0 × B0-0 → C0
     expect(macs[0].inputSlider).toBe("A0");
@@ -221,11 +194,7 @@ describe("computeTrace", () => {
       const s = trace[i];
       if (s.type === "multiply-accumulate" && s.target === "C0") lastC0Mac = i;
       if (s.type === "relu" && s.neuron === "C0") reluC0 = i;
-      if (
-        s.type === "multiply-accumulate" &&
-        s.target === "C1" &&
-        firstC1Mac === -1
-      )
+      if (s.type === "multiply-accumulate" && s.target === "C1" && firstC1Mac === -1)
         firstC1Mac = i;
     }
 
@@ -236,10 +205,7 @@ describe("computeTrace", () => {
   it("uses post-relu hidden values for output layer", () => {
     // input [0,0,1,0]: hidden_pre=[1,-1], post-relu=[1,0]
     const trace = computeTrace([0, 0, 1, 0], testWeights);
-    const macs = stepsOfType<MultiplyAccumulateStep>(
-      trace,
-      "multiply-accumulate",
-    );
+    const macs = stepsOfType<MultiplyAccumulateStep>(trace, "multiply-accumulate");
     const outputMacs = macs.filter((m) => m.target.startsWith("E"));
 
     // C0=1 (post-relu), C1=0 (post-relu, was -1)
@@ -253,15 +219,8 @@ describe("traceResult", () => {
     const trace = computeTrace([1, 0, 0, 0], testWeights);
     const result = traceResult(trace);
 
-    expect(result.hidden).toEqual([
-      expect.closeTo(1),
-      expect.closeTo(0),
-    ]);
-    expect(result.output).toEqual([
-      expect.closeTo(1),
-      expect.closeTo(0),
-      expect.closeTo(-1),
-    ]);
+    expect(result.hidden).toEqual([expect.closeTo(1), expect.closeTo(0)]);
+    expect(result.output).toEqual([expect.closeTo(1), expect.closeTo(0), expect.closeTo(-1)]);
     expect(result.prediction).toBe(0);
   });
 
@@ -284,8 +243,8 @@ describe("traceResult", () => {
 
   it("throws if trace does not end with argmax", () => {
     expect(() => traceResult([])).toThrow("Trace does not end with argmax");
-    expect(() =>
-      traceResult([{ type: "set-input", slider: "A0", value: 1 }]),
-    ).toThrow("Trace does not end with argmax");
+    expect(() => traceResult([{ type: "set-input", slider: "A0", value: 1 }])).toThrow(
+      "Trace does not end with argmax",
+    );
   });
 });
