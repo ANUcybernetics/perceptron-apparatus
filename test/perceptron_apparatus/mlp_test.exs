@@ -194,7 +194,9 @@ defmodule PerceptronApparatus.MLPTest do
       min_weight = Nx.reduce_min(output_weights) |> Nx.to_number()
       max_weight = Nx.reduce_max(output_weights) |> Nx.to_number()
 
-      IO.puts("\nOutput layer weight range: [#{Float.round(min_weight, 6)}, #{Float.round(max_weight, 6)}]")
+      IO.puts(
+        "\nOutput layer weight range: [#{Float.round(min_weight, 6)}, #{Float.round(max_weight, 6)}]"
+      )
 
       assert min_weight >= 0, "Output weights must be non-negative, found min=#{min_weight}"
 
@@ -326,7 +328,10 @@ defmodule PerceptronApparatus.MLPTest do
       temp_file = "test_scaled_weights.json"
 
       try do
-        MLP.write_weights_to_json(trained_params, temp_file, scale_to_range: true, target_max: 3.0)
+        MLP.write_weights_to_json(trained_params, temp_file,
+          scale_to_range: true,
+          target_max: 3.0
+        )
 
         assert File.exists?(temp_file)
 

@@ -414,7 +414,9 @@ defmodule PerceptronApparatus.ResourcesTest do
         {nil, D.new(270)}
       ]
 
-      {:ok, azimuthal_ring} = PerceptronApparatus.create_azimuthal_ring(azimuthal_shape, azimuthal_rule)
+      {:ok, azimuthal_ring} =
+        PerceptronApparatus.create_azimuthal_ring(azimuthal_shape, azimuthal_rule)
+
       assert %AzimuthalRing{} = azimuthal_ring
 
       radial_shape = %{groups: 3, sliders_per_group: 2}

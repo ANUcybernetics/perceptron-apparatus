@@ -131,7 +131,9 @@ describe("setSlider (radial)", () => {
     const circle = slider.querySelector("circle")!;
     const radiusAt = async (value: number) => {
       await apparatus.setSlider("B0-0", value);
-      const [dx, dy] = getStyle(slider).transform.match(/-?[\d.]+(?:e-?\d+)?/g)!.map(Number);
+      const [dx, dy] = getStyle(slider)
+        .transform.match(/-?[\d.]+(?:e-?\d+)?/g)!
+        .map(Number);
       return Math.hypot(
         Number(circle.getAttribute("cx")) + dx,
         Number(circle.getAttribute("cy")) + dy,

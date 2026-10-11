@@ -21,11 +21,7 @@ interface RingDef {
   slidersPerGroup?: number;
 }
 
-function createRingSequence(
-  nInput: number,
-  nHidden: number,
-  nOutput: number,
-): RingDef[] {
+function createRingSequence(nInput: number, nHidden: number, nOutput: number): RingDef[] {
   return [
     { type: "rule", fixedWidth: 30, rule: logRule() },
     {
@@ -73,16 +69,10 @@ function calculateRingWidths(
   const fixedRings = rings.filter((r) => r.type !== "radial");
   const fixedWidthsTotal = fixedRings.reduce((s, r) => s + r.fixedWidth, 0);
   const paddingTotal = radialPadding * (rings.length - 1);
-  const availableForRadial = Math.max(
-    radius - centerSpace - fixedWidthsTotal - paddingTotal,
-    0,
-  );
-  const radialWidth =
-    radialRings.length > 0 ? availableForRadial / radialRings.length : 0;
+  const availableForRadial = Math.max(radius - centerSpace - fixedWidthsTotal - paddingTotal, 0);
+  const radialWidth = radialRings.length > 0 ? availableForRadial / radialRings.length : 0;
 
-  return rings.map((ring) =>
-    ring.type === "radial" ? radialWidth : ring.fixedWidth,
-  );
+  return rings.map((ring) => (ring.type === "radial" ? radialWidth : ring.fixedWidth));
 }
 
 export function buildBoard(config: BoardConfig): VNode {
@@ -116,15 +106,19 @@ export function buildBoard(config: BoardConfig): VNode {
 
     if (ring.type === "rule") {
       children.push(
-        el("g", {
-          "data-ring": "log",
-          style: "transform: rotate(4.2deg)",
-        }, [
-          buildRuleRing(ring.rule as LogRuleTick[], {
-            radius: currentRadius,
-            ringWidth,
-          }),
-        ]),
+        el(
+          "g",
+          {
+            "data-ring": "log",
+            style: "transform: rotate(4.2deg)",
+          },
+          [
+            buildRuleRing(ring.rule as LogRuleTick[], {
+              radius: currentRadius,
+              ringWidth,
+            }),
+          ],
+        ),
       );
     } else if (ring.type === "azimuthal") {
       children.push(
@@ -151,19 +145,20 @@ export function buildBoard(config: BoardConfig): VNode {
 
   children.push(...buildCenterLogo(centerSpace));
 
-  return el("svg", {
-    viewBox,
-    stroke: "currentColor",
-    fill: "transparent",
-    "stroke-width": "1",
-    xmlns: "http://www.w3.org/2000/svg",
-  }, children);
+  return el(
+    "svg",
+    {
+      viewBox,
+      stroke: "currentColor",
+      fill: "transparent",
+      "stroke-width": "1",
+      xmlns: "http://www.w3.org/2000/svg",
+    },
+    children,
+  );
 }
 
-export function renderBoard(
-  config: BoardConfig,
-  parent: SVGElement | Element,
-): SVGSVGElement {
+export function renderBoard(config: BoardConfig, parent: SVGElement | Element): SVGSVGElement {
   const tree = buildBoard(config);
   return render(tree, parent) as SVGSVGElement;
 }

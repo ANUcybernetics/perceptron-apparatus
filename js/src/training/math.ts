@@ -66,9 +66,7 @@ export function mseGrad(pred: Matrix, target: Matrix): Matrix {
   return {
     rows: pred.rows,
     cols: pred.cols,
-    data: pred.data.map((row, i) =>
-      row.map((v, j) => (v - target.data[i][j]) * scale),
-    ),
+    data: pred.data.map((row, i) => row.map((v, j) => (v - target.data[i][j]) * scale)),
   };
 }
 
@@ -76,9 +74,7 @@ export function clamp(m: Matrix, min: number, max: number): Matrix {
   return {
     rows: m.rows,
     cols: m.cols,
-    data: m.data.map((row) =>
-      row.map((v) => Math.min(max, Math.max(min, v))),
-    ),
+    data: m.data.map((row) => row.map((v) => Math.min(max, Math.max(min, v)))),
   };
 }
 
@@ -112,7 +108,7 @@ export function adamUpdate(
       state.v.data[i][j] = beta2 * state.v.data[i][j] + (1 - beta2) * g * g;
       const mHat = state.m.data[i][j] / bc1;
       const vHat = state.v.data[i][j] / bc2;
-      result.data[i][j] = param.data[i][j] - lr * mHat / (Math.sqrt(vHat) + eps);
+      result.data[i][j] = param.data[i][j] - (lr * mHat) / (Math.sqrt(vHat) + eps);
     }
   }
   return result;

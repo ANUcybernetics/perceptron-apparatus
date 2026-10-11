@@ -8,8 +8,7 @@ export interface MnistData {
   testLabels: Matrix;
 }
 
-const MNIST_BASE =
-  "https://storage.googleapis.com/cvdf-datasets/mnist/";
+const MNIST_BASE = "https://storage.googleapis.com/cvdf-datasets/mnist/";
 
 const SAMPLE_INDICES = [0, 5, 9, 14, 18, 23];
 
@@ -79,20 +78,13 @@ export async function loadMnist(): Promise<MnistData> {
   };
 }
 
-export function loadFromJson(json: {
-  images: number[][];
-  labels: number[];
-}): MnistData {
+export function loadFromJson(json: { images: number[][]; labels: number[] }): MnistData {
   const splitIdx = Math.floor(json.images.length * 0.9);
   return {
     trainImages: matrix(json.images.slice(0, splitIdx)),
-    trainLabels: matrix(
-      json.labels.slice(0, splitIdx).map((l) => oneHot(l)),
-    ),
+    trainLabels: matrix(json.labels.slice(0, splitIdx).map((l) => oneHot(l))),
     testImages: matrix(json.images.slice(splitIdx)),
-    testLabels: matrix(
-      json.labels.slice(splitIdx).map((l) => oneHot(l)),
-    ),
+    testLabels: matrix(json.labels.slice(splitIdx).map((l) => oneHot(l))),
   };
 }
 

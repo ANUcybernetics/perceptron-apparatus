@@ -9,12 +9,7 @@ export interface RuleTick {
   value: number;
 }
 
-export function newRule(
-  start: number,
-  stop: number,
-  step: number,
-  majorStep: number,
-): RuleTick[] {
+export function newRule(start: number, stop: number, step: number, majorStep: number): RuleTick[] {
   const ticks: RuleTick[] = [];
   for (let val = start; val <= stop + step / 1000; val += step) {
     const rounded = Math.round(val * 1000) / 1000;

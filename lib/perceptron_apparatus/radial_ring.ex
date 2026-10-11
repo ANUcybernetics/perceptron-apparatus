@@ -35,7 +35,7 @@ defmodule PerceptronApparatus.RadialRing do
   def render_slider(radius, width, theta, slider_index) do
     # Extend bottom slider by 10 units at each end
     extension = 10
-    
+
     bottom_path =
       path_element([
         {"class", "bottom slider"},

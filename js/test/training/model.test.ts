@@ -6,9 +6,7 @@ import { matrix } from "../../src/training/math.js";
 describe("MLP", () => {
   it("forward pass produces correct output shape", () => {
     const model = new MLP(36, 6, 10);
-    const input = matrix(
-      Array.from({ length: 4 }, () => Array.from({ length: 36 }, () => 0.5)),
-    );
+    const input = matrix(Array.from({ length: 4 }, () => Array.from({ length: 36 }, () => 0.5)));
     const cache = model.forward(input);
     expect(cache.output.rows).toBe(4);
     expect(cache.output.cols).toBe(10);
@@ -19,9 +17,7 @@ describe("MLP", () => {
   it("hidden activations are non-negative (ReLU)", () => {
     const model = new MLP(36, 6, 10);
     const input = matrix(
-      Array.from({ length: 8 }, () =>
-        Array.from({ length: 36 }, () => Math.random()),
-      ),
+      Array.from({ length: 8 }, () => Array.from({ length: 36 }, () => Math.random())),
     );
     const cache = model.forward(input);
     for (const row of cache.hidden.data) {

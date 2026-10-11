@@ -36,21 +36,23 @@ defmodule PerceptronApparatus.MLP do
   """
   def bounded_uniform_initializer(opts \\ []) do
     bound = Keyword.get(opts, :bound, 0.1)
-    
+
     fn shape, type, _key ->
       # Create deterministic uniform values in [-bound, +bound]
       total_elements = Tuple.product(shape)
-      
-      uniform_values = 
+
+      uniform_values =
         0..(total_elements - 1)
-        |> Enum.map(fn i -> 
+        |> Enum.map(fn i ->
           # Create a pseudo-random but deterministic pattern
-          base = rem(i * 23 + 47, 1000) / 1000.0  # Values between 0 and 1
-          (base - 0.5) * 2 * bound  # Scale to [-bound, +bound]
+          # Values between 0 and 1
+          base = rem(i * 23 + 47, 1000) / 1000.0
+          # Scale to [-bound, +bound]
+          (base - 0.5) * 2 * bound
         end)
         |> Nx.tensor(type: type)
         |> Nx.reshape(shape)
-      
+
       uniform_values
     end
   end
@@ -95,7 +97,8 @@ defmodule PerceptronApparatus.MLP do
         |> Enum.map(fn i ->
           # Create a pseudo-random but deterministic pattern in [0, 1]
           base = rem(i * 23 + 47, 1000) / 1000.0
-          base * bound  # Scale to [0, +bound]
+          # Scale to [0, +bound]
+          base * bound
         end)
         |> Nx.tensor(type: type)
         |> Nx.reshape(shape)
@@ -711,8 +714,14 @@ defmodule PerceptronApparatus.MLP do
     d_max_final = max_abs_value(d_final)
 
     IO.puts("\nWeight scaling applied:")
-    IO.puts("  B: max #{Float.round(b_max, 4)} -> #{Float.round(b_max_final, 4)} (factor: #{Float.round(beta * final_scale, 4)})")
-    IO.puts("  D: max #{Float.round(d_max, 4)} -> #{Float.round(d_max_final, 4)} (factor: #{Float.round(final_scale / beta, 4)})")
+
+    IO.puts(
+      "  B: max #{Float.round(b_max, 4)} -> #{Float.round(b_max_final, 4)} (factor: #{Float.round(beta * final_scale, 4)})"
+    )
+
+    IO.puts(
+      "  D: max #{Float.round(d_max, 4)} -> #{Float.round(d_max_final, 4)} (factor: #{Float.round(final_scale / beta, 4)})"
+    )
 
     %{"B" => b_final, "D" => d_final}
   end
@@ -755,17 +764,19 @@ defmodule PerceptronApparatus.MLP do
   def write_weights_to_json(model_state, filename, opts \\ []) do
     weights = extract_weights(model_state)
 
-    weights = if Keyword.get(opts, :scale_to_range, false) do
-      scale_weights_to_range(weights, target_max: Keyword.get(opts, :target_max, 5.0))
-    else
-      weights
-    end
+    weights =
+      if Keyword.get(opts, :scale_to_range, false) do
+        scale_weights_to_range(weights, target_max: Keyword.get(opts, :target_max, 5.0))
+      else
+        weights
+      end
 
-    data = if test_accuracy = opts[:test_accuracy] do
-      Map.put(weights, "test_accuracy", test_accuracy)
-    else
-      weights
-    end
+    data =
+      if test_accuracy = opts[:test_accuracy] do
+        Map.put(weights, "test_accuracy", test_accuracy)
+      else
+        weights
+      end
 
     json = Jason.encode!(data, pretty: true)
     File.write!(filename, json)
@@ -839,7 +850,7 @@ defmodule PerceptronApparatus.MLP do
 
     # Create bounded model
     model = create_bounded_model()
-    
+
     # Initialize the model to see initial parameter ranges
     {init_fn, _predict_fn} = Axon.build(model)
     initial_params = init_fn.(Nx.template({1, 36}, :f32), Axon.ModelState.empty())
@@ -852,19 +863,23 @@ defmodule PerceptronApparatus.MLP do
 
     IO.puts("Running inference on untrained bounded model...")
 
-    {initial_predictions, initial_activations} = 
+    {initial_predictions, initial_activations} =
       run_inference_with_tracking(model_with_hooks, initial_params, test_data, 100)
 
     IO.puts("Initial activations with bounded weights (before training):")
-    
+
     # Print initial bounded activation ranges
     IO.puts("\n=== INITIAL BOUNDED ACTIVATION RANGES ===")
+
     Enum.each(["input", "hidden", "output"], fn layer_name ->
       if Map.has_key?(initial_activations, layer_name) do
         stats = initial_activations[layer_name]
         min_activation = Enum.min(stats.min)
         max_activation = Enum.max(stats.max)
-        IO.puts("#{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}")
+
+        IO.puts(
+          "#{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}"
+        )
       end
     end)
 
@@ -876,45 +891,61 @@ defmodule PerceptronApparatus.MLP do
     # Analyze trained model
     trained_param_stats = collect_parameter_stats(trained_params)
 
-    {trained_predictions, trained_activations} = 
+    {trained_predictions, trained_activations} =
       run_inference_with_tracking(model_with_hooks, trained_params, test_data, 100)
 
     # Print comparison
     IO.puts("\n=== PARAMETER COMPARISON ===")
     IO.puts("INITIAL:")
+
     Enum.each(initial_param_stats, fn {layer_name, layer_params} ->
       kernel_param = Enum.find(layer_params, fn param -> param.name == "kernel" end)
+
       if kernel_param do
-        IO.puts("  #{layer_name} kernel: min=#{Float.round(kernel_param.min, 4)}, max=#{Float.round(kernel_param.max, 4)}, mean=#{Float.round(kernel_param.mean, 4)}")
+        IO.puts(
+          "  #{layer_name} kernel: min=#{Float.round(kernel_param.min, 4)}, max=#{Float.round(kernel_param.max, 4)}, mean=#{Float.round(kernel_param.mean, 4)}"
+        )
       end
     end)
 
     IO.puts("TRAINED:")
+
     Enum.each(trained_param_stats, fn {layer_name, layer_params} ->
       kernel_param = Enum.find(layer_params, fn param -> param.name == "kernel" end)
+
       if kernel_param do
-        IO.puts("  #{layer_name} kernel: min=#{Float.round(kernel_param.min, 4)}, max=#{Float.round(kernel_param.max, 4)}, mean=#{Float.round(kernel_param.mean, 4)}")
+        IO.puts(
+          "  #{layer_name} kernel: min=#{Float.round(kernel_param.min, 4)}, max=#{Float.round(kernel_param.max, 4)}, mean=#{Float.round(kernel_param.mean, 4)}"
+        )
       end
     end)
 
     IO.puts("\n=== ACTIVATION COMPARISON ===")
     IO.puts("INITIAL:")
+
     Enum.each(["input", "hidden", "output"], fn layer_name ->
       if Map.has_key?(initial_activations, layer_name) do
         stats = initial_activations[layer_name]
         min_activation = Enum.min(stats.min)
         max_activation = Enum.max(stats.max)
-        IO.puts("  #{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}")
+
+        IO.puts(
+          "  #{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}"
+        )
       end
     end)
 
     IO.puts("TRAINED:")
+
     Enum.each(["input", "hidden", "output"], fn layer_name ->
       if Map.has_key?(trained_activations, layer_name) do
         stats = trained_activations[layer_name]
         min_activation = Enum.min(stats.min)
         max_activation = Enum.max(stats.max)
-        IO.puts("  #{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}")
+
+        IO.puts(
+          "  #{layer_name}: min=#{Float.round(min_activation, 4)}, max=#{Float.round(max_activation, 4)}"
+        )
       end
     end)
 

@@ -63,11 +63,7 @@ export class MLP {
     return { dB, dD };
   }
 
-  step(
-    grads: MLPGradients,
-    lr: number,
-    weightClamp: [number, number],
-  ): void {
+  step(grads: MLPGradients, lr: number, weightClamp: [number, number]): void {
     this.t++;
     this.weights.B = clamp(
       adamUpdate(this.weights.B, grads.dB, this.adamB, lr, this.t),

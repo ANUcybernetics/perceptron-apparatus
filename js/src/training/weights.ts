@@ -27,10 +27,7 @@ function scaleMatrix(m: number[][], factor: number): number[][] {
   return m.map((row) => row.map((v) => v * factor));
 }
 
-export function scaleWeights(
-  weights: ExportedWeights,
-  targetMax = 5.0,
-): ExportedWeights {
+export function scaleWeights(weights: ExportedWeights, targetMax = 5.0): ExportedWeights {
   const bMax = maxAbs(weights.B);
   const dMax = maxAbs(weights.D);
 

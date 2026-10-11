@@ -23,17 +23,21 @@ function buildSlider(
   const cx = midRadius * Math.sin(deg2rad(theta));
   const cy = midRadius * Math.cos(deg2rad(theta));
 
-  return el("g", {
-    "data-slider": `${layerLetter(layerIndex)}${groupIndex}-${sliderIndex}`,
-    "data-slider-type": "radial",
-  }, [
-    el("circle", {
-      class: "top slider",
-      cx: String(cx),
-      cy: String(cy),
-      r: "5",
-    }),
-  ]);
+  return el(
+    "g",
+    {
+      "data-slider": `${layerLetter(layerIndex)}${groupIndex}-${sliderIndex}`,
+      "data-slider-type": "radial",
+    },
+    [
+      el("circle", {
+        class: "top slider",
+        cx: String(cx),
+        cy: String(cy),
+        r: "5",
+      }),
+    ],
+  );
 }
 
 function buildGroup(
@@ -49,9 +53,7 @@ function buildGroup(
 
   for (let i = 1; i <= slidersPerGroup; i++) {
     const theta = thetaOffset + i * (thetaSweep / (slidersPerGroup + 1));
-    nodes.push(
-      buildSlider(radius, width, theta, layerIndex, groupIndex, i - 1),
-    );
+    nodes.push(buildSlider(radius, width, theta, layerIndex, groupIndex, i - 1));
   }
 
   nodes.push(
@@ -68,12 +70,7 @@ function buildGroup(
   return nodes;
 }
 
-function buildGuides(
-  radius: number,
-  width: number,
-  groups: number,
-  rule: RuleTick[],
-): VNode[] {
+function buildGuides(radius: number, width: number, groups: number, rule: RuleTick[]): VNode[] {
   const rangeMin = rule[0].value;
   const rangeMax = rule[rule.length - 1].value;
   const dynamicRange = rangeMax - rangeMin;
@@ -114,9 +111,7 @@ function buildGuides(
         "dominant-baseline": "middle",
       }),
     );
-    nodes.push(
-      el("g", { class: "top etch", transform: `rotate(${-theta})` }, labelChildren),
-    );
+    nodes.push(el("g", { class: "top etch", transform: `rotate(${-theta})` }, labelChildren));
   }
 
   return nodes;
@@ -132,14 +127,10 @@ export function buildRadialRing(
   const width = ctx.ringWidth - 10;
   const thetaSweep = 360 / groups;
 
-  const children: VNode[] = [
-    ...buildGuides(radius, width, groups, rule),
-  ];
+  const children: VNode[] = [...buildGuides(radius, width, groups, rule)];
 
   for (let i = 0; i < groups; i++) {
-    children.push(
-      ...buildGroup(radius, width, slidersPerGroup, thetaSweep, i, ctx.layerIndex),
-    );
+    children.push(...buildGroup(radius, width, slidersPerGroup, thetaSweep, i, ctx.layerIndex));
   }
 
   return el("g", { "data-ring-type": "radial" }, children);

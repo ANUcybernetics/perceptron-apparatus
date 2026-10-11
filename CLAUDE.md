@@ -14,9 +14,9 @@ tasks---see README.md for usage.
 
 NPM package providing a digital twin of the physical apparatus. Generates SVGs
 in the browser, provides an animation API for the log ring and sliders, and
-includes interactive widgets (MNIST input grid, poker hand selector,
-computation animator). Uses pnpm, tsdown, vitest, oxlint, and tsgo. See
-`js/src/index.ts` for the public API (`PerceptronApparatus` class).
+includes interactive widgets (MNIST input grid, poker hand selector, computation
+animator). Uses pnpm, tsdown, vitest, oxlint, and tsgo. See `js/src/index.ts`
+for the public API (`PerceptronApparatus` class).
 
 ### Shared resources
 
@@ -151,27 +151,37 @@ correct patterns, conventions, and best practices.
 <!-- usage-rules-header-end -->
 
 <!-- ash-start -->
+
 ## ash usage
+
 _A declarative, extensible framework for building Elixir applications._
 
 @deps/ash/usage-rules.md
 <!-- ash-end -->
 <!-- usage_rules:elixir-start -->
+
 ## usage_rules:elixir usage
+
 @deps/usage_rules/usage-rules/elixir.md
 <!-- usage_rules:elixir-end -->
 <!-- usage_rules:otp-start -->
+
 ## usage_rules:otp usage
+
 @deps/usage_rules/usage-rules/otp.md
 <!-- usage_rules:otp-end -->
 <!-- igniter-start -->
+
 ## igniter usage
+
 _A code generation and project patching framework_
 
 @deps/igniter/usage-rules.md
 <!-- igniter-end -->
 <!-- usage_rules-start -->
+
 ## usage_rules usage
+
 _A dev tool for Elixir projects to gather LLM usage rules from dependencies_
 
 @deps/usage_rules/usage-rules.md

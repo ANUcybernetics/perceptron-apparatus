@@ -25,9 +25,7 @@ describe("buildRadialRing", () => {
       ringWidth: 100,
     });
 
-    const ids = findAll(tree, (n) => "data-slider" in n.attrs).map(
-      (n) => n.attrs["data-slider"],
-    );
+    const ids = findAll(tree, (n) => "data-slider" in n.attrs).map((n) => n.attrs["data-slider"]);
     expect(ids).toContain("B0-0");
     expect(ids).toContain("B0-1");
     expect(ids).toContain("B0-2");

@@ -5,9 +5,7 @@ import { join } from "node:path";
 import { trainMnist } from "../../src/training/index.js";
 import { loadFromJson } from "../../src/training/data.js";
 
-const fixture = JSON.parse(
-  readFileSync(join(__dirname, "../fixtures/mnist-sample.json"), "utf-8"),
-);
+const fixture = JSON.parse(readFileSync(join(__dirname, "../fixtures/mnist-sample.json"), "utf-8"));
 
 describe("integration: train on fixture data", () => {
   it("trains with weights in range and correct shapes", async () => {

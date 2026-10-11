@@ -21,20 +21,13 @@ export class PerceptronApparatus {
     this.svg = renderBoard(this.config, container);
   }
 
-  setLogRingRotation(
-    degrees: number,
-    opts: AnimationOptions = {},
-  ): Promise<void> {
+  setLogRingRotation(degrees: number, opts: AnimationOptions = {}): Promise<void> {
     const el = this.svg.querySelector("[data-ring='log']");
     if (!el) return Promise.resolve();
     return applyTransform(el as SVGElement, `rotate(${degrees}deg)`, opts);
   }
 
-  setSlider(
-    id: string,
-    value: number,
-    opts: AnimationOptions = {},
-  ): Promise<void> {
+  setSlider(id: string, value: number, opts: AnimationOptions = {}): Promise<void> {
     const el = this.svg.querySelector(`[data-slider='${id}']`);
     if (!el) return Promise.resolve();
 
@@ -49,13 +42,8 @@ export class PerceptronApparatus {
     return Promise.resolve();
   }
 
-  setSliders(
-    values: Record<string, number>,
-    opts: AnimationOptions = {},
-  ): Promise<void> {
-    const promises = Object.entries(values).map(([id, value]) =>
-      this.setSlider(id, value, opts),
-    );
+  setSliders(values: Record<string, number>, opts: AnimationOptions = {}): Promise<void> {
+    const promises = Object.entries(values).map(([id, value]) => this.setSlider(id, value, opts));
     return Promise.all(promises).then(() => {});
   }
 
@@ -77,17 +65,11 @@ export class PerceptronApparatus {
 
     const baseOffset = thetaSweep * sliderNumber;
     const valueTheta =
-      azPadding +
-      ((thetaSweep - 2 * azPadding) * (clampedValue - rangeMin)) / dynamicRange;
-    const midpoint =
-      azPadding + (thetaSweep - 2 * azPadding) * 0.5;
+      azPadding + ((thetaSweep - 2 * azPadding) * (clampedValue - rangeMin)) / dynamicRange;
+    const midpoint = azPadding + (thetaSweep - 2 * azPadding) * 0.5;
     const deltaTheta = valueTheta - midpoint;
 
-    return applyTransform(
-      el,
-      `rotate(${-(baseOffset + deltaTheta)}deg)`,
-      opts,
-    );
+    return applyTransform(el, `rotate(${-(baseOffset + deltaTheta)}deg)`, opts);
   }
 
   private setRadialSlider(
@@ -109,36 +91,24 @@ export class PerceptronApparatus {
     const groups = ringDef.groups;
     const thetaSweep = 360 / groups;
     const thetaOffset = thetaSweep * groupIndex;
-    const theta =
-      thetaOffset +
-      (sliderIndex + 1) * (thetaSweep / (ringDef.slidersPerGroup + 1));
+    const theta = thetaOffset + (sliderIndex + 1) * (thetaSweep / (ringDef.slidersPerGroup + 1));
 
     const midRadius = radius - width / 2;
-    const valueRadius =
-      radius - (width * (clampedValue - rangeMin)) / dynamicRange;
+    const valueRadius = radius - (width * (clampedValue - rangeMin)) / dynamicRange;
     const radialOffset = valueRadius - midRadius;
 
     const offsetX = radialOffset * Math.sin(deg2rad(theta));
     const offsetY = radialOffset * Math.cos(deg2rad(theta));
 
-    return applyTransform(
-      el,
-      `translate(${offsetX}px, ${offsetY}px)`,
-      opts,
-    );
+    return applyTransform(el, `translate(${offsetX}px, ${offsetY}px)`, opts);
   }
 
-  private findAzimuthalRing(
-    layerIndex: number,
-  ): {
+  private findAzimuthalRing(layerIndex: number): {
     sliderCount: number;
     rangeMin: number;
     rangeMax: number;
   } | null {
-    const layerMap: Record<
-      number,
-      { sliderCount: number; rangeMin: number; rangeMax: number }
-    > = {
+    const layerMap: Record<number, { sliderCount: number; rangeMin: number; rangeMax: number }> = {
       1: { sliderCount: this.config.nInput, rangeMin: 0, rangeMax: 1 },
       3: { sliderCount: this.config.nHidden, rangeMin: -5, rangeMax: 5 },
       5: { sliderCount: this.config.nOutput, rangeMin: 0, rangeMax: 5 },
@@ -146,9 +116,7 @@ export class PerceptronApparatus {
     return layerMap[layerIndex] ?? null;
   }
 
-  private findRadialRing(
-    layerIndex: number,
-  ): {
+  private findRadialRing(layerIndex: number): {
     groups: number;
     slidersPerGroup: number;
     rangeMin: number;
@@ -162,10 +130,7 @@ export class PerceptronApparatus {
     const ringCount = 6;
     const fixedWidths = 30 + 10 + 10 + 10;
     const paddingTotal = radialPadding * (ringCount - 1);
-    const radialWidth = Math.max(
-      (radius - centerSpace - fixedWidths - paddingTotal) / 2,
-      0,
-    );
+    const radialWidth = Math.max((radius - centerSpace - fixedWidths - paddingTotal) / 2, 0);
 
     const layerMap: Record<
       number,
@@ -203,10 +168,7 @@ export class PerceptronApparatus {
     const ringCount = 6;
     const fixedWidths = 30 + 10 + 10 + 10;
     const paddingTotal = radialPadding * (ringCount - 1);
-    const radialWidth = Math.max(
-      (radius - centerSpace - fixedWidths - paddingTotal) / 2,
-      0,
-    );
+    const radialWidth = Math.max((radius - centerSpace - fixedWidths - paddingTotal) / 2, 0);
 
     const widths = [30, 10, radialWidth, 10, radialWidth, 10];
     let r = radius - radialPadding;
@@ -233,10 +195,7 @@ export class PerceptronApparatus {
     return (Math.log10(mantissa) / Math.log10(10)) * 360;
   }
 
-  setSlideRuleMarkers(
-    mac: MultiplyAccumulateStep,
-    opts: AnimationOptions = {},
-  ): Promise<void> {
+  setSlideRuleMarkers(mac: MultiplyAccumulateStep, opts: AnimationOptions = {}): Promise<void> {
     this.clearSlideRuleMarkers();
 
     const ruleRing = this.svg.querySelector("[data-ring='log']");
@@ -371,11 +330,7 @@ function parseRadialId(id: string): {
   };
 }
 
-function applyTransform(
-  el: SVGElement,
-  transform: string,
-  opts: AnimationOptions,
-): Promise<void> {
+function applyTransform(el: SVGElement, transform: string, opts: AnimationOptions): Promise<void> {
   const duration = opts.duration ?? 0;
 
   if (duration <= 0) {

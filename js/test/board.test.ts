@@ -35,10 +35,7 @@ describe("buildBoard", () => {
 
   it("creates board edge circle", () => {
     const tree = buildBoard({ nInput: 2, nHidden: 2, nOutput: 2 });
-    const edge = find(
-      tree,
-      (n) => n.tag === "circle" && (n.attrs["class"] ?? "").includes("full"),
-    );
+    const edge = find(tree, (n) => n.tag === "circle" && (n.attrs["class"] ?? "").includes("full"));
     expect(edge).toBeDefined();
     expect(edge!.attrs["r"]).toBe("600");
   });
@@ -66,8 +63,7 @@ describe("buildBoard", () => {
     const weightSliders = findAll(
       tree,
       (n) =>
-        (n.attrs["data-slider"] ?? "").startsWith("B") &&
-        n.attrs["data-slider-type"] === "radial",
+        (n.attrs["data-slider"] ?? "").startsWith("B") && n.attrs["data-slider-type"] === "radial",
     );
     expect(weightSliders.length).toBe(6);
   });
@@ -76,10 +72,7 @@ describe("buildBoard", () => {
     const tree = buildBoard({ nInput: 2, nHidden: 2, nOutput: 2 });
 
     for (const letter of ["A", "B", "C", "D", "E"]) {
-      const found = find(
-        tree,
-        (n) => (n.attrs["data-slider"] ?? "").startsWith(letter),
-      );
+      const found = find(tree, (n) => (n.attrs["data-slider"] ?? "").startsWith(letter));
       expect(found, `expected slider starting with ${letter}`).toBeDefined();
     }
   });

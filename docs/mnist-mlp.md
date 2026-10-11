@@ -1,16 +1,22 @@
 # MNIST MLP analysis
 
-This module provides an implementation of Multi-Layer Perceptron (MLP) analysis using Axon on MNIST data, specifically designed for a 36x6x10 network architecture compatible with the physical perceptron apparatus.
+This module provides an implementation of Multi-Layer Perceptron (MLP) analysis
+using Axon on MNIST data, specifically designed for a 36x6x10 network
+architecture compatible with the physical perceptron apparatus.
 
 ## Features
 
-- **Fixed architecture**: 36 inputs → 6 hidden neurons (ReLU) → 10 outputs (no softmax)
+- **Fixed architecture**: 36 inputs → 6 hidden neurons (ReLU) → 10 outputs (no
+  softmax)
 - **Real MNIST data**: automatically downloads and preprocesses MNIST dataset
-- **Image preprocessing**: resizes 28×28 images to 6×6 pixels, then flattens to 36 features
+- **Image preprocessing**: resizes 28×28 images to 6×6 pixels, then flattens to
+  36 features
 - **90/10 train/test split**: standard data splitting for evaluation
-- **Parameter range tracking**: analyzes min/max/mean values of all trained parameters
+- **Parameter range tracking**: analyzes min/max/mean values of all trained
+  parameters
 - **Activation range tracking**: monitors activation values during inference
-- **Weight export**: export trained weights to JSON for use in other tools (e.g. Typst)
+- **Weight export**: export trained weights to JSON for use in other tools (e.g.
+  Typst)
 - **Clean output**: minimal logging for focused analysis
 
 ## Quick start
@@ -152,6 +158,7 @@ Test accuracy: 57.0%
 ### Source
 
 MNIST: Modified National Institute of Standards and Technology database
+
 - Training set: 60,000 handwritten digit images
 - Test set: 10,000 images
 - We use a 90/10 split of the training set: 54,000 train, 6,000 test
@@ -173,6 +180,7 @@ To fit the 36-input architecture, images are downsampled and normalised:
 ### Downsampling: 28×28 → 6×6
 
 Simple downsampling using specific pixel indices:
+
 - Row/column indices: [0, 5, 9, 14, 18, 23]
 - This gives a 6×6 grid that captures the essential structure of each digit
 - Flattened to 36-dimensional vector
@@ -189,11 +197,13 @@ Simple downsampling using specific pixel indices:
 ### Example
 
 Original 28×28 digit "3":
+
 ```
 [0, 0, 0, ..., 0]    (784 pixels)
 ```
 
 After downsampling to 6×6:
+
 ```
 [0.0, 0.1, 0.8, 0.9, 0.2, 0.0,
  0.0, 0.3, 0.1, 0.7, 0.6, 0.0,
@@ -234,7 +244,8 @@ Trained weights are exported in a JSON format compatible with Typst:
 }
 ```
 
-Optional scaling ensures weights fit within the physical apparatus range (default target: ±5.0).
+Optional scaling ensures weights fit within the physical apparatus range
+(default target: ±5.0).
 
 ## Using the apparatus with MNIST
 
@@ -252,6 +263,7 @@ Optional scaling ensures weights fit within the physical apparatus range (defaul
 Digit: handwritten "7"
 
 After downsampling to 6×6 and normalising:
+
 ```
 [0.9, 0.9, 0.8, 0.7, 0.2, 0.0,
  0.1, 0.2, 0.3, 0.7, 0.1, 0.0,
@@ -262,33 +274,39 @@ After downsampling to 6×6 and normalising:
 ```
 
 **Ring A (inputs)**:
+
 - Set slider 1 to 0.9
 - Set slider 2 to 0.9
 - Set slider 3 to 0.8
 - ... (continue for all 36 sliders)
 
-**Ring B (input→hidden weights)**: Set according to exported B matrix
-**Ring D (hidden→output weights)**: Set according to exported D matrix
+**Ring B (input→hidden weights)**: Set according to exported B matrix **Ring D
+(hidden→output weights)**: Set according to exported D matrix
 
-**Ring G (outputs)**: After turning, slider 7 (corresponding to digit "7") should have the highest value
+**Ring G (outputs)**: After turning, slider 7 (corresponding to digit "7")
+should have the highest value
 
 ## Why MNIST works well for the apparatus
 
 ### Visual and tangible
 
-People can see the digit, understand what it represents, and observe how the physical apparatus computes the classification.
+People can see the digit, understand what it represents, and observe how the
+physical apparatus computes the classification.
 
 ### Educational value
 
-MNIST is the "hello world" of machine learning. Using it demonstrates that the apparatus can perform real ML tasks.
+MNIST is the "hello world" of machine learning. Using it demonstrates that the
+apparatus can perform real ML tasks.
 
 ### Intuitive encoding
 
-The 6×6 downsampling preserves enough visual structure that digits remain recognisable, making the connection between input and output clear.
+The 6×6 downsampling preserves enough visual structure that digits remain
+recognisable, making the connection between input and output clear.
 
 ### Benchmark problem
 
-MNIST is well-understood, so apparatus performance can be compared to digital implementations.
+MNIST is well-understood, so apparatus performance can be compared to digital
+implementations.
 
 ## Model variants
 
@@ -300,7 +318,8 @@ For iterative apparatus computation where negative accumulation is problematic:
 mix perceptron.export_weights --nonnegative-output
 ```
 
-This constrains the output layer (ring D) to have only non-negative weights, ensuring all accumulations move in a positive direction.
+This constrains the output layer (ring D) to have only non-negative weights,
+ensuring all accumulations move in a positive direction.
 
 ### Bounded initialisation
 
@@ -310,7 +329,8 @@ For tighter control over parameter and activation ranges:
 result = PerceptronApparatus.MLP.analyze_bounded_initialization(epochs: 3)
 ```
 
-This uses custom initialisers to keep parameters grouped in similar ranges, targeting specific activation ranges (hidden: [0, 1.5], output: [-1.5, 1.5]).
+This uses custom initialisers to keep parameters grouped in similar ranges,
+targeting specific activation ranges (hidden: [0, 1.5], output: [-1.5, 1.5]).
 
 ## Dependencies
 
@@ -337,10 +357,14 @@ mix test test/perceptron_apparatus/mlp_test.exs --timeout 180000
 
 ## Performance notes
 
-- Training time depends on system performance (typically 1-2 minutes for 5-10 epochs)
-- With EXLA backend (configured in `config/config.exs`), training is significantly faster
-- Batch size and epoch count can be adjusted for faster/slower but more/less accurate training
-- The 6×6 downsampling significantly reduces computation while maintaining essential digit features
+- Training time depends on system performance (typically 1-2 minutes for 5-10
+  epochs)
+- With EXLA backend (configured in `config/config.exs`), training is
+  significantly faster
+- Batch size and epoch count can be adjusted for faster/slower but more/less
+  accurate training
+- The 6×6 downsampling significantly reduces computation while maintaining
+  essential digit features
 - Test accuracy typically reaches 55-65% with 5-10 epochs
 - This is lower than state-of-the-art (99%+) due to:
   - Aggressive downsampling (36 vs 784 inputs)

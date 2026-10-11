@@ -33,7 +33,12 @@ defmodule PerceptronApparatus.BoardGenerationTest do
       }
 
       # Execute the Ash action to create the board
-      case PerceptronApparatus.create_board(params.size, params.n_input, params.n_hidden, params.n_output) do
+      case PerceptronApparatus.create_board(
+             params.size,
+             params.n_input,
+             params.n_hidden,
+             params.n_output
+           ) do
         {:ok, board} ->
           # Now write the SVG file using the separate action
           full_filename = Path.join(@output_dir, "board_#{board.id}.svg")
