@@ -9,16 +9,17 @@ apparatus.
 - `scripts/<slug>.md`: each video's key idea, its one example and its script,
   with a `_Visual:_` direction and a `_Reads:_` list per stretch of picture. Ben
   owns the script and approves the reads; a read still marked `(draft)` has not
-  been approved. `video.py` skips `_Visual` and `_Reads` paragraphs. `[beat 1.2]`
-  inside a spoken line is a held pause in seconds, and splits the line into
-  caption segments.
+  been approved. `video.py` skips `_Visual` and `_Reads` paragraphs.
+  `[beat 1.2]` inside a spoken line is a held pause in seconds, and splits the
+  line into caption segments.
 - `<slug>/`: the HyperFrames project: `index.html`, `<slug>.js` (the
   composition), `timing.json` and `captions.vtt` (written by `video.py voice`),
   `assets/` (audio, not committed) and a `kit -> ../_kit` symlink.
-- `_kit/`: `kit.css` (the stage, palette and type), `fonts/`, `mnist-digits.json`
-  (from `build-data.mjs`), and two symlinks: `motion ->` astromotion's `video/`
-  engine in `video/node_modules` and `apparatus -> ../../js/dist`, the digital
-  twin. Run `pnpm install` in `video/` first.
+- `_kit/`: `kit.css` (the stage, palette and type), `fonts/`,
+  `mnist-digits.json` (from `build-data.mjs`), and two symlinks: `motion ->`
+  astromotion's `video/` engine in `video/node_modules` and
+  `apparatus -> ../../js/dist`, the digital twin. Run `pnpm install` in `video/`
+  first.
 - `out/`: renders, stills and the TTS cache (gitignored).
 
 `video.py`'s docstring lists the build commands.
@@ -41,8 +42,9 @@ apparatus.
   black ground. Gold is for the brass sliders and for whatever the viewer should
   be looking at: a lit ring, a ringed slider, a result.
 - **The view is from directly above the table.** The camera may push in and may
-  walk round the table (rotate it) so that the labels in a close-up read upright.
-  No perspective, no photographs: the real thing is standing next to the screen.
+  walk round the table (rotate it) so that the labels in a close-up read
+  upright. No perspective, no photographs: the real thing is standing next to
+  the screen.
 - **The left of the frame is the working-out**: the input grid, the sum, the
   counter. The table keeps the right. A close-up that would spill the table into
   the left is masked there (the composition's `shade`), or takes the whole frame
