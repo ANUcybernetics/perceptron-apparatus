@@ -27,8 +27,6 @@ defmodule PerceptronApparatus.MLP do
       PerceptronApparatus.MLP.write_weights_to_json(trained_params, "mnist-weights.json")
   """
 
-  alias Axon.Loop
-
   @doc """
   Custom initializer that creates weights in a tight, consistent range.
   All weights will be uniformly distributed in [-bound, +bound].
@@ -331,7 +329,7 @@ defmodule PerceptronApparatus.MLP do
   end
 
   @doc """
-  Trains the model on MNIST data with minimal logging.
+  Trains the model on `{inputs, one_hot_labels}` data.
 
   ## Options
 
@@ -342,46 +340,102 @@ defmodule PerceptronApparatus.MLP do
       `:mean_squared_error` (default: `:cross_entropy`)
     * `:nonnegative_output` - If true, constrains output layer weights to be non-negative,
       so every output slider only ever accumulates upwards (default: true)
+    * `:weight_noise` - Each training step multiplies every weight by a fresh random
+      factor whose log has this standard deviation, so the network learns weights
+      that still work when a slider is set slightly off (default: 0.1; 0 disables)
   """
   def train_model(model, train_data, opts \\ []) do
-    # Reduced default epochs
     epochs = Keyword.get(opts, :epochs, 10)
-    # Larger batch size for faster training
     batch_size = Keyword.get(opts, :batch_size, 128)
     learning_rate = Keyword.get(opts, :learning_rate, 0.005)
     nonnegative_output = Keyword.get(opts, :nonnegative_output, true)
+    weight_noise = Keyword.get(opts, :weight_noise, 0.1)
 
-    loss =
+    loss_fn =
       case Keyword.get(opts, :loss, :cross_entropy) do
-        :cross_entropy ->
-          &Axon.Losses.categorical_cross_entropy(&1, &2, from_logits: true, reduction: :mean)
-
-        :mean_squared_error ->
-          :mean_squared_error
+        :cross_entropy -> &cross_entropy/2
+        :mean_squared_error -> &mean_squared_error/2
       end
 
-    {train_images, train_labels} = train_data
+    {inputs, labels} = train_data
+    n_examples = Nx.axis_size(inputs, 0)
 
-    # Create batched data stream
-    batched_data =
-      train_images
-      |> Nx.to_batched(batch_size)
-      |> Stream.zip(Nx.to_batched(train_labels, batch_size))
+    {init_fn, _predict_fn} = Axon.build(model)
+
+    model_state =
+      init_fn.(Nx.template({1, Nx.axis_size(inputs, 1)}, :f32), Axon.ModelState.empty())
 
     optimizer = Polaris.Optimizers.adam(learning_rate: learning_rate)
 
-    optimizer =
+    {optimizer_init, optimizer_update} =
       if nonnegative_output,
         do: Polaris.Updates.stateless(optimizer, &keep_output_weights_nonnegative/2),
         else: optimizer
 
-    model
-    |> Loop.trainer(loss, optimizer)
-    |> Loop.metric(:accuracy)
-    # compiling the whole training step with EXLA matters beyond speed: left to
-    # the default evaluator, every iteration starts EXLA processes that are never
-    # reclaimed, and a run of ~10,000 iterations hits the VM's process limit
-    |> Loop.run(batched_data, Axon.ModelState.empty(), epochs: epochs, compiler: EXLA)
+    step =
+      Nx.Defn.jit(
+        fn params, optimizer_state, key, x, y ->
+          {hidden_noise, key} = weight_noise(key, params["hidden"]["kernel"], weight_noise)
+          {output_noise, key} = weight_noise(key, params["output"]["kernel"], weight_noise)
+
+          {loss, gradients} =
+            Nx.Defn.value_and_grad(params, fn params ->
+              x
+              |> Nx.dot(Nx.multiply(params["hidden"]["kernel"], hidden_noise))
+              |> Nx.max(0)
+              |> Nx.dot(Nx.multiply(params["output"]["kernel"], output_noise))
+              |> loss_fn.(y)
+            end)
+
+          {updates, optimizer_state} = optimizer_update.(gradients, optimizer_state, params)
+          {Polaris.Updates.apply_updates(params, updates), optimizer_state, key, loss}
+        end,
+        compiler: EXLA
+      )
+
+    params = model_state.data
+    state = {params, optimizer_init.(params), Nx.Random.key(:rand.uniform(1_000_000))}
+
+    {params, _optimizer_state, _key} =
+      Enum.reduce(1..epochs, state, fn epoch, state ->
+        order = Nx.tensor(Enum.shuffle(0..(n_examples - 1)))
+
+        {losses, state} =
+          order
+          |> Nx.to_batched(batch_size, leftover: :discard)
+          |> Enum.map_reduce(state, fn batch, {params, optimizer_state, key} ->
+            {params, optimizer_state, key, loss} =
+              step.(params, optimizer_state, key, Nx.take(inputs, batch), Nx.take(labels, batch))
+
+            {loss, {params, optimizer_state, key}}
+          end)
+
+        if epochs <= 20 or rem(epoch, 50) == 0 do
+          mean_loss = losses |> Nx.stack() |> Nx.mean() |> Nx.to_number()
+          IO.puts("Epoch #{epoch}: loss #{Float.round(mean_loss, 4)}")
+        end
+
+        state
+      end)
+
+    %{model_state | data: params}
+  end
+
+  # A random factor for every weight, log-normally distributed around 1.
+  defp weight_noise(key, weights, standard_deviation) do
+    {noise, key} = Nx.Random.normal(key, 0.0, 1.0, shape: Nx.shape(weights))
+    {Nx.exp(Nx.multiply(noise, standard_deviation)), key}
+  end
+
+  defp cross_entropy(logits, labels) do
+    log_probabilities =
+      Nx.subtract(logits, Nx.logsumexp(logits, axes: [1], keep_axes: true))
+
+    labels |> Nx.multiply(log_probabilities) |> Nx.sum(axes: [1]) |> Nx.mean() |> Nx.negate()
+  end
+
+  defp mean_squared_error(outputs, labels) do
+    outputs |> Nx.subtract(labels) |> Nx.pow(2) |> Nx.mean()
   end
 
   # Limits each step so no output layer weight lands below zero.
