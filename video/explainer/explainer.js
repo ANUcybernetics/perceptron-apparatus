@@ -395,7 +395,9 @@ export function build(tl, S, T) {
     // one path per ink level, rather than 36 cells
     for (const level of [0.25, 0.5, 0.75, 1]) {
       const d = img
-        .map((v, c) => (Math.ceil(v * 4) / 4 === level ? `M${c % 6} ${Math.floor(c / 6)}h1v1h-1z` : ""))
+        .map((v, c) =>
+          Math.ceil(v * 4) / 4 === level ? `M${c % 6} ${Math.floor(c / 6)}h1v1h-1z` : "",
+        )
         .join("");
       if (d) M.svg("path", { d, fill: WHITE, "fill-opacity": level, stroke: "none" }, thumb);
     }
@@ -502,8 +504,22 @@ export function build(tl, S, T) {
   lit(bands.E, T.word(7, "inner"), T.word(7, "furthest"));
   // (the twin's stylesheet sizes every <text> on the page, so these are styled inline)
   const label = (text, x, y, fill, size, weight) => {
-    const e = hidden(o("text", { x, y, text, fill, "text-anchor": "middle", "dominant-baseline": "central", stroke: "none" }));
-    Object.assign(e.style, { fontFamily: "Public Sans", fontSize: `${size}px`, fontWeight: weight });
+    const e = hidden(
+      o("text", {
+        x,
+        y,
+        text,
+        fill,
+        "text-anchor": "middle",
+        "dominant-baseline": "central",
+        stroke: "none",
+      }),
+    );
+    Object.assign(e.style, {
+      fontFamily: "Public Sans",
+      fontSize: `${size}px`,
+      fontWeight: weight,
+    });
     return e;
   };
   const digit = (k, fill) => label(String(k), ...polar(36 * k + 18, 92), fill, 26, 600);
@@ -675,7 +691,10 @@ export function build(tl, S, T) {
     });
     const swept = 276 * C.phase(t, tHand, 2.6, "in-out-quad"); // degrees: 46 minutes of an hour
     const [hx, hy] = polar(180 - swept, 592);
-    clock.setAttribute("d", swept > 0.1 ? `M0 -592A592 592 0 ${swept > 180 ? 1 : 0} 1 ${hx} ${hy}` : "");
+    clock.setAttribute(
+      "d",
+      swept > 0.1 ? `M0 -592A592 592 0 ${swept > 180 ? 1 : 0} 1 ${hx} ${hy}` : "",
+    );
     const inRun2 = t >= run2.start - 0.5;
     count.textContent = String(inRun2 ? Math.min(60, step2(t)) : Math.min(216, step1(t)));
     countLabel.textContent = inRun2 ? "of 60 more" : "of 216 multiplications";
