@@ -21,6 +21,17 @@ import {
 } from "./kit/apparatus/widgets/index.mjs";
 
 const SAMPLE = await fetch("kit/mnist-digits.json").then((r) => r.json());
+// the School of Cybernetics lockup that closes the video (astro-theme-anu's SocyLogo)
+const LOGO = await fetch("kit/socy-logo.svg").then((r) => r.text());
+// Andrew Meares's photographs of the apparatus: the table, in use, a brass slider
+const PHOTOS = await Promise.all(
+  [3317, 3239, 3379].map(async (n) => {
+    const img = new Image();
+    img.src = `kit/photos/apparatus-${n}.jpg`;
+    await img.decode();
+    return img;
+  }),
+);
 
 export const FONTS = [300, 400, 500, 600, 700].map((w) => `${w} 20px "Public Sans"`);
 
@@ -178,7 +189,9 @@ export function build(tl, S, T) {
   const TOTAL = Number(S.root.dataset.duration);
 
   // ------------------------------------------------------------------ cues
-  const tGlint = [T.word(0, "brass"), T.word(12, "watch")];
+  // the photographs give way to the drawing, whose sliders then glint
+  const tDraw = T.word(0, "sliders") + 0.45;
+  const tGlint = [tDraw + 0.5, T.word(12, "watch")];
   const tSpin = T.word(0, "circular");
   const tSets = T.word(2, "sets");
   const tPushA = seg(2, 3).start - 0.55;
@@ -217,7 +230,8 @@ export function build(tl, S, T) {
   const GLIDE = { spread: 2.0, dur: 0.7 };
   const zoomOut = { start: T.word(11, "chip") - 0.2, dur: 3.4 };
   const zoomIn = { start: T.word(12, "multiplying") - 0.2, dur: 3.2 };
-  const tReset = TOTAL - 3.4;
+  const tLogo = TOTAL - 6.5; // the closing lockup
+  const tReset = tLogo - 3.4;
 
   const step1 = (t) => 2 + Math.floor(214 * C.phase(t, run1.start, run1.end - run1.start) ** 2.2);
   const step2 = (t) => 1 + Math.floor(59 * C.phase(t, run2.start, run2.end - run2.start) ** 1.6);
@@ -325,6 +339,29 @@ export function build(tl, S, T) {
   const fadeIn = (e, t, dur = 0.4) => tl.to(e, { opacity: 1 }, t, { dur });
   const fadeOut = (e, t, dur = 0.4) => tl.to(e, { opacity: 0 }, t, { dur, ease: "in-cubic" });
 
+  // the real thing first, in the frame the drawing then takes over
+  const PHOTO = { x: 880, y: 98, w: 1040, h: 693 };
+  const photoL = M.layer(scene, PHOTO.x, PHOTO.y);
+  const tPhoto = [0.1, T.word(0, "No") - 0.2, T.word(0, "brass") - 0.25];
+  PHOTOS.forEach((img, n) => {
+    Object.assign(img.style, {
+      position: "absolute",
+      left: "0",
+      top: "0",
+      width: `${PHOTO.w}px`,
+      height: `${PHOTO.h}px`,
+    });
+    photoL.appendChild(img);
+    M.set(img, { opacity: 0 });
+    fadeIn(img, tPhoto[n], 0.6);
+    // gone once the next one covers it; the last gives way to the drawing
+    if (n < PHOTOS.length - 1) tl.set(img, { opacity: 0 }, tPhoto[n + 1] + 0.6);
+    else fadeOut(img, tDraw, 0.9);
+  });
+  M.set(boardL, { opacity: 0 });
+  fadeIn(boardL, tDraw, 0.9);
+  fadeOut(boardL, tLogo - 0.6, 0.6);
+
   const band = (r, w) =>
     hidden(
       o("circle", {
@@ -374,12 +411,14 @@ export function build(tl, S, T) {
   creditL.innerHTML = `
     <div class="credit"><b>Cybernetic Studio</b> · ANU School of Cybernetics</div>
     <div class="credit">Designed by Ben Swift · fabricated with Sam Shellard, UC Workshop7</div>
+    <div class="credit">Photographs by Andrew Meares</div>
     <div class="credit">github.com/ANUcybernetics/perceptron-apparatus</div>`;
-  M.set(creditL, { opacity: 0 });
+  M.set([titleL, creditL], { opacity: 0 });
+  fadeIn(titleL, 0.1, 0.6);
   fadeOut(titleL, T.start(1) - 0.5);
   fadeIn(titleL, END - 0.4, 0.8);
   fadeIn(creditL, END + 0.4, 0.8);
-  fadeOut(creditL, TOTAL - 1.8, 0.6);
+  fadeOut([titleL, creditL], tLogo - 0.6, 0.6);
 
   // the network diagram: 36, 6 and 10 nodes, every node joined to the next column
   const netL = M.layer(scene, 0, 0);
@@ -961,6 +1000,20 @@ export function build(tl, S, T) {
   fadeOut([letAnswer, letWinner, trails], tReset, 0.8);
   tl.to(logo, { opacity: (i) => logoRest[i] }, tReset + 0.6, { dur: 0.8 });
 
+  // the closing lockup: its rules grow from the top and bottom edges, then the
+  // crest and wordmark fade in, as on the ANU decks' closing slide
+  const logoL = M.el("div", { class: "layer" });
+  Object.assign(logoL.style, { width: "1920px", height: "1080px" });
+  logoL.innerHTML = LOGO;
+  Object.assign(logoL.firstElementChild.style, { display: "block", width: "100%", height: "100%" });
+  const ruleTop = logoL.querySelector(".logo-rule-top");
+  const ruleBottom = logoL.querySelector(".logo-rule-bottom");
+  for (const rule of [ruleTop, ruleBottom]) rule.removeAttribute("style");
+  const lockup = logoL.querySelector(".logo-group");
+  M.set(lockup, { opacity: 0 });
+  tl.to(lockup, { opacity: 1 }, tLogo + 1, { dur: 2, ease: "in-out-quad" });
+  fadeOut(logoL, TOTAL - 1.0, 0.8);
+
   // ------------------------------------------------- the apparatus, each frame
   const sliders = [...apparatus.svg.querySelectorAll("circle.slider")];
   const GLINT = { spread: 1.3, dur: 0.5, size: 1.3 };
@@ -991,6 +1044,10 @@ export function build(tl, S, T) {
       const [x1, y1] = azPos("E", k, v);
       trailEls[k].setAttribute("d", v > 0.005 ? `M${x0} ${y0}A130 130 0 0 0 ${x1} ${y1}` : "");
     });
+    const grown = 250 * C.phase(t, tLogo, 1, "out-quart");
+    ruleTop.setAttribute("height", grown);
+    ruleBottom.setAttribute("y", 720 - grown);
+    ruleBottom.setAttribute("height", grown);
     const swept = 276 * C.phase(t, tHand, 2.6, "in-out-quad"); // degrees: 46 minutes of an hour
     const [hx, hy] = polar(180 - swept, 592);
     clock.setAttribute(
@@ -1032,4 +1089,6 @@ export function build(tl, S, T) {
     // held across a short pause, so the band doesn't blink between sentences
     tl.set(c, { opacity: 0 }, next - cue.end < 1.2 ? next : cue.end + 0.5);
   });
+  // over everything, the caption band included
+  S.root.appendChild(logoL);
 }

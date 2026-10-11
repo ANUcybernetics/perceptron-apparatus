@@ -15,11 +15,11 @@ apparatus.
 - `<slug>/`: the HyperFrames project: `index.html`, `<slug>.js` (the
   composition), `timing.json` and `captions.vtt` (written by `video.py voice`),
   `assets/` (audio, not committed) and a `kit -> ../_kit` symlink.
-- `_kit/`: `kit.css` (the stage, palette and type), `fonts/`,
-  `mnist-digits.json` (from `build-data.mjs`), and two symlinks: `motion ->`
-  astromotion's `video/` engine in `video/node_modules` and
-  `apparatus -> ../../js/dist`, the digital twin. Run `pnpm install` in `video/`
-  first.
+- `_kit/`: `kit.css` (the stage, palette and type), `fonts/`, `photos/`,
+  `socy-logo.svg`, `mnist-digits.json` (from `build-data.mjs`), and two
+  symlinks: `motion ->` astromotion's `video/` engine in `video/node_modules`
+  and `apparatus -> ../../js/dist`, the digital twin. Run `pnpm install` in
+  `video/` first.
 - `out/`: renders, stills and the TTS cache (gitignored).
 
 `video.py`'s docstring lists the build commands.
@@ -43,8 +43,13 @@ apparatus.
   be looking at: a lit ring, a ringed slider, a result.
 - **The view is from directly above the table.** The camera may push in and may
   walk round the table (rotate it) so that the labels in a close-up read
-  upright. No perspective, no photographs: the real thing is standing next to
-  the screen.
+  upright. The drawing has no perspective.
+- **Photographs open a video, and only that.** Andrew Meares's studio
+  photographs (`_kit/photos/`, exported from the set in the `studio-photos`
+  memory) show that the apparatus has been built, in the frame the drawing then
+  takes over. Credit him in the closing credits.
+- **Light type.** Display type is Public Sans at weight 300, as in the ANU
+  theme; never a heavy weight for a title.
 - **The left of the frame is the working-out**: the input grid, the sum, the
   counter. The table keeps the right. A close-up that would spill the table into
   the left is masked there (the composition's `shade`), or takes the whole frame
@@ -52,9 +57,12 @@ apparatus.
 - **Square corners**, as in the ANU theme.
 - **Captions** sit in a 190 px band below the scene, one sentence at a time, and
   are always on: the display may be muted or the room loud.
-- **It loops.** A video for the display beside the table ends on the frame it
-  starts on, with the table at rest and the title up, and the sound fades to
-  silence at the loop point.
+- **It loops.** A video for the display beside the table starts and ends on
+  black, with the sound faded to silence at the loop point.
+- **It closes on the lockup.** After the table has returned to rest with the
+  title and credits, the School of Cybernetics lockup (`_kit/socy-logo.svg`,
+  from astro-theme-anu's `SocyLogo.astro`) animates as on the decks' closing
+  slide: the rules grow, then the crest and wordmark fade in.
 - **Stage** 1920×1080; masters 4K at 50 fps, drafts 1080p25.
 
 ## Sound

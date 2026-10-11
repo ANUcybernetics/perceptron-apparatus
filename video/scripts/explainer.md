@@ -26,12 +26,15 @@ next highest 1.47).
 **VO:** This table is a computer. [beat 0.5] No electricity, no chips: just
 plywood, brass sliders and a circular slide rule. [beat 0.9]
 
-_Visual:_ the apparatus at rest, top-down, white line on black with its sliders
-in gold; the title beside it. The sliders glint on "brass sliders"; the outer
-log ring turns on "slide rule".
+_Visual:_ from black, the title, and beside it three photographs of the built
+apparatus in turn: the whole table, a hand setting sliders, one brass slider
+close up. On "sliders" the last photograph gives way to the drawing of the
+table, top-down, white line on black with its sliders in gold, in the same
+place. The sliders glint; the outer log ring turns on "slide rule".
 
-_Reads (draft):_ 1. the drawing is the table beside you; 2. the gold marks are
-its sliders; 3. the outer ring turns, and it is a slide rule.
+_Reads (draft):_ 1. this is a real table that has been built; 2. people work it
+by hand; 3. its sliders are brass; 4. the drawing is that table; 5. the outer
+ring turns, and it is a slide rule.
 
 **VO:** It runs a neural network, the same arithmetic that underpins modern AI.
 [beat 1.0]
@@ -156,7 +159,8 @@ multiplying and adding, all the way down. [beat 1.2] Here, you can watch every
 step. [beat 1.5]
 
 _Visual:_ push back in through the chip to the one table, its last answer still
-standing. Hold.
+standing. Hold. The table returns to rest with the title and credits, then
+everything clears for the School of Cybernetics lockup, which fades to black.
 
 _Reads (draft):_ 1. inside the chip is this same table; 2. this one is the one
 you can see.
