@@ -220,132 +220,136 @@ defmodule PerceptronApparatus.MLPTest do
     end
   end
 
-  describe "Weight scaling" do
-    test "scale_weight_matrix scales all values by factor" do
-      matrix = [[1.0, 2.0], [3.0, 4.0]]
-      scaled = MLP.scale_weight_matrix(matrix, 2.0)
+  describe "Fitting weights to the apparatus" do
+    setup do
+      key = Nx.Random.key(42)
+      {inputs, key} = Nx.Random.uniform(key, shape: {200, 8})
+      {b, key} = Nx.Random.uniform(key, -3.0, 3.0, shape: {8, 6})
+      {d, _key} = Nx.Random.uniform(key, 0.0, 2.0, shape: {6, 4})
 
-      assert scaled == [[2.0, 4.0], [6.0, 8.0]]
+      %{inputs: inputs, weights: %{"B" => Nx.to_list(b), "D" => Nx.to_list(d)}}
     end
 
-    test "max_abs_value finds maximum absolute value in matrix" do
-      matrix = [[1.0, -5.0], [3.0, 2.0]]
-      max_val = MLP.max_abs_value(matrix)
+    test "keeps every slider within its range", %{inputs: inputs, weights: weights} do
+      fitted = MLP.fit_weights_to_apparatus(weights, inputs)
+      b = Nx.tensor(fitted["B"])
+      d = Nx.tensor(fitted["D"])
 
-      assert max_val == 5.0
+      # each hidden slider's running total, input by input
+      running_totals =
+        inputs
+        |> Nx.new_axis(2)
+        |> Nx.multiply(Nx.new_axis(b, 0))
+        |> Nx.cumulative_sum(axis: 1)
+        |> Nx.abs()
+
+      outputs = inputs |> Nx.dot(b) |> Nx.max(0) |> Nx.dot(d)
+
+      assert Nx.to_number(Nx.reduce_max(running_totals)) <= 5.0 + 1.0e-3
+      assert Nx.to_number(Nx.reduce_max(outputs)) <= 5.0 + 1.0e-3
+      assert Nx.to_number(Nx.reduce_min(outputs)) >= 0.0
     end
 
-    test "max_abs_value handles negative max" do
-      matrix = [[-10.0, 2.0], [3.0, -8.0]]
-      max_val = MLP.max_abs_value(matrix)
+    test "leaves only weights that can be set on a slider", %{inputs: inputs, weights: weights} do
+      fitted = MLP.fit_weights_to_apparatus(weights, inputs)
 
-      assert max_val == 10.0
+      for magnitude <- fitted["B"] |> Kernel.++(fitted["D"]) |> List.flatten() |> Enum.map(&abs/1) do
+        assert magnitude == 0.0 or (magnitude >= 0.02 and magnitude <= 5.0 + 1.0e-3)
+      end
     end
 
-    @tag timeout: 300_000
-    test "scale_weights_to_range scales both layers to target max" do
-      {train_data, _test_data} = MLP.load_mnist_data()
-      model = MLP.create_model()
-      trained_params = MLP.train_model(model, train_data, epochs: 1, batch_size: 128)
+    test "uses the full range of the hidden and output sliders", %{
+      inputs: inputs,
+      weights: weights
+    } do
+      fitted = MLP.fit_weights_to_apparatus(weights, inputs)
 
-      weights = MLP.extract_weights(trained_params)
+      outputs =
+        inputs |> Nx.dot(Nx.tensor(fitted["B"])) |> Nx.max(0) |> Nx.dot(Nx.tensor(fitted["D"]))
 
-      original_b_max = MLP.max_abs_value(weights["B"])
-      original_d_max = MLP.max_abs_value(weights["D"])
-
-      target = 5.0
-      scaled_weights = MLP.scale_weights_to_range(weights, target_max: target)
-
-      b_max = MLP.max_abs_value(scaled_weights["B"])
-      d_max = MLP.max_abs_value(scaled_weights["D"])
-
-      # Both should be at or very close to target (within floating point tolerance)
-      assert_in_delta b_max, target, 0.01
-      assert_in_delta d_max, target, 0.01
-
-      # Verify the scaling maintains the network output property
-      # B scaled by beta, D scaled by 1/beta means outputs stay the same
-      # We can verify by checking that the product of scale factors is 1.0
-      b_scale = MLP.max_abs_value(scaled_weights["B"]) / original_b_max
-      d_scale = MLP.max_abs_value(scaled_weights["D"]) / original_d_max
-
-      # The product should be approximately 1.0 (geometric mean property)
-      # Actually, due to the final uniform scaling, this won't be exactly 1.0
-      # but the ratio should be preserved
-      IO.puts("\nScale factors: B=#{b_scale}, D=#{d_scale}")
-      IO.puts("Original maxes: B=#{original_b_max}, D=#{original_d_max}")
-      IO.puts("Scaled maxes: B=#{b_max}, D=#{d_max}")
+      assert Nx.to_number(Nx.reduce_max(outputs)) > 4.0
     end
 
-    @tag timeout: 300_000
-    test "scaled weights produce similar outputs" do
-      {train_data, _test_data} = MLP.load_mnist_data()
-      model = MLP.create_model()
-      trained_params = MLP.train_model(model, train_data, epochs: 1, batch_size: 128)
+    test "does not change which output is largest" do
+      inputs = Nx.tensor([[1.0, 0.0, 0.5], [0.0, 1.0, 0.2], [0.3, 0.3, 1.0]])
 
-      # Get a small sample of test data
-      {test_images, _} = train_data
-      sample = Nx.slice_along_axis(test_images, 0, 10, axis: 0)
-
-      # Run inference with original weights
-      {_init_fn, predict_fn} = Axon.build(model)
-      original_output = predict_fn.(trained_params, %{"input" => sample})
-
-      # Scale weights and create new model state
-      weights = MLP.extract_weights(trained_params)
-      scaled_weights = MLP.scale_weights_to_range(weights, target_max: 5.0)
-
-      # Convert scaled weights back to Nx tensors and update model state
-      b_tensor = Nx.tensor(scaled_weights["B"])
-      d_tensor = Nx.tensor(scaled_weights["D"])
-
-      scaled_params = %Axon.ModelState{
-        data: %{
-          "hidden" => %{"kernel" => b_tensor},
-          "output" => %{"kernel" => d_tensor}
-        }
+      weights = %{
+        "B" => [[40.0, -20.0], [-30.0, 50.0], [10.0, 10.0]],
+        "D" => [[0.5, 0.1, 0.3], [0.1, 0.6, 0.3]]
       }
 
-      scaled_output = predict_fn.(scaled_params, %{"input" => sample})
+      labels =
+        inputs
+        |> Nx.dot(Nx.tensor(weights["B"]))
+        |> Nx.max(0)
+        |> Nx.dot(Nx.tensor(weights["D"]))
+        |> Nx.argmax(axis: 1)
+        |> Nx.new_axis(-1)
+        |> Nx.equal(Nx.iota({1, 3}))
 
-      # Outputs should be similar (scaled by some constant factor)
-      # Check that the argmax (predicted class) is the same
-      original_classes = Nx.argmax(original_output, axis: 1)
-      scaled_classes = Nx.argmax(scaled_output, axis: 1)
+      fitted = MLP.fit_weights_to_apparatus(weights, inputs)
 
-      # The predicted classes should be identical
-      assert Nx.equal(original_classes, scaled_classes) |> Nx.all() |> Nx.to_number() == 1
+      assert MLP.accuracy(fitted, {inputs, labels}) == 1.0
+    end
+  end
 
-      IO.puts("\n✓ Scaled weights produce same predictions")
+  describe "pad_weights/3" do
+    test "fills spare inputs and outputs with zeros" do
+      weights = %{"B" => [[1.0, 2.0], [3.0, 4.0]], "D" => [[5.0], [6.0]]}
+
+      assert MLP.pad_weights(weights, 3, 2) == %{
+               "B" => [[1.0, 2.0], [3.0, 4.0], [0.0, 0.0]],
+               "D" => [[5.0, 0.0], [6.0, 0.0]]
+             }
+    end
+  end
+
+  describe "accuracy/2" do
+    test "is the fraction of examples whose largest output is the labelled class" do
+      weights = %{"B" => [[1.0, 0.0], [0.0, 1.0]], "D" => [[1.0, 0.0], [0.0, 1.0]]}
+      inputs = Nx.tensor([[1.0, 0.0], [0.0, 1.0], [1.0, 0.2], [0.1, 1.0]])
+      labels = Nx.tensor([[1, 0], [0, 1], [0, 1], [0, 1]])
+
+      assert MLP.accuracy(weights, {inputs, labels}) == 0.75
     end
 
-    @tag timeout: 300_000
-    test "write_weights_to_json with scaling option" do
-      {train_data, _test_data} = MLP.load_mnist_data()
-      model = MLP.create_model()
-      trained_params = MLP.train_model(model, train_data, epochs: 1, batch_size: 128)
+    test "ignores the padding on weights exported for a larger board" do
+      weights =
+        MLP.pad_weights(%{"B" => [[1.0, 0.0], [0.0, 1.0]], "D" => [[1.0, 0.0], [0.0, 1.0]]}, 4, 3)
 
-      temp_file = "test_scaled_weights.json"
+      inputs = Nx.tensor([[1.0, 0.0], [0.0, 1.0]])
+      labels = Nx.tensor([[1, 0], [0, 1]])
+
+      assert MLP.accuracy(weights, {inputs, labels}) == 1.0
+    end
+  end
+
+  describe "Exporting weights for the apparatus" do
+    @tag timeout: 300_000
+    test "writes fitted weights with the accuracy they achieve" do
+      {train_data, test_data} = MLP.load_mnist_data()
+      {train_images, _train_labels} = train_data
+      model = MLP.create_model()
+      trained_params = MLP.train_model(model, train_data, epochs: 2, batch_size: 128)
+
+      temp_file = "test_fitted_weights.json"
 
       try do
         MLP.write_weights_to_json(trained_params, temp_file,
-          scale_to_range: true,
-          target_max: 3.0
+          fit_to: train_images,
+          test_data: test_data
         )
 
-        assert File.exists?(temp_file)
+        decoded = temp_file |> File.read!() |> Jason.decode!()
 
-        content = File.read!(temp_file)
-        decoded = Jason.decode!(content)
+        assert length(decoded["B"]) == 36
+        assert length(decoded["D"]) == 6
+        assert decoded["D"] |> List.flatten() |> Enum.min() >= 0
+        assert decoded["B"] |> List.flatten() |> Enum.map(&abs/1) |> Enum.max() <= 5.001
 
-        b_max = MLP.max_abs_value(decoded["B"])
-        d_max = MLP.max_abs_value(decoded["D"])
-
-        # Both should be at or close to 3.0
-        assert_in_delta b_max, 3.0, 0.01
-        assert_in_delta d_max, 3.0, 0.01
-
-        IO.puts("\n✓ JSON export with scaling successful")
+        # cross-entropy training gets well clear of the 10% a guess would score
+        assert decoded["test_accuracy"] > 0.5
+        assert decoded["test_accuracy"] == MLP.accuracy(decoded, test_data)
       after
         if File.exists?(temp_file), do: File.rm!(temp_file)
       end

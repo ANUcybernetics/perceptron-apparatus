@@ -5,7 +5,7 @@ defmodule PerceptronApparatus.MLP do
 
   This module provides functionality to:
   - Load and preprocess MNIST data (resizing 28x28 images to 6x6, then flattening to 36 features)
-  - Create a fixed architecture MLP: 36 inputs -> 6 hidden neurons (ReLU) -> 10 outputs (softmax)
+  - Create a fixed architecture MLP: 36 inputs -> 6 hidden neurons (ReLU) -> 10 linear outputs
   - Train the model on real MNIST data with 90/10 train/test split
   - Track and analyze parameter ranges after training
   - Track and analyze activation ranges during inference
@@ -110,15 +110,21 @@ defmodule PerceptronApparatus.MLP do
   @doc """
   Creates a 36x6x10 MLP model with ReLU activation for MNIST classification.
   """
-  def create_model do
-    Axon.input("input", shape: {nil, 36})
+  def create_model, do: create_model(36, 10)
+
+  @doc """
+  Creates the apparatus's network for any task that fits it: `n_input` inputs,
+  6 bias-free ReLU hidden units and `n_output` bias-free linear outputs.
+  """
+  def create_model(n_input, n_output) do
+    Axon.input("input", shape: {nil, n_input})
     |> Axon.dense(6,
       activation: :relu,
       use_bias: false,
       name: "hidden",
       kernel_initializer: :glorot_uniform
     )
-    |> Axon.dense(10, use_bias: false, name: "output", kernel_initializer: :glorot_uniform)
+    |> Axon.dense(n_output, use_bias: false, name: "output", kernel_initializer: :glorot_uniform)
   end
 
   @doc """
@@ -332,7 +338,10 @@ defmodule PerceptronApparatus.MLP do
     * `:epochs` - Number of training epochs (default: 10)
     * `:batch_size` - Batch size for training (default: 128)
     * `:learning_rate` - Learning rate for optimizer (default: 0.005)
-    * `:nonnegative_output` - If true, constrains output layer weights to be non-negative (default: false)
+    * `:loss` - `:cross_entropy` (softmax cross-entropy on the linear outputs) or
+      `:mean_squared_error` (default: `:cross_entropy`)
+    * `:nonnegative_output` - If true, constrains output layer weights to be non-negative,
+      so every output slider only ever accumulates upwards (default: true)
   """
   def train_model(model, train_data, opts \\ []) do
     # Reduced default epochs
@@ -340,7 +349,16 @@ defmodule PerceptronApparatus.MLP do
     # Larger batch size for faster training
     batch_size = Keyword.get(opts, :batch_size, 128)
     learning_rate = Keyword.get(opts, :learning_rate, 0.005)
-    nonnegative_output = Keyword.get(opts, :nonnegative_output, false)
+    nonnegative_output = Keyword.get(opts, :nonnegative_output, true)
+
+    loss =
+      case Keyword.get(opts, :loss, :cross_entropy) do
+        :cross_entropy ->
+          &Axon.Losses.categorical_cross_entropy(&1, &2, from_logits: true, reduction: :mean)
+
+        :mean_squared_error ->
+          :mean_squared_error
+      end
 
     {train_images, train_labels} = train_data
 
@@ -350,13 +368,9 @@ defmodule PerceptronApparatus.MLP do
       |> Nx.to_batched(batch_size)
       |> Stream.zip(Nx.to_batched(train_labels, batch_size))
 
-    # Create training loop with MSE loss to avoid numerical issues
     loop =
       model
-      |> Loop.trainer(
-        :mean_squared_error,
-        Polaris.Optimizers.adam(learning_rate: learning_rate)
-      )
+      |> Loop.trainer(loss, Polaris.Optimizers.adam(learning_rate: learning_rate))
       |> Loop.metric(:accuracy)
 
     # Add weight projection if needed
@@ -639,114 +653,141 @@ defmodule PerceptronApparatus.MLP do
     %{"B" => b_list, "D" => d_list}
   end
 
+  @hidden_max 5.0
+  @output_max 5.0
+  @weight_max 5.0
+  @weight_min 0.02
+  @fit_sample 10_000
+
   @doc """
-  Scales a weight matrix (2D list) by a constant factor.
+  Rescales trained weights so the network can be worked on the apparatus,
+  without changing which output is largest.
+
+  With no biases and ReLU hidden units, multiplying one hidden unit's incoming
+  weights by `k` and its outgoing weights by `1/k` leaves every output
+  unchanged, and multiplying all outgoing weights by one constant scales every
+  output alike. This uses that freedom so that, over the given `inputs`:
+
+  - each hidden slider just reaches the end of its #{@hidden_max} range at its
+    furthest point while accumulating, input by input
+  - the largest output just reaches #{@output_max}
+  - no weight exceeds the largest magnitude on the weight scale (#{@weight_max})
+
+  Weights smaller than the smallest magnitude on the weight scale
+  (#{@weight_min}) are then set to zero, since they cannot be set on a slider.
+
+  `weights` is the map returned by `extract_weights/1`; `inputs` is a tensor of
+  example inputs, one per row (the first #{@fit_sample} are used).
   """
-  def scale_weight_matrix(matrix, factor) do
-    Enum.map(matrix, fn row ->
-      Enum.map(row, fn val -> val * factor end)
-    end)
+  def fit_weights_to_apparatus(weights, inputs) do
+    x = Nx.slice_along_axis(inputs, 0, min(Nx.axis_size(inputs, 0), @fit_sample), axis: 0)
+    b = Nx.tensor(weights["B"], type: :f32)
+    d = Nx.tensor(weights["D"], type: :f32)
+
+    hidden_scale =
+      Nx.min(
+        bound_ratio(@hidden_max, accumulation_peaks(x, b)),
+        bound_ratio(@weight_max, b |> Nx.abs() |> Nx.reduce_max(axes: [0]))
+      )
+
+    hidden_scale = Nx.select(Nx.is_infinity(hidden_scale), 1.0, hidden_scale)
+    b = Nx.multiply(b, hidden_scale)
+    d = Nx.divide(d, Nx.new_axis(hidden_scale, 1))
+
+    hidden = x |> Nx.dot(b) |> Nx.max(0)
+
+    output_scale =
+      Nx.min(
+        bound_ratio(@output_max, hidden |> accumulation_peaks(d) |> Nx.reduce_max()),
+        bound_ratio(@weight_max, d |> Nx.abs() |> Nx.reduce_max())
+      )
+
+    output_scale = Nx.select(Nx.is_infinity(output_scale), 1.0, output_scale)
+    d = Nx.multiply(d, output_scale)
+
+    %{"B" => settable(b), "D" => settable(d)}
+  end
+
+  # The largest magnitude each accumulator reaches while its products are
+  # added one at a time, in slider order, over all the example rows.
+  defp accumulation_peaks(values, weights) do
+    values
+    |> Nx.new_axis(2)
+    |> Nx.multiply(Nx.new_axis(weights, 0))
+    |> Nx.cumulative_sum(axis: 1)
+    |> Nx.abs()
+    |> Nx.reduce_max(axes: [0, 1])
+  end
+
+  defp bound_ratio(bound, peaks) do
+    Nx.select(Nx.greater(peaks, 0), Nx.divide(bound, peaks), Nx.Constants.infinity())
+  end
+
+  defp settable(tensor) do
+    tensor
+    |> Nx.abs()
+    |> Nx.less(@weight_min)
+    |> Nx.select(0.0, tensor)
+    |> Nx.to_list()
   end
 
   @doc """
-  Finds the maximum absolute value in a weight matrix (2D list).
+  Pads weights with zeros to fill a board with `n_input` inputs and `n_output`
+  outputs, for a task that uses fewer of either.
   """
-  def max_abs_value(matrix) do
-    matrix
-    |> List.flatten()
-    |> Enum.map(&abs/1)
-    |> Enum.max()
+  def pad_weights(%{"B" => b, "D" => d}, n_input, n_output) do
+    n_hidden = length(hd(b))
+    spare_inputs = List.duplicate(List.duplicate(0.0, n_hidden), n_input - length(b))
+    spare_outputs = List.duplicate(0.0, n_output - length(hd(d)))
+
+    %{"B" => b ++ spare_inputs, "D" => Enum.map(d, &(&1 ++ spare_outputs))}
   end
 
   @doc """
-  Scales weights so that each layer has a maximum absolute value of target_max.
-  This maintains network outputs up to a multiplicative constant because:
-  - Scaling B by β and D by 1/β preserves outputs exactly (no biases, ReLU is homogeneous)
-  - We find the geometric mean of the required scale factors to distribute scaling equally
-
-  ## Options
-
-    * `:target_max` - Target maximum absolute value (default: 5.0)
-
-  ## Example
-
-      weights = extract_weights(model_state)
-      scaled = scale_weights_to_range(weights, target_max: 5.0)
+  Fraction of examples for which the network's largest output is the labelled
+  class. `weights` is a map of weight lists; `labels` are one-hot rows.
   """
-  def scale_weights_to_range(weights, opts \\ []) do
-    target_max = Keyword.get(opts, :target_max, 5.0)
+  def accuracy(%{"B" => b, "D" => d}, {inputs, labels}) do
+    n_input = Nx.axis_size(inputs, 1)
+    n_output = Nx.axis_size(labels, 1)
+    b = b |> Nx.tensor(type: :f32) |> Nx.slice_along_axis(0, n_input, axis: 0)
+    d = d |> Nx.tensor(type: :f32) |> Nx.slice_along_axis(0, n_output, axis: 1)
 
-    b_max = max_abs_value(weights["B"])
-    d_max = max_abs_value(weights["D"])
+    predicted = inputs |> Nx.dot(b) |> Nx.max(0) |> Nx.dot(d) |> Nx.argmax(axis: 1)
 
-    # Calculate scale factors needed for each layer to reach target_max independently
-    b_scale_needed = target_max / b_max
-    d_scale_needed = target_max / d_max
-
-    # Use geometric mean to distribute scaling between layers while preserving outputs
-    # This maintains outputs: scale B by β, scale D by 1/β where β² = b_scale/d_scale
-    # Both layers will end up with max abs value = target_max * sqrt(b_max * d_max) / sqrt(b_max² * d_max²)
-    # = target_max / sqrt(b_max/d_max * d_max/b_max) = target_max
-    beta = :math.sqrt(b_scale_needed / d_scale_needed)
-
-    # Apply the balanced scaling
-    b_scaled = scale_weight_matrix(weights["B"], beta)
-    d_scaled = scale_weight_matrix(weights["D"], 1.0 / beta)
-
-    # The final max values will be:
-    # b_max_after = b_max * beta = b_max * sqrt(target_max/b_max / (target_max/d_max))
-    #             = sqrt(b_max * d_max * target_max² / (b_max * d_max))
-    #             = sqrt(target_max²) * sqrt(b_max/d_max) / sqrt(b_max/d_max)
-    # Actually: b_max_after = b_max * sqrt((target_max/b_max) / (target_max/d_max))
-    #                       = b_max * sqrt(d_max/b_max) = sqrt(b_max * d_max)
-    # d_max_after = d_max / beta = sqrt(b_max * d_max)
-    # Both equal sqrt(b_max * d_max), so we need to scale overall to hit target_max
-
-    b_max_after = max_abs_value(b_scaled)
-    d_max_after = max_abs_value(d_scaled)
-
-    # Apply final uniform scaling to hit target exactly
-    final_scale = target_max / max(b_max_after, d_max_after)
-    b_final = scale_weight_matrix(b_scaled, final_scale)
-    d_final = scale_weight_matrix(d_scaled, final_scale)
-
-    b_max_final = max_abs_value(b_final)
-    d_max_final = max_abs_value(d_final)
-
-    IO.puts("\nWeight scaling applied:")
-
-    IO.puts(
-      "  B: max #{Float.round(b_max, 4)} -> #{Float.round(b_max_final, 4)} (factor: #{Float.round(beta * final_scale, 4)})"
-    )
-
-    IO.puts(
-      "  D: max #{Float.round(d_max, 4)} -> #{Float.round(d_max_final, 4)} (factor: #{Float.round(final_scale / beta, 4)})"
-    )
-
-    %{"B" => b_final, "D" => d_final}
+    predicted
+    |> Nx.equal(Nx.argmax(labels, axis: 1))
+    |> Nx.mean()
+    |> Nx.to_number()
   end
 
   @doc """
   Writes trained weights to a JSON file.
   The JSON structure has top-level keys "B" and "D" containing 2D arrays of weights,
-  and optionally "test_accuracy" if provided.
+  and optionally "test_accuracy".
 
   ## Options
 
-    * `:test_accuracy` - Test accuracy to include in JSON
-    * `:scale_to_range` - If true, scales weights so max abs value in each layer is 5.0 (default: false)
-    * `:target_max` - Target maximum absolute value when scaling (default: 5.0)
+    * `:fit_to` - A tensor of example inputs; if given, the weights are rescaled with
+      `fit_weights_to_apparatus/2` before writing
+    * `:pad_to` - `{n_input, n_output}`; if given, the weights are padded with zeros to
+      that board size
+    * `:test_data` - `{inputs, one_hot_labels}`; if given, the accuracy of the weights as
+      written is included as "test_accuracy"
+    * `:test_accuracy` - Test accuracy to include in JSON (overridden by `:test_data`)
 
   ## Example
 
       trained_params = PerceptronApparatus.MLP.train_model(model, train_data, epochs: 5)
       PerceptronApparatus.MLP.write_weights_to_json(trained_params, "mnist-weights.json")
 
-      # With test accuracy
-      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "mnist-weights.json", test_accuracy: 0.85)
+      # Rescaled for the apparatus, with the accuracy of the rescaled weights
+      {train_images, _} = train_data
 
-      # With scaling
-      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "mnist-weights.json", scale_to_range: true)
+      PerceptronApparatus.MLP.write_weights_to_json(trained_params, "mnist-weights.json",
+        fit_to: train_images,
+        test_data: test_data
+      )
 
   ## Typst Usage
 
@@ -765,18 +806,20 @@ defmodule PerceptronApparatus.MLP do
     weights = extract_weights(model_state)
 
     weights =
-      if Keyword.get(opts, :scale_to_range, false) do
-        scale_weights_to_range(weights, target_max: Keyword.get(opts, :target_max, 5.0))
-      else
-        weights
+      if inputs = opts[:fit_to], do: fit_weights_to_apparatus(weights, inputs), else: weights
+
+    test_accuracy =
+      if test_data = opts[:test_data],
+        do: accuracy(weights, test_data),
+        else: opts[:test_accuracy]
+
+    weights =
+      case opts[:pad_to] do
+        {n_input, n_output} -> pad_weights(weights, n_input, n_output)
+        nil -> weights
       end
 
-    data =
-      if test_accuracy = opts[:test_accuracy] do
-        Map.put(weights, "test_accuracy", test_accuracy)
-      else
-        weights
-      end
+    data = if test_accuracy, do: Map.put(weights, "test_accuracy", test_accuracy), else: weights
 
     json = Jason.encode!(data, pretty: true)
     File.write!(filename, json)
