@@ -5,18 +5,28 @@
 """Check whether candidate demonstration tasks fit the apparatus.
 
 Each task is trained at the apparatus's architecture (at most 36 inputs, 6
-bias-free ReLU hidden units, at most 10 bias-free linear outputs, MSE loss on
-one-hot targets, Adam) and scored on held-out data over several seeds. For
-context each task also reports the majority-class share and the same network
-with 64 hidden units, which shows how much the 6-unit bottleneck costs.
+bias-free ReLU hidden units, at most 10 bias-free linear outputs, prediction by
+largest output) and scored on held-out data over several seeds. For context
+each task also reports the majority-class share and the same network with 64
+hidden units, which shows how much the 6-unit bottleneck costs.
 
-The first seed's weights are then scaled so each layer peaks at 5, as the weight
-export does, and put through the slider-noise model from slider_scale_sim.py
-(see its docstring) on a linear scale and on a full-slot log scale with sign
-carried separately.
+Three training recipes are compared, none of which changes what the apparatus
+computes:
+
+- mse: mean squared error on one-hot targets, as the repo's training code does
+- ce: softmax cross-entropy
+- ce + constant input: cross-entropy, with one spare input slider fixed at 1 so
+  the hidden units get a bias; only possible when the task leaves an input free
+
+For each recipe the best 6-hidden model's weights are scaled so each layer
+peaks at 5, as the weight export does, and put through the slider-noise model
+from slider_scale_sim.py (see its docstring) on a linear scale and on a
+full-slot log scale with sign carried separately.
 
 Tasks:
 
+- mnist: the existing digit task, trained on the 60,000-image training set and
+  scored on the 10,000-image test set
 - zoo: UCI Zoo, 15 yes/no animal traits plus one-hot leg count (21 inputs) to
   7 animal classes; 101 animals, so scored by repeated 5-fold cross-validation
 - letters: next-symbol prediction over a 10-symbol alphabet (the letters
@@ -41,6 +51,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import slider_scale_sim as sim
 
 SEEDS = 5
+MAX_INPUTS = 36
+RECIPES = [("mse", False), ("ce", False), ("ce", True)]
 NOISE_TRIALS = 50
 NOISE_SIGMAS = [0.01, 0.02, 0.05]
 LOG_FLOOR = 0.02
@@ -76,9 +88,15 @@ def one_hot(labels: np.ndarray, classes: int) -> np.ndarray:
 
 
 def train(
-    x: np.ndarray, y: np.ndarray, classes: int, hidden: int, epochs: int, seed: int
+    x: np.ndarray,
+    y: np.ndarray,
+    classes: int,
+    hidden: int,
+    epochs: int,
+    seed: int,
+    loss: str,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Bias-free ReLU MLP trained with MSE on one-hot targets and Adam."""
+    """Bias-free ReLU MLP trained with Adam on MSE or softmax cross-entropy."""
     rng = np.random.default_rng(seed)
     params = [
         rng.normal(0, np.sqrt(2 / x.shape[1]), (x.shape[1], hidden)),
@@ -92,7 +110,12 @@ def train(
         for start in range(0, len(x), 128):
             batch = order[start : start + 128]
             h = np.maximum(x[batch] @ params[0], 0)
-            delta = 2 * (h @ params[1] - targets[batch]) / len(batch)
+            out = h @ params[1]
+            if loss == "ce":
+                exp = np.exp(out - out.max(1, keepdims=True))
+                delta = (exp / exp.sum(1, keepdims=True) - targets[batch]) / len(batch)
+            else:
+                delta = 2 * (out - targets[batch]) / len(batch)
             grads = [x[batch].T @ ((delta @ params[1].T) * (h > 0)), h.T @ delta]
             step += 1
             for p, g, m in zip(params, grads, moments, strict=True):
@@ -129,52 +152,88 @@ def noise_report(b: np.ndarray, d: np.ndarray, x: np.ndarray, y: np.ndarray) -> 
         print(f"  slider noise, {name:6} scale  " + "  ".join(cells))
 
 
+def with_constant_input(data: Dataset) -> Dataset:
+    x_train, y_train, x_test, y_test = data
+    return (
+        np.hstack([x_train, np.ones((len(x_train), 1))]),
+        y_train,
+        np.hstack([x_test, np.ones((len(x_test), 1))]),
+        y_test,
+    )
+
+
 def evaluate(
     name: str,
     splits: list[Dataset],
     classes: int,
     epochs: int,
     final: Dataset | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Train on each split and report held-out accuracy at 6 and 64 hidden units.
+) -> tuple[np.ndarray, np.ndarray, bool]:
+    """Train on each split under each recipe and report held-out accuracy.
 
-    The noise check uses the best 6-hidden model on its own test data, or, when
-    `final` is given, a model trained and checked on that dataset instead.
-    Returns the weights used for the noise check.
+    The noise check uses each recipe's best 6-hidden model on its own test data,
+    or, when `final` is given, a model trained and checked on that dataset
+    instead. Returns the best such model and whether it takes a constant input.
     """
-    print(f"\n=== {name} ===")
+    print(f"\n=== {name} ===", flush=True)
     x_test, y_test = splits[0][2], splits[0][3]
     print(
         f"inputs {splits[0][0].shape[1]}, outputs {classes}, "
         f"train {len(splits[0][0])}, test {len(x_test)}, "
         f"majority class {np.bincount(y_test).max() / len(y_test):.3f}"
     )
-    models = []
-    for hidden in (6, 64):
-        accs = []
-        for seed, (x_train, y_train, x_te, y_te) in enumerate(splits):
-            b, d = train(x_train, y_train, classes, hidden, epochs, seed)
-            accs.append(sim.accuracy(b, d, x_te, y_te))
-            if hidden == 6:
-                models.append((accs[-1], b, d, x_te, y_te))
+    best = None
+    for loss, constant in RECIPES:
+        if constant and splits[0][0].shape[1] >= MAX_INPUTS:
+            continue
+        print(f" {loss}{' + constant input' if constant else ''}:")
+        recipe_splits = [with_constant_input(d) for d in splits] if constant else splits
+        models = []
+        for hidden in (6, 64):
+            accs = []
+            for seed, (x_train, y_train, x_te, y_te) in enumerate(recipe_splits):
+                b, d = train(x_train, y_train, classes, hidden, epochs, seed, loss)
+                accs.append(sim.accuracy(b, d, x_te, y_te))
+                if hidden == 6:
+                    models.append((accs[-1], b, d, x_te, y_te))
+            print(
+                f"  {hidden:2} hidden: accuracy {np.mean(accs):.3f} ± {np.std(accs):.3f}, "
+                f"best {np.max(accs):.3f}",
+                flush=True,
+            )
+        if final is not None:
+            whole = with_constant_input(final) if constant else final
+            fits = [
+                train(whole[0], whole[1], classes, 6, epochs, seed, loss)
+                for seed in range(SEEDS)
+            ]
+            models = [
+                (sim.accuracy(b, d, whole[2], whole[3]), b, d, whole[2], whole[3])
+                for b, d in fits
+            ]
+        acc, b, d, x_noise, y_noise = max(models, key=lambda m: m[0])
         print(
-            f"  {hidden:2} hidden: accuracy {np.mean(accs):.3f} ± {np.std(accs):.3f}, "
-            f"best {np.max(accs):.3f}"
+            f"  model used for the noise check: accuracy {acc:.3f} on {len(y_noise)} examples"
         )
-    if final is not None:
-        fits = [
-            train(final[0], final[1], classes, 6, epochs, seed) for seed in range(SEEDS)
-        ]
-        models = [
-            (sim.accuracy(b, d, final[2], final[3]), b, d, final[2], final[3])
-            for b, d in fits
-        ]
-    acc, b, d, x_noise, y_noise = max(models, key=lambda m: m[0])
-    print(
-        f"  model used for the noise check: accuracy {acc:.3f} on {len(y_noise)} examples"
+        noise_report(b, d, x_noise, y_noise)
+        if best is None or acc > best[0]:
+            best = (acc, b, d, constant)
+    return best[1:]
+
+
+def mnist_data() -> Dataset:
+    def images(name: str) -> np.ndarray:
+        full = sim.fetch_idx(name, 16).reshape(-1, 28, 28)
+        return (
+            full[:, sim.SAMPLE_INDICES][:, :, sim.SAMPLE_INDICES].reshape(-1, 36) / 255
+        )
+
+    return (
+        images("train-images-idx3-ubyte.gz"),
+        sim.fetch_idx("train-labels-idx1-ubyte.gz", 8).astype(int),
+        images("t10k-images-idx3-ubyte.gz"),
+        sim.fetch_idx("t10k-labels-idx1-ubyte.gz", 8).astype(int),
     )
-    noise_report(b, d, x_noise, y_noise)
-    return b, d
 
 
 def zoo_splits() -> tuple[list[Dataset], Dataset]:
@@ -221,7 +280,9 @@ def letters_data() -> tuple[Dataset, str]:
     return (x[:cut], y[:cut], x[cut:], y[cut:]), text
 
 
-def letters_report(data: Dataset, text: str, b: np.ndarray, d: np.ndarray) -> None:
+def letters_report(
+    data: Dataset, text: str, b: np.ndarray, d: np.ndarray, constant: bool
+) -> None:
     x_train, y_train, x_test, y_test = data
     print(f"  corpus: {len(text)} symbols, e.g. '{text[:60]}'")
 
@@ -243,12 +304,14 @@ def letters_report(data: Dataset, text: str, b: np.ndarray, d: np.ndarray) -> No
     rng = np.random.default_rng(0)
     out = [ALPHABET.index(c) for c in "the"]
     for _ in range(120):
-        probs = np.maximum(
-            sim.forward(b, d, one_hot(np.array(out[-3:]), 10).reshape(1, 30))[0], 0
-        )
-        probs = probs if probs.sum() > 0 else np.ones(10)
+        context = one_hot(np.array(out[-3:]), 10).reshape(1, 30)
+        context = np.hstack([context, np.ones((1, 1))]) if constant else context
+        scores = sim.forward(b, d, context)[0]
+        probs = np.exp(scores - scores.max())
         out.append(int(rng.choice(10, p=probs / probs.sum())))
-    print(f"  sampled from the 6-hidden model: '{''.join(ALPHABET[i] for i in out)}'")
+    print(
+        f"  sampled from the best 6-hidden model (softmax of its outputs): '{''.join(ALPHABET[i] for i in out)}'"
+    )
 
 
 def dotmatrix_data(seed: int) -> Dataset:
@@ -306,12 +369,14 @@ def language_data(languages: list[str], phrase_words: int, seed: int) -> Dataset
 
 
 def main() -> None:
+    evaluate("mnist", [mnist_data()] * SEEDS, classes=10, epochs=10)
+
     splits, whole = zoo_splits()
     evaluate("zoo", splits, classes=7, epochs=2000, final=whole)
 
     letters, text = letters_data()
-    b, d = evaluate("letters", [letters] * SEEDS, classes=10, epochs=10)
-    letters_report(letters, text, b, d)
+    b, d, constant = evaluate("letters", [letters] * SEEDS, classes=10, epochs=10)
+    letters_report(letters, text, b, d, constant)
 
     evaluate(
         "dotmatrix (test: 3 of 35 pixels flipped)",
