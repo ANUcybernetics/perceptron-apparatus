@@ -21,6 +21,9 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     * `--restarts` - Train this many times and keep the run with the best training
       accuracy (default depends on the task)
     * `--loss` - `cross_entropy` or `mean_squared_error` (default: cross_entropy)
+    * `--weight-scale` - The scale the weights will be set on, `linear` or `log`;
+      training perturbs the weights the way a slider on that scale is misset
+      (default: linear)
     * `--no-nonnegative-output` - Allow negative output layer weights
     * `--no-fit` - Export the weights as trained, without rescaling them for the apparatus
     * `--output` - Output file path (default: <task>-weights.json)
@@ -56,6 +59,7 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     learning_rate: :float,
     restarts: :integer,
     loss: :string,
+    weight_scale: :string,
     nonnegative_output: :boolean,
     fit: :boolean,
     output: :string,
@@ -74,6 +78,7 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
     task: "mnist",
     learning_rate: 0.005,
     loss: "cross_entropy",
+    weight_scale: "linear",
     nonnegative_output: true,
     fit: true
   ]
@@ -153,6 +158,7 @@ defmodule Mix.Tasks.Perceptron.ExportWeights do
           batch_size: config[:batch_size] || task.batch_size,
           learning_rate: config[:learning_rate],
           loss: loss,
+          weight_scale: PerceptronApparatus.Utils.parse_weight_scale(config[:weight_scale]),
           nonnegative_output: config[:nonnegative_output]
         )
       end)

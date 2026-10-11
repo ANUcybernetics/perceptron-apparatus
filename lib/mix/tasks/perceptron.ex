@@ -13,6 +13,8 @@ defmodule Mix.Tasks.Perceptron do
     * `--hidden` - Number of hidden neurons (default: 6)
     * `--output` - Number of output neurons (default: 10)
     * `--qr` - QR code data (optional)
+    * `--weight-scale` - Scale engraved on the weight rings, `linear` (-5 to 5) or
+      `log` (magnitude 0.02 to 5, sign on the slider marker) (default: linear)
     * `--file` - Output file path (default: svg/board.svg)
     * `--print` - Generate print-ready SVG (white on black)
     * `--help` - Show this help message
@@ -45,6 +47,7 @@ defmodule Mix.Tasks.Perceptron do
     hidden: :integer,
     output: :integer,
     qr: :string,
+    weight_scale: :string,
     file: :string,
     print: :boolean,
     help: :boolean
@@ -64,6 +67,7 @@ defmodule Mix.Tasks.Perceptron do
     input: 36,
     hidden: 6,
     output: 10,
+    weight_scale: "linear",
     file: "svg/board.svg"
   ]
 
@@ -89,6 +93,7 @@ defmodule Mix.Tasks.Perceptron do
     n_hidden = config[:hidden]
     n_output = config[:output]
     qr_data = config[:qr]
+    weight_scale = PerceptronApparatus.Utils.parse_weight_scale(config[:weight_scale])
     filename = config[:file]
     print_mode = config[:print] || false
 
@@ -109,13 +114,16 @@ defmodule Mix.Tasks.Perceptron do
     )
 
     Mix.shell().info("  Estimated time per inference: #{format_time(ops.time_seconds)}")
+    Mix.shell().info("  Weight scale: #{weight_scale}")
     if qr_data, do: Mix.shell().info("  QR data: #{qr_data}")
     if print_mode, do: Mix.shell().info("  Print mode: enabled")
     Mix.shell().info("  Output file: #{filename}")
     Mix.shell().info("")
 
     # Create the board using domain code interface
-    case PerceptronApparatus.create_board(size, n_input, n_hidden, n_output, qr_data) do
+    case PerceptronApparatus.create_board(size, n_input, n_hidden, n_output, qr_data, %{
+           weight_scale: weight_scale
+         }) do
       {:ok, board} ->
         Mix.shell().info("Board created successfully (ID: #{board.id})")
 

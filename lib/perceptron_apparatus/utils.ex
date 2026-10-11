@@ -59,13 +59,18 @@ defmodule PerceptronApparatus.Utils do
   @weight_labelled ["0.02", "0.05", "0.1", "0.2", "0.5", "1", "2", "5"]
 
   @doc """
-  The rule for a weight slider: zero, then a tick at every leading digit from
-  the smallest settable magnitude to the largest, labelled on the 1-2-5 series.
+  The rule for a weight slider, on one of the two weight scales.
 
-  Weight sliders carry magnitude on a log scale; sign is shown by the slider
-  marker, not by position.
+  `:linear` runs from -5 to 5 with a tick at every whole number, the scale the
+  built apparatus has. `:log` carries magnitude only, with sign shown by the
+  slider marker: zero, then a tick at every leading digit from the smallest
+  settable magnitude to the largest, labelled on the 1-2-5 series.
   """
-  def weight_rule do
+  def weight_rule(scale \\ :linear)
+
+  def weight_rule(:linear), do: new_rule(-@weight_max, @weight_max, 1, @weight_max)
+
+  def weight_rule(:log) do
     ticks =
       for exponent <- -2..0,
           digit <- 1..9,
@@ -79,10 +84,20 @@ defmodule PerceptronApparatus.Utils do
   end
 
   @doc """
-  Fraction of a weight slot between its zero end (0.0) and the largest
-  magnitude (1.0). Magnitudes too small to set park at zero.
+  How far along its slot a weight slider sits, from the outer end (0.0) to the
+  inner end (1.0).
+
+  On the `:linear` scale that is -5 to 5. On the `:log` scale it is zero to the
+  largest magnitude whatever the sign, and magnitudes too small to set park at
+  zero.
   """
-  def weight_scale_fraction(value) do
+  def weight_scale_fraction(value, scale \\ :linear)
+
+  def weight_scale_fraction(value, :linear) do
+    (min(max(value, -@weight_max), @weight_max) + @weight_max) / (2 * @weight_max)
+  end
+
+  def weight_scale_fraction(value, :log) do
     magnitude = min(abs(value), @weight_max)
 
     if magnitude < @weight_min do
@@ -91,6 +106,16 @@ defmodule PerceptronApparatus.Utils do
       log_fraction = :math.log(magnitude / @weight_min) / :math.log(@weight_max / @weight_min)
       @weight_zero_gap + (1 - @weight_zero_gap) * log_fraction
     end
+  end
+
+  @doc """
+  The weight scale named by a command line option.
+  """
+  def parse_weight_scale("linear"), do: :linear
+  def parse_weight_scale("log"), do: :log
+
+  def parse_weight_scale(other) do
+    raise ArgumentError, "unknown weight scale #{inspect(other)}, expected linear or log"
   end
 
   # LazyHTML helper functions for SVG generation

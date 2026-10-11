@@ -14,7 +14,7 @@ defmodule PerceptronApparatus.Board do
     defaults [:read]
 
     create :create do
-      accept [:size, :n_input, :n_hidden, :n_output, :qr_data]
+      accept [:size, :n_input, :n_hidden, :n_output, :qr_data, :weight_scale]
       change PerceptronApparatus.Board.Changes.CreateRingSequence
     end
 
@@ -44,6 +44,12 @@ defmodule PerceptronApparatus.Board do
     attribute :n_hidden, :integer, allow_nil?: false
     attribute :n_output, :integer, allow_nil?: false
     attribute :qr_data, :string, allow_nil?: true
+
+    attribute :weight_scale, :atom,
+      allow_nil?: false,
+      default: :linear,
+      constraints: [one_of: [:linear, :log]]
+
     attribute :rings, :term, default: []
   end
 

@@ -12,13 +12,14 @@ defmodule PerceptronApparatus.Board.Changes.CreateRingSequence do
     n_input = Ash.Changeset.get_attribute(changeset, :n_input)
     n_hidden = Ash.Changeset.get_attribute(changeset, :n_hidden)
     n_output = Ash.Changeset.get_attribute(changeset, :n_output)
+    weight_scale = Ash.Changeset.get_attribute(changeset, :weight_scale)
 
-    rings = create_ring_sequence(n_input, n_hidden, n_output)
+    rings = create_ring_sequence(n_input, n_hidden, n_output, weight_scale)
 
     Ash.Changeset.change_attribute(changeset, :rings, rings)
   end
 
-  defp create_ring_sequence(n_input, n_hidden, n_output) do
+  defp create_ring_sequence(n_input, n_hidden, n_output, weight_scale) do
     [
       # Log ring
       create_log_ring!(),
@@ -27,13 +28,13 @@ defmodule PerceptronApparatus.Board.Changes.CreateRingSequence do
       create_input_ring!(n_input),
 
       # Weight1 radial ring (input -> hidden)
-      create_weight_ring!(n_hidden, n_input),
+      create_weight_ring!(n_hidden, n_input, weight_scale),
 
       # Hidden azimuthal ring
       create_hidden_ring!(n_hidden),
 
       # Weight2 radial ring (hidden -> output)
-      create_weight_ring!(n_output, n_hidden),
+      create_weight_ring!(n_output, n_hidden, weight_scale),
 
       # Output azimuthal ring
       create_output_ring!(n_output)
@@ -55,12 +56,12 @@ defmodule PerceptronApparatus.Board.Changes.CreateRingSequence do
     |> Ash.create!()
   end
 
-  defp create_weight_ring!(n_groups, n_sliders_per_group) do
-    rule = Utils.weight_rule()
+  defp create_weight_ring!(n_groups, n_sliders_per_group, scale) do
+    rule = Utils.weight_rule(scale)
     shape = %{groups: n_groups, sliders_per_group: n_sliders_per_group}
 
     RadialRing
-    |> Ash.Changeset.for_create(:new, %{shape: shape, rule: rule, width: 25.0})
+    |> Ash.Changeset.for_create(:new, %{shape: shape, rule: rule, scale: scale, width: 25.0})
     |> Ash.create!()
   end
 

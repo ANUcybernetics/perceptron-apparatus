@@ -328,6 +328,12 @@ defmodule PerceptronApparatus.MLP do
     |> Nx.take(indices, axis: 2)
   end
 
+  # the slider ranges of the apparatus
+  @hidden_max 5.0
+  @output_max 5.0
+  @weight_max 5.0
+  @weight_min 0.02
+
   @doc """
   Trains the model on `{inputs, one_hot_labels}` data.
 
@@ -340,16 +346,28 @@ defmodule PerceptronApparatus.MLP do
       `:mean_squared_error` (default: `:cross_entropy`)
     * `:nonnegative_output` - If true, constrains output layer weights to be non-negative,
       so every output slider only ever accumulates upwards (default: true)
-    * `:weight_noise` - Each training step multiplies every weight by a fresh random
-      factor whose log has this standard deviation, so the network learns weights
-      that still work when a slider is set slightly off (default: 0.1; 0 disables)
+    * `:weight_scale` - The scale the weight sliders will be set on, `:linear` or
+      `:log`, which decides the kind of noise below (default: `:linear`)
+    * `:weight_noise` - Each training step perturbs every weight afresh, so the
+      network learns weights that still work when a slider is set slightly off
+      (0 disables). On the linear scale a slider is off by the same distance
+      wherever it sits, so the noise is added: its standard deviation is this
+      fraction of the slot's length, in the units the weights will have once
+      fitted to the apparatus (default: 0.01). On the log scale a slider is off
+      by the same ratio, so every weight is multiplied by a factor whose log has
+      this standard deviation (default: 0.1).
   """
   def train_model(model, train_data, opts \\ []) do
     epochs = Keyword.get(opts, :epochs, 10)
     batch_size = Keyword.get(opts, :batch_size, 128)
     learning_rate = Keyword.get(opts, :learning_rate, 0.005)
     nonnegative_output = Keyword.get(opts, :nonnegative_output, true)
-    weight_noise = Keyword.get(opts, :weight_noise, 0.1)
+    weight_scale = Keyword.get(opts, :weight_scale, :linear)
+
+    weight_noise =
+      Keyword.get_lazy(opts, :weight_noise, fn ->
+        if weight_scale == :log, do: 0.1, else: 0.01
+      end)
 
     loss_fn =
       case Keyword.get(opts, :loss, :cross_entropy) do
@@ -375,15 +393,15 @@ defmodule PerceptronApparatus.MLP do
     step =
       Nx.Defn.jit(
         fn params, optimizer_state, key, x, y ->
-          {hidden_noise, key} = weight_noise(key, params["hidden"]["kernel"], weight_noise)
-          {output_noise, key} = weight_noise(key, params["output"]["kernel"], weight_noise)
+          {perturb_hidden, perturb_output, key} =
+            weight_noise(weight_scale, key, params, x, weight_noise)
 
           {loss, gradients} =
             Nx.Defn.value_and_grad(params, fn params ->
               x
-              |> Nx.dot(Nx.multiply(params["hidden"]["kernel"], hidden_noise))
+              |> Nx.dot(perturb_hidden.(params["hidden"]["kernel"]))
               |> Nx.max(0)
-              |> Nx.dot(Nx.multiply(params["output"]["kernel"], output_noise))
+              |> Nx.dot(perturb_output.(params["output"]["kernel"]))
               |> loss_fn.(y)
             end)
 
@@ -421,10 +439,52 @@ defmodule PerceptronApparatus.MLP do
     %{model_state | data: params}
   end
 
-  # A random factor for every weight, log-normally distributed around 1.
-  defp weight_noise(key, weights, standard_deviation) do
-    {noise, key} = Nx.Random.normal(key, 0.0, 1.0, shape: Nx.shape(weights))
-    {Nx.exp(Nx.multiply(noise, standard_deviation)), key}
+  # One step's slider error for each layer, as functions that perturb its weights.
+  defp weight_noise(scale, key, params, x, level) do
+    hidden = params["hidden"]["kernel"]
+    output = params["output"]["kernel"]
+    {hidden_noise, key} = Nx.Random.normal(key, 0.0, 1.0, shape: Nx.shape(hidden))
+    {output_noise, key} = Nx.Random.normal(key, 0.0, 1.0, shape: Nx.shape(output))
+
+    case scale do
+      # a factor for every weight, log-normally distributed around 1
+      :log ->
+        {&Nx.multiply(&1, Nx.exp(Nx.multiply(hidden_noise, level))),
+         &Nx.multiply(&1, Nx.exp(Nx.multiply(output_noise, level))), key}
+
+      # an offset for every weight, the same size on the apparatus for all of them
+      :linear ->
+        {hidden_unit, output_unit} = apparatus_units(hidden, output, x)
+        slot = 2 * @weight_max * level
+
+        {&Nx.add(&1, Nx.multiply(hidden_noise, Nx.multiply(slot, hidden_unit))),
+         &Nx.add(&1, Nx.multiply(output_noise, Nx.multiply(slot, output_unit))), key}
+    end
+  end
+
+  # How much of each layer's weights, as trained, makes one unit on the apparatus:
+  # an estimate from one batch of the rescaling fit_weights_to_apparatus/2 will do.
+  defp apparatus_units(hidden, output, x) do
+    tiny = 1.0e-6
+    peak = fn tensor, opts -> tensor |> Nx.abs() |> Nx.reduce_max(opts) |> Nx.max(tiny) end
+    hidden_values = Nx.dot(x, hidden)
+
+    hidden_scale =
+      Nx.min(
+        Nx.divide(@hidden_max, peak.(hidden_values, axes: [0])),
+        Nx.divide(@weight_max, peak.(hidden, axes: [0]))
+      )
+
+    fitted_output = Nx.divide(output, Nx.new_axis(hidden_scale, 1))
+    outputs = hidden_values |> Nx.multiply(hidden_scale) |> Nx.max(0) |> Nx.dot(fitted_output)
+
+    output_scale =
+      Nx.min(
+        Nx.divide(@output_max, peak.(outputs, [])),
+        Nx.divide(@weight_max, peak.(fitted_output, []))
+      )
+
+    {Nx.divide(1, hidden_scale), Nx.divide(Nx.new_axis(hidden_scale, 1), output_scale)}
   end
 
   defp cross_entropy(logits, labels) do
@@ -694,10 +754,6 @@ defmodule PerceptronApparatus.MLP do
     %{"B" => b_list, "D" => d_list}
   end
 
-  @hidden_max 5.0
-  @output_max 5.0
-  @weight_max 5.0
-  @weight_min 0.02
   @fit_sample 10_000
 
   @doc """

@@ -14,7 +14,7 @@ defmodule PerceptronApparatus.RadialRing do
     defaults [:read]
 
     create :new do
-      accept [:width, :shape, :rule]
+      accept [:width, :shape, :rule, :scale]
     end
 
     update :set_context do
@@ -27,6 +27,7 @@ defmodule PerceptronApparatus.RadialRing do
     attribute :width, :float, default: 80.0
     attribute :shape, :term, allow_nil?: false
     attribute :rule, :term, allow_nil?: false
+    attribute :scale, :atom, default: :linear, constraints: [one_of: [:linear, :log]]
     attribute :context, :term, allow_nil?: true
   end
 
@@ -107,13 +108,13 @@ defmodule PerceptronApparatus.RadialRing do
     sliders ++ [index_text]
   end
 
-  def render_guides(radius, width, groups, rule) do
+  def render_guides(radius, width, groups, rule, scale \\ :linear) do
     theta_sweep = 360 / groups
 
     radii =
       rule
       |> Enum.map(fn {label, val} ->
-        {label, radius - width * weight_scale_fraction(D.to_float(val))}
+        {label, radius - width * weight_scale_fraction(D.to_float(val), scale)}
       end)
 
     circles =
@@ -172,7 +173,7 @@ defmodule PerceptronApparatus.RadialRing do
     circles ++ labels
   end
 
-  def render(radius, width, groups, sliders_per_group, rule, layer_index) do
+  def render(radius, width, groups, sliders_per_group, rule, layer_index, scale \\ :linear) do
     theta_sweep = 360 / groups
 
     groups_elements =
@@ -182,7 +183,7 @@ defmodule PerceptronApparatus.RadialRing do
       end)
       |> List.flatten()
 
-    guides_elements = render_guides(radius, width, groups, rule)
+    guides_elements = render_guides(radius, width, groups, rule, scale)
 
     guides_elements ++ groups_elements
   end
@@ -196,6 +197,7 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.RadialRing do
   def render(ring) do
     %{
       rule: rule,
+      scale: scale,
       shape: %{groups: groups, sliders_per_group: sliders_per_group},
       context: %{radius: radius, ring_width: ring_width, layer_index: layer_index}
     } = ring
@@ -206,7 +208,8 @@ defimpl PerceptronApparatus.Renderable, for: PerceptronApparatus.RadialRing do
       groups,
       sliders_per_group,
       rule,
-      layer_index
+      layer_index,
+      scale
     )
   end
 end
