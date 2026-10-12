@@ -1,11 +1,11 @@
 ---
-id: task-8
+id: TASK-13
 title: rotate outer ring for cut
 status: Done
 assignee: []
 created_date: "2025-07-15"
 labels: []
-dependencies: ["task-9"]
+dependencies: ["task-14"]
 ---
 
 ## Description

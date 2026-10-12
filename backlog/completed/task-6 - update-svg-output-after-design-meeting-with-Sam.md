@@ -13,8 +13,8 @@ dependencies: []
 Design updates from meeting with Sam have been split into separate tasks:
 
 - task-7: use knobs instead of fasteners for outside ring
-- task-8: rotate outer ring for cut
-- task-9: add cut line to svg output (needs clarification)
+- task-13: rotate outer ring for cut
+- task-14: add cut line to svg output (needs clarification)
 - task-10: extend bottom slot for pill-shaped slider (8-10mm past)
 
 See individual tasks for implementation details.
