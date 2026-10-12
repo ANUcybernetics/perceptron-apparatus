@@ -6,7 +6,7 @@ title: >-
 status: In Progress
 assignee: []
 created_date: '2026-10-12 00:45'
-updated_date: '2026-10-12 06:41'
+updated_date: '2026-10-12 06:56'
 labels:
   - video
 dependencies: []
@@ -42,4 +42,6 @@ Context for whoever picks this up:
 
 <!-- SECTION:NOTES:BEGIN -->
 Voice path built: video.py cut assembles the takes named in video/explainer/cut.json (take 2 throughout, take 1 for reading-copy lines 9 and 11, where take 2 ran straight through a pause an animation needs, or departed from the script). The script's [beat] values now hold the pauses of the cut: Ben's own take-2 pauses wherever an animation doesn't need longer. Script updated to what was said ("a mammal", "It's multiplying"). Cues checked on stills; #3 still needs the draft watched at speed with sound, which is Ben's to do. Master (#6) waits on the music bed (#7), which Ben is organising.
+
+2026-10-12: Ben has watched the draft with sound and is happy with the cut in general. Next: Ben chooses the background music (he is supplying a track, not generating one with video.py music) and puts it at video/explainer/assets/music.mp3. Then: video.py mix, a 1080p draft for Ben to hear, check whether the music swells too much in the 2-3 s animation pauses (if so slow the sidechain release or reduce the ducking in mix), listen at the two take changes (reading-copy lines 9 and 11), then video.py render --final for the 4K50 master and check its first and last frames. The takes are not in git: they are in video/explainer/assets/ on this machine and in ~/Downloads on daysy.
 <!-- SECTION:NOTES:END -->
