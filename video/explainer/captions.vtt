@@ -1,118 +1,118 @@
 WEBVTT
 
-00:00:01.000 --> 00:00:02.765
+00:00:01.000 --> 00:00:02.320
 This table is a computer.
 
-00:00:03.265 --> 00:00:10.370
+00:00:03.070 --> 00:00:09.140
 No electricity, no chips: just plywood, brass sliders and a circular slide rule.
 
-00:00:11.270 --> 00:00:16.239
+00:00:10.290 --> 00:00:14.550
 It runs a neural network, the same algorithm that underpins modern AI.
 
-00:00:17.239 --> 00:00:19.282
+00:00:15.800 --> 00:00:17.290
 Start with a handwritten digit,
 
-00:00:19.682 --> 00:00:21.958
+00:00:17.940 --> 00:00:19.630
 shrunk to thirty-six squares.
 
-00:00:22.758 --> 00:00:26.612
+00:00:20.680 --> 00:00:23.440
 Each square corresponds to one slider on the outer ring:
 
-00:00:27.113 --> 00:00:30.874
+00:00:24.390 --> 00:00:27.340
 the more ink in the square, the further it slides.
 
-00:00:32.074 --> 00:00:39.133
+00:00:28.990 --> 00:00:34.620
 The next ring of sliders holds the weights: numbers the network learned from thousands of handwritten digits.
 
-00:00:39.933 --> 00:00:41.651
+00:00:35.470 --> 00:00:37.110
 They are everything it knows.
 
-00:00:42.651 --> 00:00:44.137
+00:00:38.460 --> 00:00:39.770
 And this is how it works.
 
-00:00:44.637 --> 00:00:45.566
+00:00:40.320 --> 00:00:41.280
 Take an input,
 
-00:00:46.266 --> 00:00:47.520
+00:00:42.130 --> 00:00:43.070
 take its weight,
 
-00:00:48.220 --> 00:00:50.681
+00:00:44.020 --> 00:00:45.750
 and multiply them on the slide rule.
 
-00:00:52.281 --> 00:00:55.114
+00:00:47.100 --> 00:00:49.490
 Add the answer to a slider in the middle ring.
 
-00:00:56.714 --> 00:00:58.247
+00:00:51.440 --> 00:00:52.610
 Then do it again.
 
-00:00:58.747 --> 00:01:01.069
+00:00:53.060 --> 00:00:55.410
 Two hundred and sixteen times.
 
-00:01:04.269 --> 00:01:07.566
+00:00:57.960 --> 00:01:00.790
 Anything that ends up below zero goes back to zero.
 
-00:01:08.966 --> 00:01:13.610
+00:01:02.140 --> 00:01:06.940
 Then once more: one more ring of weights, sixty more multiplications,
 
-00:01:16.010 --> 00:01:19.168
+00:01:09.290 --> 00:01:11.440
 and the ten inner sliders hold the answer.
 
-00:01:19.968 --> 00:01:22.243
+00:01:12.390 --> 00:01:14.450
 The one that has travelled furthest wins.
 
-00:01:23.143 --> 00:01:24.258
+00:01:15.300 --> 00:01:16.240
 It's a seven.
 
-00:01:26.458 --> 00:01:28.734
+00:01:18.190 --> 00:01:20.060
 Those weights make it read digits.
 
-00:01:29.334 --> 00:01:31.098
+00:01:21.010 --> 00:01:22.760
 Slide them to new positions,
 
-00:01:33.098 --> 00:01:35.745
+00:01:24.410 --> 00:01:26.220
 and the same table does a different job.
 
-00:01:36.745 --> 00:01:41.111
+00:01:27.570 --> 00:01:30.970
 Now each input slider answers a yes-or-no question about an animal.
 
-00:01:41.711 --> 00:01:42.918
+00:01:31.620 --> 00:01:33.230
 Hair: yes.
 
-00:01:43.318 --> 00:01:44.897
+00:01:33.980 --> 00:01:35.649
 Feathers: no.
 
-00:01:45.297 --> 00:01:46.319
+00:01:36.499 --> 00:01:38.209
 Milk: yes.
 
-00:01:47.519 --> 00:01:50.259
+00:01:39.759 --> 00:01:42.109
 The same two hundred and seventy-six steps,
 
-00:01:52.859 --> 00:01:54.623
-and the output is mammal.
+00:01:43.859 --> 00:01:45.369
+and the output is a mammal.
 
-00:01:56.423 --> 00:01:57.817
+00:01:47.319 --> 00:01:48.718
 Move the weights once more,
 
-00:01:59.817 --> 00:02:01.767
+00:01:50.468 --> 00:01:51.798
 and it guesses the next letter.
 
-00:02:02.567 --> 00:02:04.425
+00:01:52.948 --> 00:01:54.678
 After T, H:
 
-00:02:07.025 --> 00:02:07.721
+00:01:57.228 --> 00:01:57.738
 E.
 
-00:02:09.521 --> 00:02:12.493
+00:01:59.888 --> 00:02:02.958
 By hand, each answer takes the best part of an hour.
 
-00:02:13.493 --> 00:02:18.462
+00:02:03.708 --> 00:02:07.058
 A chip in a data centre does the same sums trillions of times a second.
 
-00:02:19.662 --> 00:02:21.938
+00:02:08.508 --> 00:02:10.248
 But nothing different is happening in there.
 
-00:02:22.438 --> 00:02:25.457
-It is multiplying and adding, all the way down.
+00:02:11.098 --> 00:02:13.718
+It's multiplying and adding, all the way down.
 
-00:02:26.657 --> 00:02:28.932
+00:02:14.468 --> 00:02:16.538
 Here, you can watch every step.

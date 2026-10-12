@@ -1,0 +1,5 @@
+{
+  "takes": { "1": "assets/take1.m4a", "2": "assets/take2.m4a" },
+  "default": "2",
+  "segments": { "9": "1", "11": "1" }
+}

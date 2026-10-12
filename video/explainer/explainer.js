@@ -201,7 +201,7 @@ export function build(tl, S, T) {
   const CLOSE = [13, 14, 15]; // the three sliders the push-in on ring A lands on
   const rank = Array.from({ length: N_IN }, (_, i) => i).filter((i) => !CLOSE.includes(i));
   const tA = PX.map((_, i) =>
-    CLOSE.includes(i) ? tPushA + 1.5 + CLOSE.indexOf(i) * 0.6 : tSets + rank.indexOf(i) * 0.075,
+    CLOSE.includes(i) ? tPushA + 1.5 + CLOSE.indexOf(i) * 0.6 : tSets + rank.indexOf(i) * 0.065,
   );
   const tLearn = T.word(3, "learned");
   const tMul = T.word(4, "multiply") + 0.3;
@@ -216,7 +216,7 @@ export function build(tl, S, T) {
   // the digit task clears and the weights move to the animal task's, then the next-letter task's
   const tClear1 = T.word(8, "Slide") - 0.3;
   const tGlide1 = T.word(8, "Slide") + 0.3;
-  const tZooYes = [seg(9, 1).start + 0.65, seg(9, 2).start + 0.8, seg(9, 3).start + 0.4];
+  const tZooYes = [T.word(9, "yes."), T.word(9, "no."), T.word(9, "yes.", 2)];
   const called = [0, 1, 3]; // hair, feathers and milk are named aloud
   const tZooA = ZOO_QUESTIONS.map((_, i) =>
     called.includes(i)

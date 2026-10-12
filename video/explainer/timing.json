@@ -1,1660 +1,1660 @@
 {
- "duration": 150.932,
+ "duration": 138.288,
  "lines": [
   {
    "caption": "This table is a computer. No electricity, no chips: just plywood, brass sliders and a circular slide rule.",
    "start": 1.0,
-   "end": 10.37,
+   "end": 9.14,
    "segments": [
     {
      "caption": "This table is a computer.",
      "start": 1.0,
-     "end": 2.765
+     "end": 2.32
     },
     {
      "caption": "No electricity, no chips: just plywood, brass sliders and a circular slide rule.",
-     "start": 3.265,
-     "end": 10.37
+     "start": 3.07,
+     "end": 9.14
     }
    ],
    "words": [
     {
      "w": "This",
      "start": 1.0,
-     "end": 1.232
+     "end": 1.17
     },
     {
      "w": "table",
-     "start": 1.29,
-     "end": 1.639
+     "start": 1.21,
+     "end": 1.45
     },
     {
      "w": "is",
-     "start": 1.685,
-     "end": 1.766
+     "start": 1.49,
+     "end": 1.57
     },
     {
      "w": "a",
-     "start": 1.801,
-     "end": 1.836
+     "start": 1.61,
+     "end": 1.63
     },
     {
      "w": "computer.",
-     "start": 1.871,
-     "end": 2.765
+     "start": 1.67,
+     "end": 2.07
     },
     {
      "w": "No",
-     "start": 3.265,
-     "end": 3.451
+     "start": 3.07,
+     "end": 3.19
     },
     {
      "w": "electricity,",
-     "start": 3.509,
-     "end": 4.263
+     "start": 3.25,
+     "end": 3.829
     },
     {
      "w": "no",
-     "start": 4.38,
-     "end": 4.542
+     "start": 4.05,
+     "end": 4.15
     },
     {
      "w": "chips:",
-     "start": 4.612,
-     "end": 5.215
+     "start": 4.25,
+     "end": 4.61
     },
     {
      "w": "just",
-     "start": 5.39,
-     "end": 5.587
+     "start": 5.35,
+     "end": 5.53
     },
     {
      "w": "plywood,",
-     "start": 5.633,
-     "end": 6.4
+     "start": 5.59,
+     "end": 6.03
     },
     {
      "w": "brass",
-     "start": 6.644,
-     "end": 6.969
+     "start": 6.47,
+     "end": 6.71
     },
     {
      "w": "sliders",
-     "start": 7.003,
-     "end": 7.572
+     "start": 6.77,
+     "end": 7.27
     },
     {
      "w": "and",
-     "start": 7.955,
-     "end": 8.106
+     "start": 7.71,
+     "end": 7.79
     },
     {
      "w": "a",
-     "start": 8.164,
-     "end": 8.188
+     "start": 7.83,
+     "end": 7.89
     },
     {
      "w": "circular",
-     "start": 8.246,
-     "end": 8.687
+     "start": 7.93,
+     "end": 8.27
     },
     {
      "w": "slide",
-     "start": 8.745,
-     "end": 9.116
+     "start": 8.37,
+     "end": 8.63
     },
     {
      "w": "rule.",
-     "start": 9.151,
-     "end": 10.37
+     "start": 8.67,
+     "end": 8.89
     }
    ]
   },
   {
    "caption": "It runs a neural network, the same algorithm that underpins modern AI.",
-   "start": 11.27,
-   "end": 16.239,
+   "start": 10.29,
+   "end": 14.55,
    "segments": [
     {
      "caption": "It runs a neural network, the same algorithm that underpins modern AI.",
-     "start": 11.27,
-     "end": 16.239
+     "start": 10.29,
+     "end": 14.55
     }
    ],
    "words": [
     {
      "w": "It",
-     "start": 11.27,
-     "end": 11.421
+     "start": 10.29,
+     "end": 10.4
     },
     {
      "w": "runs",
-     "start": 11.479,
-     "end": 11.769
+     "start": 10.44,
+     "end": 10.6
     },
     {
      "w": "a",
-     "start": 11.827,
-     "end": 11.862
+     "start": 10.64,
+     "end": 10.68
     },
     {
      "w": "neural",
-     "start": 11.955,
-     "end": 12.28
+     "start": 10.72,
+     "end": 10.92
     },
     {
      "w": "network,",
-     "start": 12.35,
-     "end": 12.907
+     "start": 10.98,
+     "end": 11.38
     },
     {
      "w": "the",
-     "start": 12.965,
-     "end": 13.081
+     "start": 12.019,
+     "end": 12.12
     },
     {
      "w": "same",
-     "start": 13.151,
-     "end": 13.429
+     "start": 12.159,
+     "end": 12.4
     },
     {
      "w": "algorithm",
-     "start": 13.476,
-     "end": 14.022
+     "start": 12.46,
+     "end": 12.88
     },
     {
      "w": "that",
-     "start": 14.068,
-     "end": 14.184
+     "start": 12.94,
+     "end": 13.04
     },
     {
      "w": "underpins",
-     "start": 14.242,
-     "end": 14.753
+     "start": 13.1,
+     "end": 13.6
     },
     {
      "w": "modern",
-     "start": 14.823,
-     "end": 15.113
+     "start": 13.64,
+     "end": 13.86
     },
     {
      "w": "AI.",
-     "start": 15.171,
-     "end": 16.239
+     "start": 13.94,
+     "end": 14.3
     }
    ]
   },
   {
    "caption": "Start with a handwritten digit, shrunk to thirty-six squares. Each square corresponds to one slider on the outer ring: the more ink in the square, the further it slides.",
-   "start": 17.239,
-   "end": 30.874,
+   "start": 15.8,
+   "end": 27.34,
    "segments": [
     {
      "caption": "Start with a handwritten digit,",
-     "start": 17.239,
-     "end": 19.282
+     "start": 15.8,
+     "end": 17.29
     },
     {
      "caption": "shrunk to thirty-six squares.",
-     "start": 19.682,
-     "end": 21.958
+     "start": 17.94,
+     "end": 19.63
     },
     {
      "caption": "Each square corresponds to one slider on the outer ring:",
-     "start": 22.758,
-     "end": 26.612
+     "start": 20.68,
+     "end": 23.44
     },
     {
      "caption": "the more ink in the square, the further it slides.",
-     "start": 27.113,
-     "end": 30.874
+     "start": 24.39,
+     "end": 27.34
     }
    ],
    "words": [
     {
      "w": "Start",
-     "start": 17.239,
-     "end": 17.576
+     "start": 15.8,
+     "end": 16.02
     },
     {
      "w": "with",
-     "start": 17.611,
-     "end": 17.738
+     "start": 16.06,
+     "end": 16.14
     },
     {
      "w": "a",
-     "start": 17.773,
-     "end": 17.808
+     "start": 16.18,
+     "end": 16.22
     },
     {
      "w": "handwritten",
-     "start": 17.901,
-     "end": 18.446
+     "start": 16.26,
+     "end": 16.62
     },
     {
      "w": "digit,",
-     "start": 18.504,
-     "end": 19.282
+     "start": 16.66,
+     "end": 17.04
     },
     {
      "w": "shrunk",
-     "start": 19.682,
-     "end": 20.019
+     "start": 17.94,
+     "end": 18.28
     },
     {
      "w": "to",
-     "start": 20.1,
-     "end": 20.204
+     "start": 18.32,
+     "end": 18.4
     },
     {
      "w": "thirty-six",
-     "start": 20.286,
-     "end": 20.878
+     "start": 18.4,
+     "end": 18.84
     },
     {
      "w": "squares.",
-     "start": 20.947,
-     "end": 21.958
+     "start": 18.88,
+     "end": 19.38
     },
     {
      "w": "Each",
-     "start": 22.758,
-     "end": 23.037
+     "start": 20.68,
+     "end": 20.91
     },
     {
      "w": "square",
-     "start": 23.095,
-     "end": 23.478
+     "start": 20.99,
+     "end": 21.25
     },
     {
      "w": "corresponds",
-     "start": 23.547,
-     "end": 24.198
+     "start": 21.31,
+     "end": 21.79
     },
     {
      "w": "to",
-     "start": 24.267,
-     "end": 24.337
+     "start": 21.83,
+     "end": 21.93
     },
     {
      "w": "one",
-     "start": 24.453,
-     "end": 24.662
+     "start": 22.01,
+     "end": 22.11
     },
     {
      "w": "slider",
-     "start": 24.732,
-     "end": 25.208
+     "start": 22.21,
+     "end": 22.53
     },
     {
      "w": "on",
-     "start": 25.266,
-     "end": 25.335
+     "start": 22.57,
+     "end": 22.63
     },
     {
      "w": "the",
-     "start": 25.37,
-     "end": 25.44
+     "start": 22.67,
+     "end": 22.71
     },
     {
      "w": "outer",
-     "start": 25.486,
-     "end": 25.742
+     "start": 22.77,
+     "end": 22.93
     },
     {
      "w": "ring:",
-     "start": 25.8,
-     "end": 26.613
+     "start": 22.99,
+     "end": 23.19
     },
     {
      "w": "the",
-     "start": 27.113,
-     "end": 27.229
+     "start": 24.39,
+     "end": 24.47
     },
     {
      "w": "more",
-     "start": 27.299,
-     "end": 27.588
+     "start": 24.51,
+     "end": 24.69
     },
     {
      "w": "ink",
-     "start": 27.669,
-     "end": 27.937
+     "start": 24.75,
+     "end": 24.87
     },
     {
      "w": "in",
-     "start": 28.03,
-     "end": 28.111
+     "start": 24.93,
+     "end": 24.99
     },
     {
      "w": "the",
-     "start": 28.157,
-     "end": 28.227
+     "start": 25.01,
+     "end": 25.09
     },
     {
      "w": "square,",
-     "start": 28.274,
-     "end": 28.831
+     "start": 25.15,
+     "end": 25.49
     },
     {
      "w": "the",
-     "start": 28.959,
-     "end": 29.075
+     "start": 26.07,
+     "end": 26.15
     },
     {
      "w": "further",
-     "start": 29.145,
-     "end": 29.527
+     "start": 26.19,
+     "end": 26.41
     },
     {
      "w": "it",
-     "start": 29.573,
-     "end": 29.643
+     "start": 26.45,
+     "end": 26.55
     },
     {
      "w": "slides.",
-     "start": 29.701,
-     "end": 30.875
+     "start": 26.61,
+     "end": 27.09
     }
    ]
   },
   {
    "caption": "The next ring of sliders holds the weights: numbers the network learned from thousands of handwritten digits. They are everything it knows.",
-   "start": 32.074,
-   "end": 41.651,
+   "start": 28.99,
+   "end": 37.11,
    "segments": [
     {
      "caption": "The next ring of sliders holds the weights: numbers the network learned from thousands of handwritten digits.",
-     "start": 32.074,
-     "end": 39.133
+     "start": 28.99,
+     "end": 34.62
     },
     {
      "caption": "They are everything it knows.",
-     "start": 39.933,
-     "end": 41.651
+     "start": 35.47,
+     "end": 37.11
     }
    ],
    "words": [
     {
      "w": "The",
-     "start": 32.074,
-     "end": 32.248
+     "start": 28.99,
+     "end": 29.07
     },
     {
      "w": "next",
-     "start": 32.306,
-     "end": 32.55
+     "start": 29.11,
+     "end": 29.29
     },
     {
      "w": "ring",
-     "start": 32.62,
-     "end": 32.805
+     "start": 29.35,
+     "end": 29.45
     },
     {
      "w": "of",
-     "start": 32.852,
-     "end": 32.91
+     "start": 29.49,
+     "end": 29.55
     },
     {
      "w": "sliders",
-     "start": 32.98,
-     "end": 33.49
+     "start": 29.61,
+     "end": 29.95
     },
     {
      "w": "holds",
-     "start": 33.548,
-     "end": 33.85
+     "start": 29.99,
+     "end": 30.21
     },
     {
      "w": "the",
-     "start": 33.908,
-     "end": 33.978
+     "start": 30.25,
+     "end": 30.31
     },
     {
      "w": "weights:",
-     "start": 34.036,
-     "end": 34.57
+     "start": 30.35,
+     "end": 30.73
     },
     {
      "w": "numbers",
-     "start": 34.779,
-     "end": 35.127
+     "start": 31.61,
+     "end": 31.87
     },
     {
      "w": "the",
-     "start": 35.185,
-     "end": 35.255
+     "start": 31.91,
+     "end": 31.97
     },
     {
      "w": "network",
-     "start": 35.313,
-     "end": 35.673
+     "start": 32.01,
+     "end": 32.35
     },
     {
      "w": "learned",
-     "start": 35.743,
-     "end": 36.091
+     "start": 32.41,
+     "end": 32.63
     },
     {
      "w": "from",
-     "start": 36.149,
-     "end": 36.312
+     "start": 32.67,
+     "end": 32.85
     },
     {
      "w": "thousands",
-     "start": 36.381,
-     "end": 36.857
+     "start": 32.93,
+     "end": 33.33
     },
     {
      "w": "of",
-     "start": 36.892,
-     "end": 36.95
+     "start": 33.39,
+     "end": 33.45
     },
     {
      "w": "handwritten",
-     "start": 37.043,
-     "end": 37.589
+     "start": 33.51,
+     "end": 33.89
     },
     {
      "w": "digits.",
-     "start": 37.647,
-     "end": 39.133
+     "start": 33.93,
+     "end": 34.37
     },
     {
      "w": "They",
-     "start": 39.933,
-     "end": 40.107
+     "start": 35.47,
+     "end": 35.6
     },
     {
      "w": "are",
-     "start": 40.142,
-     "end": 40.246
+     "start": 35.68,
+     "end": 35.84
     },
     {
      "w": "everything",
-     "start": 40.293,
-     "end": 40.699
+     "start": 35.92,
+     "end": 36.28
     },
     {
      "w": "it",
-     "start": 40.757,
-     "end": 40.827
+     "start": 36.32,
+     "end": 36.4
     },
     {
      "w": "knows.",
-     "start": 40.873,
-     "end": 41.651
+     "start": 36.44,
+     "end": 36.86
     }
    ]
   },
   {
    "caption": "And this is how it works. Take an input, take its weight, and multiply them on the slide rule. Add the answer to a slider in the middle ring.",
-   "start": 42.651,
-   "end": 55.114,
+   "start": 38.46,
+   "end": 49.49,
    "segments": [
     {
      "caption": "And this is how it works.",
-     "start": 42.651,
-     "end": 44.137
+     "start": 38.46,
+     "end": 39.77
     },
     {
      "caption": "Take an input,",
-     "start": 44.637,
-     "end": 45.566
+     "start": 40.32,
+     "end": 41.28
     },
     {
      "caption": "take its weight,",
-     "start": 46.266,
-     "end": 47.52
+     "start": 42.13,
+     "end": 43.07
     },
     {
      "caption": "and multiply them on the slide rule.",
-     "start": 48.22,
-     "end": 50.681
+     "start": 44.02,
+     "end": 45.75
     },
     {
      "caption": "Add the answer to a slider in the middle ring.",
-     "start": 52.281,
-     "end": 55.114
+     "start": 47.1,
+     "end": 49.49
     }
    ],
    "words": [
     {
      "w": "And",
-     "start": 42.651,
-     "end": 42.802
+     "start": 38.46,
+     "end": 38.54
     },
     {
      "w": "this",
-     "start": 42.848,
-     "end": 42.976
+     "start": 38.58,
+     "end": 38.68
     },
     {
      "w": "is",
-     "start": 43.034,
-     "end": 43.115
+     "start": 38.72,
+     "end": 38.8
     },
     {
      "w": "how",
-     "start": 43.173,
-     "end": 43.313
+     "start": 38.84,
+     "end": 38.94
     },
     {
      "w": "it",
-     "start": 43.382,
-     "end": 43.452
+     "start": 38.98,
+     "end": 39.08
     },
     {
      "w": "works.",
-     "start": 43.499,
-     "end": 44.137
+     "start": 39.12,
+     "end": 39.52
     },
     {
      "w": "Take",
-     "start": 44.637,
-     "end": 44.916
+     "start": 40.32,
+     "end": 40.51
     },
     {
      "w": "an",
-     "start": 44.95,
-     "end": 44.997
+     "start": 40.55,
+     "end": 40.61
     },
     {
      "w": "input,",
-     "start": 45.055,
-     "end": 45.566
+     "start": 40.65,
+     "end": 41.03
     },
     {
      "w": "take",
-     "start": 46.266,
-     "end": 46.545
+     "start": 42.13,
+     "end": 42.28
     },
     {
      "w": "its",
-     "start": 46.579,
-     "end": 46.696
+     "start": 42.32,
+     "end": 42.44
     },
     {
      "w": "weight,",
-     "start": 46.754,
-     "end": 47.52
+     "start": 42.5,
+     "end": 42.82
     },
     {
      "w": "and",
-     "start": 48.22,
-     "end": 48.394
+     "start": 44.02,
+     "end": 44.14
     },
     {
      "w": "multiply",
-     "start": 48.452,
-     "end": 48.975
+     "start": 44.18,
+     "end": 44.56
     },
     {
      "w": "them",
-     "start": 49.044,
-     "end": 49.195
+     "start": 44.58,
+     "end": 44.68
     },
     {
      "w": "on",
-     "start": 49.277,
-     "end": 49.404
+     "start": 44.72,
+     "end": 44.78
     },
     {
      "w": "the",
-     "start": 49.439,
-     "end": 49.509
+     "start": 44.8,
+     "end": 44.88
     },
     {
      "w": "slide",
-     "start": 49.555,
-     "end": 49.95
+     "start": 44.94,
+     "end": 45.2
     },
     {
      "w": "rule.",
-     "start": 49.973,
-     "end": 50.681
+     "start": 45.26,
+     "end": 45.5
     },
     {
      "w": "Add",
-     "start": 52.281,
-     "end": 52.525
+     "start": 47.1,
+     "end": 47.26
     },
     {
      "w": "the",
-     "start": 52.571,
-     "end": 52.641
+     "start": 47.3,
+     "end": 47.38
     },
     {
      "w": "answer",
-     "start": 52.711,
-     "end": 53.047
+     "start": 47.46,
+     "end": 47.82
     },
     {
      "w": "to",
-     "start": 53.105,
-     "end": 53.187
+     "start": 47.88,
+     "end": 47.94
     },
     {
      "w": "a",
-     "start": 53.279,
-     "end": 53.303
+     "start": 48.02,
+     "end": 48.06
     },
     {
      "w": "slider",
-     "start": 53.361,
-     "end": 53.779
+     "start": 48.14,
+     "end": 48.48
     },
     {
      "w": "in",
-     "start": 53.825,
-     "end": 53.883
+     "start": 48.54,
+     "end": 48.6
     },
     {
      "w": "the",
-     "start": 53.918,
-     "end": 53.988
+     "start": 48.64,
+     "end": 48.68
     },
     {
      "w": "middle",
-     "start": 54.046,
-     "end": 54.324
+     "start": 48.72,
+     "end": 48.9
     },
     {
      "w": "ring.",
-     "start": 54.371,
-     "end": 55.114
+     "start": 48.96,
+     "end": 49.24
     }
    ]
   },
   {
    "caption": "Then do it again. Two hundred and sixteen times.",
-   "start": 56.714,
-   "end": 61.069,
+   "start": 51.44,
+   "end": 55.41,
    "segments": [
     {
      "caption": "Then do it again.",
-     "start": 56.714,
-     "end": 58.247
+     "start": 51.44,
+     "end": 52.61
     },
     {
      "caption": "Two hundred and sixteen times.",
-     "start": 58.747,
-     "end": 61.069
+     "start": 53.06,
+     "end": 55.41
     }
    ],
    "words": [
     {
      "w": "Then",
-     "start": 56.714,
-     "end": 56.946
+     "start": 51.44,
+     "end": 51.62
     },
     {
      "w": "do",
-     "start": 57.004,
-     "end": 57.109
+     "start": 51.66,
+     "end": 51.74
     },
     {
      "w": "it",
-     "start": 57.178,
-     "end": 57.248
+     "start": 51.78,
+     "end": 51.82
     },
     {
      "w": "again.",
-     "start": 57.283,
-     "end": 58.247
+     "start": 51.88,
+     "end": 52.36
     },
     {
      "w": "Two",
-     "start": 58.747,
-     "end": 58.979
+     "start": 53.06,
+     "end": 53.285
     },
     {
      "w": "hundred",
-     "start": 59.06,
-     "end": 59.42
+     "start": 53.285,
+     "end": 53.81
     },
     {
      "w": "and",
-     "start": 59.467,
-     "end": 59.548
+     "start": 53.81,
+     "end": 54.035
     },
     {
      "w": "sixteen",
-     "start": 59.629,
-     "end": 60.14
+     "start": 54.035,
+     "end": 54.56
     },
     {
      "w": "times.",
-     "start": 60.21,
-     "end": 61.069
+     "start": 54.64,
+     "end": 55.16
     }
    ]
   },
   {
    "caption": "Anything that ends up below zero goes back to zero.",
-   "start": 64.269,
-   "end": 67.566,
+   "start": 57.96,
+   "end": 60.79,
    "segments": [
     {
      "caption": "Anything that ends up below zero goes back to zero.",
-     "start": 64.269,
-     "end": 67.566
+     "start": 57.96,
+     "end": 60.79
     }
    ],
    "words": [
     {
      "w": "Anything",
-     "start": 64.269,
-     "end": 64.675
+     "start": 57.96,
+     "end": 58.3
     },
     {
      "w": "that",
-     "start": 64.71,
-     "end": 64.815
+     "start": 58.34,
+     "end": 58.42
     },
     {
      "w": "ends",
-     "start": 64.873,
-     "end": 65.035
+     "start": 58.46,
+     "end": 58.6
     },
     {
      "w": "up",
-     "start": 65.07,
-     "end": 65.175
+     "start": 58.66,
+     "end": 58.74
     },
     {
      "w": "below",
-     "start": 65.221,
-     "end": 65.511
+     "start": 58.78,
+     "end": 59.0
     },
     {
      "w": "zero",
-     "start": 65.593,
-     "end": 65.964
+     "start": 59.06,
+     "end": 59.38
     },
     {
      "w": "goes",
-     "start": 66.045,
-     "end": 66.266
+     "start": 59.62,
+     "end": 59.8
     },
     {
      "w": "back",
-     "start": 66.324,
-     "end": 66.533
+     "start": 59.84,
+     "end": 59.98
     },
     {
      "w": "to",
-     "start": 66.591,
-     "end": 66.672
+     "start": 60.04,
+     "end": 60.12
     },
     {
      "w": "zero.",
-     "start": 66.754,
-     "end": 67.566
+     "start": 60.18,
+     "end": 60.54
     }
    ]
   },
   {
    "caption": "Then once more: one more ring of weights, sixty more multiplications, and the ten inner sliders hold the answer. The one that has travelled furthest wins. It's a seven.",
-   "start": 68.966,
-   "end": 84.258,
+   "start": 62.14,
+   "end": 76.24,
    "segments": [
     {
      "caption": "Then once more: one more ring of weights, sixty more multiplications,",
-     "start": 68.966,
-     "end": 73.61
+     "start": 62.14,
+     "end": 66.94
     },
     {
      "caption": "and the ten inner sliders hold the answer.",
-     "start": 76.01,
-     "end": 79.168
+     "start": 69.29,
+     "end": 71.44
     },
     {
      "caption": "The one that has travelled furthest wins.",
-     "start": 79.968,
-     "end": 82.243
+     "start": 72.39,
+     "end": 74.45
     },
     {
      "caption": "It's a seven.",
-     "start": 83.143,
-     "end": 84.258
+     "start": 75.3,
+     "end": 76.24
     }
    ],
    "words": [
     {
      "w": "Then",
-     "start": 68.966,
-     "end": 69.187
+     "start": 62.14,
+     "end": 62.35
     },
     {
      "w": "once",
-     "start": 69.256,
-     "end": 69.512
+     "start": 62.43,
+     "end": 62.61
     },
     {
      "w": "more:",
-     "start": 69.57,
-     "end": 70.011
+     "start": 62.67,
+     "end": 62.91
     },
     {
      "w": "one",
-     "start": 70.255,
-     "end": 70.464
+     "start": 63.87,
+     "end": 63.97
     },
     {
      "w": "more",
-     "start": 70.499,
-     "end": 70.696
+     "start": 64.01,
+     "end": 64.13
     },
     {
      "w": "ring",
-     "start": 70.754,
-     "end": 70.916
+     "start": 64.17,
+     "end": 64.29
     },
     {
      "w": "of",
-     "start": 70.963,
-     "end": 71.021
+     "start": 64.33,
+     "end": 64.41
     },
     {
      "w": "weights,",
-     "start": 71.102,
-     "end": 71.601
+     "start": 64.45,
+     "end": 64.81
     },
     {
      "w": "sixty",
-     "start": 71.718,
-     "end": 72.077
+     "start": 65.19,
+     "end": 65.55
     },
     {
      "w": "more",
-     "start": 72.136,
-     "end": 72.333
+     "start": 65.59,
+     "end": 65.71
     },
     {
      "w": "multiplications,",
-     "start": 72.368,
-     "end": 73.61
+     "start": 65.75,
+     "end": 66.69
     },
     {
      "w": "and",
-     "start": 76.01,
-     "end": 76.173
+     "start": 69.29,
+     "end": 69.39
     },
     {
      "w": "the",
-     "start": 76.219,
-     "end": 76.289
+     "start": 69.43,
+     "end": 69.49
     },
     {
      "w": "ten",
-     "start": 76.335,
-     "end": 76.649
+     "start": 69.51,
+     "end": 69.85
     },
     {
      "w": "inner",
-     "start": 76.799,
-     "end": 77.055
+     "start": 69.93,
+     "end": 70.07
     },
     {
      "w": "sliders",
-     "start": 77.09,
-     "end": 77.589
+     "start": 70.13,
+     "end": 70.49
     },
     {
      "w": "hold",
-     "start": 77.659,
-     "end": 77.914
+     "start": 70.53,
+     "end": 70.67
     },
     {
      "w": "the",
-     "start": 77.949,
-     "end": 78.03
+     "start": 70.71,
+     "end": 70.79
     },
     {
      "w": "answer.",
-     "start": 78.088,
-     "end": 79.168
+     "start": 70.85,
+     "end": 71.19
     },
     {
      "w": "The",
-     "start": 79.968,
-     "end": 80.107
+     "start": 72.39,
+     "end": 72.48
     },
     {
      "w": "one",
-     "start": 80.177,
-     "end": 80.305
+     "start": 72.58,
+     "end": 72.7
     },
     {
      "w": "that",
-     "start": 80.328,
-     "end": 80.432
+     "start": 72.74,
+     "end": 72.82
     },
     {
      "w": "has",
-     "start": 80.467,
-     "end": 80.572
+     "start": 72.84,
+     "end": 72.94
     },
     {
      "w": "travelled",
-     "start": 80.63,
-     "end": 81.001
+     "start": 72.98,
+     "end": 73.3
     },
     {
      "w": "furthest",
-     "start": 81.048,
-     "end": 81.466
+     "start": 73.36,
+     "end": 73.7
     },
     {
      "w": "wins.",
-     "start": 81.547,
-     "end": 82.244
+     "start": 73.76,
+     "end": 74.2
     },
     {
      "w": "It's",
-     "start": 83.143,
-     "end": 83.352
+     "start": 75.3,
+     "end": 75.41
     },
     {
      "w": "a",
-     "start": 83.387,
-     "end": 83.41
+     "start": 75.47,
+     "end": 75.51
     },
     {
      "w": "seven.",
-     "start": 83.48,
-     "end": 84.258
+     "start": 75.59,
+     "end": 75.99
     }
    ]
   },
   {
    "caption": "Those weights make it read digits. Slide them to new positions, and the same table does a different job.",
-   "start": 86.458,
-   "end": 95.745,
+   "start": 78.19,
+   "end": 86.22,
    "segments": [
     {
      "caption": "Those weights make it read digits.",
-     "start": 86.458,
-     "end": 88.734
+     "start": 78.19,
+     "end": 80.06
     },
     {
      "caption": "Slide them to new positions,",
-     "start": 89.334,
-     "end": 91.098
+     "start": 81.01,
+     "end": 82.76
     },
     {
      "caption": "and the same table does a different job.",
-     "start": 93.098,
-     "end": 95.745
+     "start": 84.41,
+     "end": 86.22
     }
    ],
    "words": [
     {
      "w": "Those",
-     "start": 86.458,
-     "end": 86.783
+     "start": 78.19,
+     "end": 78.47
     },
     {
      "w": "weights",
-     "start": 86.841,
-     "end": 87.143
+     "start": 78.53,
+     "end": 78.79
     },
     {
      "w": "make",
-     "start": 87.213,
-     "end": 87.422
+     "start": 78.85,
+     "end": 78.97
     },
     {
      "w": "it",
-     "start": 87.456,
-     "end": 87.515
+     "start": 78.99,
+     "end": 79.07
     },
     {
      "w": "read",
-     "start": 87.584,
-     "end": 87.793
+     "start": 79.11,
+     "end": 79.31
     },
     {
      "w": "digits.",
-     "start": 87.851,
-     "end": 88.734
+     "start": 79.35,
+     "end": 79.81
     },
     {
      "w": "Slide",
-     "start": 89.334,
-     "end": 89.775
+     "start": 81.01,
+     "end": 81.33
     },
     {
      "w": "them",
-     "start": 89.797,
-     "end": 89.925
+     "start": 81.35,
+     "end": 81.47
     },
     {
      "w": "to",
-     "start": 89.984,
-     "end": 90.064
+     "start": 81.51,
+     "end": 81.57
     },
     {
      "w": "new",
-     "start": 90.157,
-     "end": 90.308
+     "start": 81.61,
+     "end": 81.71
     },
     {
      "w": "positions,",
-     "start": 90.356,
-     "end": 91.099
+     "start": 81.75,
+     "end": 82.51
     },
     {
      "w": "and",
-     "start": 93.098,
-     "end": 93.261
+     "start": 84.41,
+     "end": 84.49
     },
     {
      "w": "the",
-     "start": 93.307,
-     "end": 93.377
+     "start": 84.53,
+     "end": 84.59
     },
     {
      "w": "same",
-     "start": 93.423,
-     "end": 93.702
+     "start": 84.65,
+     "end": 84.83
     },
     {
      "w": "table",
-     "start": 93.748,
-     "end": 94.108
+     "start": 84.89,
+     "end": 85.15
     },
     {
      "w": "does",
-     "start": 94.155,
-     "end": 94.41
+     "start": 85.17,
+     "end": 85.29
     },
     {
      "w": "a",
-     "start": 94.48,
-     "end": 94.514
+     "start": 85.33,
+     "end": 85.37
     },
     {
      "w": "different",
-     "start": 94.572,
-     "end": 94.886
+     "start": 85.41,
+     "end": 85.63
     },
     {
      "w": "job.",
-     "start": 94.921,
-     "end": 95.745
+     "start": 85.71,
+     "end": 85.97
     }
    ]
   },
   {
-   "caption": "Now each input slider answers a yes-or-no question about an animal. Hair: yes. Feathers: no. Milk: yes. The same two hundred and seventy-six steps, and the output is mammal.",
-   "start": 96.745,
-   "end": 114.623,
+   "caption": "Now each input slider answers a yes-or-no question about an animal. Hair: yes. Feathers: no. Milk: yes. The same two hundred and seventy-six steps, and the output is a mammal.",
+   "start": 87.57,
+   "end": 105.369,
    "segments": [
     {
      "caption": "Now each input slider answers a yes-or-no question about an animal.",
-     "start": 96.745,
-     "end": 101.111
+     "start": 87.57,
+     "end": 90.97
     },
     {
      "caption": "Hair: yes.",
-     "start": 101.711,
-     "end": 102.918
+     "start": 91.62,
+     "end": 93.23
     },
     {
      "caption": "Feathers: no.",
-     "start": 103.318,
-     "end": 104.897
+     "start": 93.98,
+     "end": 95.649
     },
     {
      "caption": "Milk: yes.",
-     "start": 105.297,
-     "end": 106.319
+     "start": 96.499,
+     "end": 98.209
     },
     {
      "caption": "The same two hundred and seventy-six steps,",
-     "start": 107.519,
-     "end": 110.259
+     "start": 99.759,
+     "end": 102.109
     },
     {
-     "caption": "and the output is mammal.",
-     "start": 112.859,
-     "end": 114.623
+     "caption": "and the output is a mammal.",
+     "start": 103.859,
+     "end": 105.369
     }
    ],
    "words": [
     {
      "w": "Now",
-     "start": 96.745,
-     "end": 96.966
+     "start": 87.57,
+     "end": 87.82
     },
     {
      "w": "each",
-     "start": 97.035,
-     "end": 97.256
+     "start": 87.86,
+     "end": 88.0
     },
     {
      "w": "input",
-     "start": 97.337,
-     "end": 97.697
+     "start": 88.04,
+     "end": 88.3
     },
     {
      "w": "slider",
-     "start": 97.755,
-     "end": 98.196
+     "start": 88.38,
+     "end": 88.68
     },
     {
      "w": "answers",
-     "start": 98.254,
-     "end": 98.626
+     "start": 88.74,
+     "end": 88.98
     },
     {
      "w": "a",
-     "start": 98.672,
-     "end": 98.707
+     "start": 89.04,
+     "end": 89.08
     },
     {
      "w": "yes-or-no",
-     "start": 98.777,
-     "end": 99.392
+     "start": 89.12,
+     "end": 89.62
     },
     {
      "w": "question",
-     "start": 99.462,
-     "end": 99.856
+     "start": 89.68,
+     "end": 90.0
     },
     {
      "w": "about",
-     "start": 99.903,
-     "end": 100.124
+     "start": 90.06,
+     "end": 90.22
     },
     {
      "w": "an",
-     "start": 100.158,
-     "end": 100.205
+     "start": 90.26,
+     "end": 90.32
     },
     {
      "w": "animal.",
-     "start": 100.251,
-     "end": 101.11
+     "start": 90.38,
+     "end": 90.72
     },
     {
      "w": "Hair:",
-     "start": 101.711,
-     "end": 102.233
+     "start": 91.62,
+     "end": 91.92
     },
     {
      "w": "yes.",
-     "start": 102.384,
-     "end": 102.918
+     "start": 92.62,
+     "end": 92.98
     },
     {
      "w": "Feathers:",
-     "start": 103.318,
-     "end": 103.933
+     "start": 93.98,
+     "end": 94.44
     },
     {
      "w": "no.",
-     "start": 104.107,
-     "end": 104.897
+     "start": 95.2,
+     "end": 95.399
     },
     {
      "w": "Milk:",
-     "start": 105.297,
-     "end": 105.669
+     "start": 96.499,
+     "end": 96.839
     },
     {
      "w": "yes.",
-     "start": 105.703,
-     "end": 106.319
+     "start": 97.579,
+     "end": 97.959
     },
     {
      "w": "The",
-     "start": 107.519,
-     "end": 107.693
+     "start": 99.759,
+     "end": 99.859
     },
     {
      "w": "same",
-     "start": 107.751,
-     "end": 108.053
+     "start": 99.939,
+     "end": 100.259
     },
     {
      "w": "two",
-     "start": 108.088,
-     "end": 108.297
+     "start": 100.249,
+     "end": 100.383
     },
     {
      "w": "hundred",
-     "start": 108.367,
-     "end": 108.657
+     "start": 100.383,
+     "end": 100.695
     },
     {
      "w": "and",
-     "start": 108.692,
-     "end": 108.773
+     "start": 100.695,
+     "end": 100.829
     },
     {
      "w": "seventy-six",
-     "start": 108.831,
-     "end": 109.423
+     "start": 100.829,
+     "end": 101.319
     },
     {
      "w": "steps,",
-     "start": 109.458,
-     "end": 110.259
+     "start": 101.399,
+     "end": 101.859
     },
     {
      "w": "and",
-     "start": 112.859,
-     "end": 113.045
+     "start": 103.859,
+     "end": 103.939
     },
     {
      "w": "the",
-     "start": 113.091,
-     "end": 113.161
+     "start": 103.979,
+     "end": 104.039
     },
     {
      "w": "output",
-     "start": 113.219,
-     "end": 113.648
+     "start": 104.099,
+     "end": 104.539
     },
     {
      "w": "is",
-     "start": 113.718,
-     "end": 113.846
+     "start": 104.619,
+     "end": 104.679
+    },
+    {
+     "w": "a",
+     "start": 104.719,
+     "end": 104.759
     },
     {
      "w": "mammal.",
-     "start": 113.916,
-     "end": 114.624
+     "start": 104.799,
+     "end": 105.119
     }
    ]
   },
   {
    "caption": "Move the weights once more, and it guesses the next letter. After T, H: E.",
-   "start": 116.423,
-   "end": 127.721,
+   "start": 107.319,
+   "end": 117.738,
    "segments": [
     {
      "caption": "Move the weights once more,",
-     "start": 116.423,
-     "end": 117.817
+     "start": 107.319,
+     "end": 108.718
     },
     {
      "caption": "and it guesses the next letter.",
-     "start": 119.817,
-     "end": 121.767
+     "start": 110.468,
+     "end": 111.798
     },
     {
      "caption": "After T, H:",
-     "start": 122.567,
-     "end": 124.425
+     "start": 112.948,
+     "end": 114.678
     },
     {
      "caption": "E.",
-     "start": 127.025,
-     "end": 127.721
+     "start": 117.228,
+     "end": 117.738
     }
    ],
    "words": [
     {
      "w": "Move",
-     "start": 116.423,
-     "end": 116.702
+     "start": 107.319,
+     "end": 107.589
     },
     {
      "w": "the",
-     "start": 116.736,
-     "end": 116.806
+     "start": 107.628,
+     "end": 107.688
     },
     {
      "w": "weights",
-     "start": 116.853,
-     "end": 117.154
+     "start": 107.729,
+     "end": 107.949
     },
     {
      "w": "once",
-     "start": 117.212,
-     "end": 117.433
+     "start": 108.009,
+     "end": 108.209
     },
     {
      "w": "more,",
-     "start": 117.491,
-     "end": 117.816
+     "start": 108.269,
+     "end": 108.468
     },
     {
      "w": "and",
-     "start": 119.817,
-     "end": 119.98
+     "start": 110.468,
+     "end": 110.548
     },
     {
      "w": "it",
-     "start": 120.026,
-     "end": 120.084
+     "start": 110.588,
+     "end": 110.628
     },
     {
      "w": "guesses",
-     "start": 120.13,
-     "end": 120.467
+     "start": 110.668,
+     "end": 110.928
     },
     {
      "w": "the",
-     "start": 120.537,
-     "end": 120.606
+     "start": 110.968,
+     "end": 111.028
     },
     {
      "w": "next",
-     "start": 120.665,
-     "end": 120.885
+     "start": 111.068,
+     "end": 111.248
     },
     {
      "w": "letter.",
-     "start": 120.932,
-     "end": 121.767
+     "start": 111.308,
+     "end": 111.548
     },
     {
      "w": "After",
-     "start": 122.567,
-     "end": 122.915
+     "start": 112.948,
+     "end": 113.258
     },
     {
      "w": "T,",
-     "start": 122.985,
-     "end": 123.519
+     "start": 113.338,
+     "end": 113.578
     },
     {
      "w": "H:",
-     "start": 123.67,
-     "end": 124.425
+     "start": 114.278,
+     "end": 114.428
     },
     {
      "w": "E.",
-     "start": 127.025,
-     "end": 127.722
+     "start": 117.228,
+     "end": 117.488
     }
    ]
   },
   {
    "caption": "By hand, each answer takes the best part of an hour. A chip in a data centre does the same sums trillions of times a second.",
-   "start": 129.521,
-   "end": 138.462,
+   "start": 119.888,
+   "end": 127.058,
    "segments": [
     {
      "caption": "By hand, each answer takes the best part of an hour.",
-     "start": 129.521,
-     "end": 132.493
+     "start": 119.888,
+     "end": 122.958
     },
     {
      "caption": "A chip in a data centre does the same sums trillions of times a second.",
-     "start": 133.493,
-     "end": 138.462
+     "start": 123.708,
+     "end": 127.058
     }
    ],
    "words": [
     {
      "w": "By",
-     "start": 129.521,
-     "end": 129.742
+     "start": 119.888,
+     "end": 120.048
     },
     {
      "w": "hand,",
-     "start": 129.823,
-     "end": 130.101
+     "start": 120.108,
+     "end": 120.408
     },
     {
      "w": "each",
-     "start": 130.148,
-     "end": 130.334
+     "start": 121.088,
+     "end": 121.288
     },
     {
      "w": "answer",
-     "start": 130.38,
-     "end": 130.647
+     "start": 121.368,
+     "end": 121.588
     },
     {
      "w": "takes",
-     "start": 130.694,
-     "end": 130.914
+     "start": 121.628,
+     "end": 121.808
     },
     {
      "w": "the",
-     "start": 130.949,
-     "end": 131.019
+     "start": 121.828,
+     "end": 121.888
     },
     {
      "w": "best",
-     "start": 131.077,
-     "end": 131.274
+     "start": 121.928,
+     "end": 122.088
     },
     {
      "w": "part",
-     "start": 131.332,
-     "end": 131.553
+     "start": 122.148,
+     "end": 122.248
     },
     {
      "w": "of",
-     "start": 131.588,
-     "end": 131.646
+     "start": 122.288,
+     "end": 122.328
     },
     {
      "w": "an",
-     "start": 131.68,
-     "end": 131.739
+     "start": 122.368,
+     "end": 122.428
     },
     {
      "w": "hour.",
-     "start": 131.785,
-     "end": 132.493
+     "start": 122.508,
+     "end": 122.708
     },
     {
      "w": "A",
-     "start": 133.493,
-     "end": 133.621
+     "start": 123.708,
+     "end": 123.788
     },
     {
      "w": "chip",
-     "start": 133.702,
-     "end": 133.957
+     "start": 123.828,
+     "end": 123.988
     },
     {
      "w": "in",
-     "start": 134.073,
-     "end": 134.19
+     "start": 124.028,
+     "end": 124.068
     },
     {
      "w": "a",
-     "start": 134.236,
-     "end": 134.259
+     "start": 124.128,
+     "end": 124.168
     },
     {
      "w": "data",
-     "start": 134.306,
-     "end": 134.55
+     "start": 124.208,
+     "end": 124.408
     },
     {
      "w": "centre",
-     "start": 134.608,
-     "end": 135.049
+     "start": 124.468,
+     "end": 124.648
     },
     {
      "w": "does",
-     "start": 135.142,
-     "end": 135.362
+     "start": 124.688,
+     "end": 124.808
     },
     {
      "w": "the",
-     "start": 135.397,
-     "end": 135.467
+     "start": 124.848,
+     "end": 124.948
     },
     {
      "w": "same",
-     "start": 135.525,
-     "end": 135.827
+     "start": 125.008,
+     "end": 125.248
     },
     {
      "w": "sums",
-     "start": 135.873,
-     "end": 136.291
+     "start": 125.328,
+     "end": 125.608
     },
     {
      "w": "trillions",
-     "start": 136.361,
-     "end": 136.837
+     "start": 125.668,
+     "end": 125.948
     },
     {
      "w": "of",
-     "start": 136.872,
-     "end": 136.93
+     "start": 125.988,
+     "end": 126.048
     },
     {
      "w": "times",
-     "start": 136.976,
-     "end": 137.278
+     "start": 126.108,
+     "end": 126.308
     },
     {
      "w": "a",
-     "start": 137.313,
-     "end": 137.348
+     "start": 126.348,
+     "end": 126.388
     },
     {
      "w": "second.",
-     "start": 137.406,
-     "end": 138.462
+     "start": 126.448,
+     "end": 126.808
     }
    ]
   },
   {
-   "caption": "But nothing different is happening in there. It is multiplying and adding, all the way down. Here, you can watch every step.",
-   "start": 139.662,
-   "end": 148.932,
+   "caption": "But nothing different is happening in there. It's multiplying and adding, all the way down. Here, you can watch every step.",
+   "start": 128.508,
+   "end": 136.538,
    "segments": [
     {
      "caption": "But nothing different is happening in there.",
-     "start": 139.662,
-     "end": 141.938
+     "start": 128.508,
+     "end": 130.248
     },
     {
-     "caption": "It is multiplying and adding, all the way down.",
-     "start": 142.438,
-     "end": 145.457
+     "caption": "It's multiplying and adding, all the way down.",
+     "start": 131.098,
+     "end": 133.718
     },
     {
      "caption": "Here, you can watch every step.",
-     "start": 146.657,
-     "end": 148.932
+     "start": 134.468,
+     "end": 136.538
     }
    ],
    "words": [
     {
      "w": "But",
-     "start": 139.662,
-     "end": 139.859
+     "start": 128.508,
+     "end": 128.618
     },
     {
      "w": "nothing",
-     "start": 139.906,
-     "end": 140.173
+     "start": 128.658,
+     "end": 128.898
     },
     {
      "w": "different",
-     "start": 140.231,
-     "end": 140.568
+     "start": 128.938,
+     "end": 129.158
     },
     {
      "w": "is",
-     "start": 140.614,
-     "end": 140.684
+     "start": 129.198,
+     "end": 129.278
     },
     {
      "w": "happening",
-     "start": 140.742,
-     "end": 141.09
+     "start": 129.298,
+     "end": 129.538
     },
     {
      "w": "in",
-     "start": 141.136,
-     "end": 141.206
+     "start": 129.578,
+     "end": 129.658
     },
     {
      "w": "there.",
-     "start": 141.241,
-     "end": 141.938
+     "start": 129.698,
+     "end": 129.998
     },
     {
-     "w": "It",
-     "start": 142.438,
-     "end": 142.612
-    },
-    {
-     "w": "is",
-     "start": 142.659,
-     "end": 142.74
+     "w": "It's",
+     "start": 131.098,
+     "end": 131.248
     },
     {
      "w": "multiplying",
-     "start": 142.821,
-     "end": 143.518
+     "start": 131.308,
+     "end": 131.788
     },
     {
      "w": "and",
-     "start": 143.553,
-     "end": 143.622
+     "start": 131.848,
+     "end": 131.948
     },
     {
      "w": "adding,",
-     "start": 143.68,
-     "end": 144.052
+     "start": 132.008,
+     "end": 132.568
     },
     {
      "w": "all",
-     "start": 144.075,
-     "end": 144.307
+     "start": 132.688,
+     "end": 132.788
     },
     {
      "w": "the",
-     "start": 144.377,
-     "end": 144.447
+     "start": 132.828,
+     "end": 132.888
     },
     {
      "w": "way",
-     "start": 144.493,
-     "end": 144.621
+     "start": 132.928,
+     "end": 133.108
     },
     {
      "w": "down.",
-     "start": 144.679,
-     "end": 145.457
+     "start": 133.168,
+     "end": 133.468
     },
     {
      "w": "Here,",
-     "start": 146.657,
-     "end": 146.97
+     "start": 134.468,
+     "end": 134.728
     },
     {
      "w": "you",
-     "start": 147.005,
-     "end": 147.087
+     "start": 135.328,
+     "end": 135.388
     },
     {
      "w": "can",
-     "start": 147.133,
-     "end": 147.261
+     "start": 135.428,
+     "end": 135.528
     },
     {
      "w": "watch",
-     "start": 147.319,
-     "end": 147.621
+     "start": 135.548,
+     "end": 135.728
     },
     {
      "w": "every",
-     "start": 147.83,
-     "end": 148.131
+     "start": 135.768,
+     "end": 135.948
     },
     {
      "w": "step.",
-     "start": 148.19,
-     "end": 148.933
+     "start": 136.008,
+     "end": 136.288
     }
    ]
   }
