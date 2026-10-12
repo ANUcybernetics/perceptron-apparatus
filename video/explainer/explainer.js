@@ -196,7 +196,7 @@ export function build(tl, S, T) {
   const tDraw = T.word(0, "sliders") + 0.45;
   const tGlint = [tDraw + 0.5, T.word(12, "watch")];
   const tSpin = T.word(0, "circular");
-  const tSets = T.word(2, "sets");
+  const tSets = T.word(2, "corresponds");
   const tPushA = seg(2, 3).start - 0.55;
   const CLOSE = [13, 14, 15]; // the three sliders the push-in on ring A lands on
   const rank = Array.from({ length: N_IN }, (_, i) => i).filter((i) => !CLOSE.includes(i));
@@ -205,10 +205,10 @@ export function build(tl, S, T) {
   );
   const tLearn = T.word(3, "learned");
   const tMul = T.word(4, "multiply") + 0.3;
-  const tAdd = T.word(4, "hidden");
+  const tAdd = T.word(4, "middle");
   const run1 = { start: T.word(5, "again") + 0.25, end: T.start(6) - 0.9 };
   const tRelu = T.word(6, "back");
-  const tD = T.word(7, "more");
+  const tD = T.word(7, "one");
   const run2 = { start: T.word(7, "sixty"), end: seg(7, 1).start - 0.55 };
   const tPushE = seg(7, 1).start - 0.35;
   const tSeven = T.word(7, "seven");

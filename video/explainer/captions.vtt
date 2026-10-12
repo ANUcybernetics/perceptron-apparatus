@@ -7,112 +7,112 @@ This table is a computer.
 No electricity, no chips: just plywood, brass sliders and a circular slide rule.
 
 00:00:11.270 --> 00:00:16.239
-It runs a neural network, the same arithmetic that underpins modern AI.
+It runs a neural network, the same algorithm that underpins modern AI.
 
-00:00:17.239 --> 00:00:18.911
+00:00:17.239 --> 00:00:19.282
 Start with a handwritten digit,
 
-00:00:19.311 --> 00:00:21.540
+00:00:19.682 --> 00:00:21.958
 shrunk to thirty-six squares.
 
-00:00:22.340 --> 00:00:25.823
-Each square sets one slider on the outer ring:
+00:00:22.758 --> 00:00:26.612
+Each square corresponds to one slider on the outer ring:
 
-00:00:26.323 --> 00:00:29.249
-the more ink, the further it slides.
+00:00:27.113 --> 00:00:30.874
+the more ink in the square, the further it slides.
 
-00:00:30.449 --> 00:00:37.043
-The next ring holds the weights: numbers the network learned from thousands of handwritten digits.
+00:00:32.074 --> 00:00:39.133
+The next ring of sliders holds the weights: numbers the network learned from thousands of handwritten digits.
 
-00:00:37.843 --> 00:00:39.654
+00:00:39.933 --> 00:00:41.651
 They are everything it knows.
 
-00:00:40.654 --> 00:00:41.815
-Now the work.
+00:00:42.651 --> 00:00:44.137
+And this is how it works.
 
-00:00:42.315 --> 00:00:43.244
+00:00:44.637 --> 00:00:45.566
 Take an input,
 
-00:00:43.944 --> 00:00:45.105
+00:00:46.266 --> 00:00:47.520
 take its weight,
 
-00:00:45.805 --> 00:00:48.267
+00:00:48.220 --> 00:00:50.681
 and multiply them on the slide rule.
 
-00:00:49.867 --> 00:00:52.560
-Add the answer to a slider in the hidden ring.
+00:00:52.281 --> 00:00:55.114
+Add the answer to a slider in the middle ring.
 
-00:00:54.160 --> 00:00:55.692
+00:00:56.714 --> 00:00:58.247
 Then do it again.
 
-00:00:56.193 --> 00:00:58.515
+00:00:58.747 --> 00:01:01.069
 Two hundred and sixteen times.
 
-00:01:01.715 --> 00:01:04.687
+00:01:04.269 --> 00:01:07.566
 Anything that ends up below zero goes back to zero.
 
-00:01:06.087 --> 00:01:09.523
-One more ring of weights, sixty more multiplications,
+00:01:08.966 --> 00:01:13.610
+Then once more: one more ring of weights, sixty more multiplications,
 
-00:01:11.923 --> 00:01:15.081
+00:01:16.010 --> 00:01:19.168
 and the ten inner sliders hold the answer.
 
-00:01:15.881 --> 00:01:18.157
+00:01:19.968 --> 00:01:22.243
 The one that has travelled furthest wins.
 
-00:01:19.057 --> 00:01:20.171
+00:01:23.143 --> 00:01:24.258
 It's a seven.
 
-00:01:22.371 --> 00:01:24.647
+00:01:26.458 --> 00:01:28.734
 Those weights make it read digits.
 
-00:01:25.247 --> 00:01:27.011
+00:01:29.334 --> 00:01:31.098
 Slide them to new positions,
 
-00:01:29.011 --> 00:01:31.659
+00:01:33.098 --> 00:01:35.745
 and the same table does a different job.
 
-00:01:32.659 --> 00:01:37.024
+00:01:36.745 --> 00:01:41.111
 Now each input slider answers a yes-or-no question about an animal.
 
-00:01:37.624 --> 00:01:38.831
+00:01:41.711 --> 00:01:42.918
 Hair: yes.
 
-00:01:39.231 --> 00:01:40.810
+00:01:43.318 --> 00:01:44.897
 Feathers: no.
 
-00:01:41.210 --> 00:01:42.232
+00:01:45.297 --> 00:01:46.319
 Milk: yes.
 
-00:01:43.432 --> 00:01:46.172
+00:01:47.519 --> 00:01:50.259
 The same two hundred and seventy-six steps,
 
-00:01:48.772 --> 00:01:50.862
-and it says mammal.
+00:01:52.859 --> 00:01:54.623
+and the output is mammal.
 
-00:01:52.662 --> 00:01:53.962
+00:01:56.423 --> 00:01:57.817
 Move the weights once more,
 
-00:01:55.962 --> 00:01:58.052
+00:01:59.817 --> 00:02:01.767
 and it guesses the next letter.
 
-00:01:58.852 --> 00:02:00.709
+00:02:02.567 --> 00:02:04.425
 After T, H:
 
-00:02:03.309 --> 00:02:04.006
+00:02:07.025 --> 00:02:07.721
 E.
 
-00:02:05.806 --> 00:02:08.778
+00:02:09.521 --> 00:02:12.493
 By hand, each answer takes the best part of an hour.
 
-00:02:09.778 --> 00:02:14.747
+00:02:13.493 --> 00:02:18.462
 A chip in a data centre does the same sums trillions of times a second.
 
-00:02:15.947 --> 00:02:18.223
+00:02:19.662 --> 00:02:21.938
 But nothing different is happening in there.
 
-00:02:18.723 --> 00:02:21.741
+00:02:22.438 --> 00:02:25.457
 It is multiplying and adding, all the way down.
 
-00:02:22.941 --> 00:02:25.217
+00:02:26.657 --> 00:02:28.932
 Here, you can watch every step.
