@@ -6,7 +6,7 @@ title: >-
 status: In Progress
 assignee: []
 created_date: '2026-10-12 00:45'
-updated_date: '2026-10-12 06:56'
+updated_date: '2026-10-12 06:57'
 labels:
   - video
 dependencies: []
@@ -31,7 +31,7 @@ Context for whoever picks this up:
 <!-- AC:BEGIN -->
 - [x] #1 The video's voice is Ben's recording, with no synthesised speech left in the mix
 - [x] #2 timing.json and captions.vtt come from the recording, and every caption matches what is said
-- [ ] #3 Each animation cue lands on the word that names it, checked on stills around every cue and by watching the draft at speed with sound
+- [x] #3 Each animation cue lands on the word that names it, checked on stills around every cue and by watching the draft at speed with sound
 - [x] #4 No animation that runs inside a pause is cut short or left waiting
 - [x] #5 video.py check passes, and the script matches the recording word for word
 - [ ] #6 A 4K 50 fps master is rendered and its first and last frames checked for missing fonts or assets
