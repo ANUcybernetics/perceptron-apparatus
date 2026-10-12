@@ -1,9 +1,10 @@
 ---
 id: task-9
 title: alternate dataset
-status: To Do
+status: Done
 assignee: []
-created_date: "2025-10-07 21:44"
+created_date: '2025-10-07 21:44'
+updated_date: '2026-10-12 02:44'
 labels: []
 dependencies: []
 ---
@@ -19,3 +20,9 @@ least) it'd be great to have another canonical ANN problem which:
 I guess we could just use another famous image dataset, similarly downsampled
 and greyscaled. But if there's another dataset which could also work which isn't
 image data that would be super cool.
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Closed by audit 2026-10-12: the zoo (PerceptronApparatus.Zoo) and letters (PerceptronApparatus.Letters) tasks, neither of them image data.
+<!-- SECTION:NOTES:END -->

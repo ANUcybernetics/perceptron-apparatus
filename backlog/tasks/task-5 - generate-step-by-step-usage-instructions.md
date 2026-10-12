@@ -1,15 +1,17 @@
 ---
 id: task-5
 title: generate step-by-step usage instructions
-status: To Do
+status: Done
 assignee: []
-created_date: "2025-07-14"
+created_date: '2025-07-14'
+updated_date: '2026-10-12 02:44'
 labels: []
 dependencies: []
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 When using the apparatus, participants will be required to follow the
 "algorithm" to turn the input values into the output values.
 
@@ -42,3 +44,10 @@ the correct values.
 To _adjust_ by a value means to add or subtract the value from the current value
 of the slider. To _set_ the value means the slider should show that value
 (regardless of the previous value).
+<!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Closed by audit 2026-10-12: Ben confirmed done; the instructions are docs/mnist-instructions.typ and docs/mnist-poster.typ.
+<!-- SECTION:NOTES:END -->
