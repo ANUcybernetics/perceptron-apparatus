@@ -13,7 +13,8 @@ apparatus.
   `[beat 1.2]` inside a spoken line is a held pause in seconds, and splits the
   line into caption segments.
 - `<slug>/`: the HyperFrames project: `index.html`, `<slug>.js` (the
-  composition), `timing.json` and `captions.vtt` (written by `video.py voice`),
+  composition), `timing.json` and `captions.vtt` (written by `video.py voice` or
+  `video.py cut`), `cut.json` (which recorded take each line comes from),
   `assets/` (audio, not committed) and a `kit -> ../_kit` symlink.
 - `_kit/`: `kit.css` (the stage, palette and type), `fonts/`, `photos/`,
   `socy-logo.svg`, `mnist-digits.json` (from `build-data.mjs`), and two
@@ -70,6 +71,10 @@ apparatus.
 
 ## Sound
 
-Voice and music are ElevenLabs (`video.py voice`, `video.py music`); the voice,
-model and music prompt are constants at the top of `video.py`. `video.py mix`
-ducks the music under the voice.
+The voice is Ben's recording, assembled from the takes in `assets/` by
+`video.py cut`; its docstring explains `cut.json`. The script's `[beat]` values
+set every pause in the cut, so retiming a pause is one number and a rebuild.
+`video.py voice` makes an ElevenLabs scratch voice for a video not yet recorded,
+and `video.py music` a music bed; the voice, model and music prompt are
+constants at the top of `video.py`. `video.py mix` ducks the music under the
+voice.

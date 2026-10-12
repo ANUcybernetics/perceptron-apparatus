@@ -5,12 +5,16 @@
 #   "typer>=0.15",
 #   "loguru>=0.7",
 #   "httpx>=0.27",
+#   "numpy>=2.0",
+#   "pedalboard>=0.9",
+#   "pyloudnorm>=0.1",
 # ]
 # ///
 """Build a video's voice, timing, music and renders.
 
     video/video.py script <slug>    # the spoken lines alone, for reading aloud -> out/<slug>/
     video/video.py voice <slug>     # ElevenLabs voice -> assets/voice.wav, timing.json, captions.vtt
+    video/video.py cut <slug>       # recorded takes -> assets/voice.wav, timing.json, captions.vtt
     video/video.py music <slug>     # ElevenLabs music bed -> assets/music.mp3
     video/video.py mix <slug>       # voice + ducked music -> assets/mix.wav, data-duration synced
     video/video.py check <slug>     # HyperFrames check
@@ -24,11 +28,21 @@ line into caption segments; a trailing `[beat]` is the gap before the next
 line. ElevenLabs returns character timings with the audio, so timing.json
 comes straight from the synthesis, with no forced alignment.
 
+`cut` builds the same three files from a recorded voice-over instead, as
+<slug>/cut.json directs: `takes` names the recordings, `default` the take most
+of the read comes from, and `segments` the exceptions, keyed by reading-copy
+line ("9") or line and segment ("9.2"). Each segment is found in its take by
+transcript (the last reading of it, so a re-read wins), and the script's
+`[beat]` values set every pause between segments; the pauses inside a segment
+stay as they were read.
+
 Needs ELEVENLABS_API_KEY in the environment, and ffmpeg/ffprobe on PATH.
 """
 
 import base64
+import difflib
 import hashlib
+import itertools
 import json
 import math
 import os
@@ -39,6 +53,9 @@ import wave
 from pathlib import Path
 
 import httpx
+import numpy as np
+import pedalboard
+import pyloudnorm
 import typer
 from loguru import logger
 
@@ -59,6 +76,14 @@ MUSIC_PROMPT = (
     "mechanical like a clock, no drums, no vocals, no build or climax, even dynamics "
     "throughout so it loops unobtrusively. 72 bpm."
 )
+
+CUT_RATE = 48000
+LOUDNESS = -20.0  # LUFS, the level the mix's music and ducking are set against
+# how much of the recording's own room is kept either side of a segment; the
+# rest of a pause is room tone, which leaves out its clicks and rustles
+HEAD = 0.35
+TAIL = 0.3
+FADE = 0.03
 
 START_SILENCE = 1.0
 END_SILENCE = 0.5
@@ -222,6 +247,11 @@ def voice(slug: str) -> None:
         w.setsampwidth(2)
         w.setframerate(RATE)
         w.writeframes(bytes(pcm))
+    write_timing(slug, timing_lines, duration)
+
+
+def write_timing(slug: str, timing_lines: list[dict], duration: float) -> None:
+    proj = project(slug)
     (proj / "timing.json").write_text(
         json.dumps({"duration": round(duration, 3), "lines": timing_lines}, indent=1)
         + "\n"
@@ -235,6 +265,360 @@ def voice(slug: str) -> None:
         )
     )
     logger.info(f"{slug}: {len(cues)} captions, {duration:.2f} s of voice")
+
+
+def transcribe(audio: Path) -> list[dict]:
+    """A recording's words as [{text, start, end}], cached by its contents."""
+    key = hashlib.sha256(audio.read_bytes()).hexdigest()[:16]
+    cached = OUT / "_stt-cache" / f"{key}.json"
+    if not cached.is_file():
+        logger.info(f"transcribing {audio.name}")
+        with audio.open("rb") as f:
+            r = httpx.post(
+                f"{API}/speech-to-text",
+                headers={"xi-api-key": api_key()},
+                data={
+                    "model_id": "scribe_v1",
+                    "language_code": "en",
+                    "timestamps_granularity": "word",
+                    "tag_audio_events": "false",
+                },
+                files={"file": (audio.name, f)},
+                timeout=600,
+            )
+        r.raise_for_status()
+        cached.parent.mkdir(parents=True, exist_ok=True)
+        cached.write_text(json.dumps(r.json()))
+    return [w for w in json.loads(cached.read_text())["words"] if w["type"] == "word"]
+
+
+ONES = [
+    "zero",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+    "twelve",
+    "thirteen",
+    "fourteen",
+    "fifteen",
+    "sixteen",
+    "seventeen",
+    "eighteen",
+    "nineteen",
+]
+TENS = ["twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+
+
+def spoken(n: int) -> list[str]:
+    """A number below a thousand as it is read aloud: 216 is two hundred and sixteen."""
+    if n >= 100:
+        rest = ["and", *spoken(n % 100)] if n % 100 else []
+        return [ONES[n // 100], "hundred", *rest]
+    if n >= 20:
+        return [TENS[n // 10 - 2], *([ONES[n % 10]] if n % 10 else [])]
+    return [ONES[n]]
+
+
+def tokens(text: str) -> list[str]:
+    """Words as they compare between script and transcript: "yes-or-no" is
+    three, and the transcript's "36" is thirty, six."""
+    found = re.findall(r"[a-z0-9]+", text.lower().replace("'", ""))
+    return [w for t in found for w in (spoken(int(t)) if t.isdigit() else [t])]
+
+
+def same_word(a: str, b: str) -> bool:
+    """Equal, or a spelling of the same word (centre and center)."""
+    return a == b or difflib.SequenceMatcher(None, a, b).ratio() >= 0.8
+
+
+def locate(segments: list[str], heard: list[dict]) -> list[tuple[int, int] | None]:
+    """Where each script segment is read in a take, as (first, last) indices
+    into its words, or None if the take never reads it as written. Works
+    backwards from the end, so of two readings the later one is found."""
+    flat = [(t, n) for n, w in enumerate(heard) for t in tokens(w["text"])]
+    found: list[tuple[int, int] | None] = [None] * len(segments)
+    bound = len(flat)
+    for n in reversed(range(len(segments))):
+        want = tokens(segments[n])
+        for j in range(bound - len(want), -1, -1):
+            if all(same_word(a, b[0]) for a, b in zip(want, flat[j : j + len(want)])):
+                found[n] = (flat[j][1], flat[j + len(want) - 1][1])
+                bound = j
+                break
+    return found
+
+
+def level(x: np.ndarray, t: float) -> float:
+    """RMS level in dB of the 10 ms of x at t."""
+    i = int(t * CUT_RATE)
+    w = x[max(0, i) : i + CUT_RATE // 100]
+    return 20 * math.log10(math.sqrt(float(np.mean(w**2))) + 1e-9) if len(w) else -180.0
+
+
+def snap(
+    x: np.ndarray, t: float, step: float, limit: float, inside: bool = False
+) -> float:
+    """A word boundary the transcript put inside speech (it does this to
+    numbers and single letters), walked outwards (`step` is +-10 ms) to where
+    the sound stops, and no further than `limit`. Speech dips for a moment
+    between syllables, so it has stopped once it has been quiet for 150 ms."""
+
+    def beyond(u: float) -> float:
+        return level(x, u if step > 0 else u + step)
+
+    if not inside and beyond(t) < -35:
+        return t
+    edge = t
+    while (limit - t) * step > 0 and abs(t - edge) < 0.15:
+        t += step
+        if beyond(t - step) > -45:
+            edge = t
+    return edge
+
+
+def quietest(x: np.ndarray, a: float, b: float) -> float:
+    """The middle of the quietest 60 ms between a and b: where to cut a pause."""
+    width = 0.06
+    starts = np.arange(a, max(a + 0.001, b - width), 0.01)
+    rms = [
+        float(np.mean(x[int(t * CUT_RATE) : int((t + width) * CUT_RATE)] ** 2))
+        for t in starts
+    ]
+    return min(b, float(starts[int(np.argmin(rms))]) + width / 2)
+
+
+def faded(x: np.ndarray, start: float = FADE, end: float = FADE) -> np.ndarray:
+    """x with its ends faded over `start` and `end` seconds."""
+    y = x.copy()
+    for seconds, ends in ((start, slice(None)), (end, slice(None, None, -1))):
+        n = min(int(seconds * CUT_RATE), len(y) // 2)
+        if n:
+            y[ends][:n] *= np.linspace(0.0, 1.0, n)
+    return y
+
+
+def room_tone(x: np.ndarray, heard: list[dict]) -> np.ndarray:
+    """The quietest 0.8 s between words in a take: what silence sounds like there."""
+    n = int(0.8 * CUT_RATE)
+    best = None
+    for a, b in itertools.pairwise(heard):
+        for i in range(
+            int(a["end"] * CUT_RATE), int(b["start"] * CUT_RATE) - n, n // 4
+        ):
+            peak = float(np.abs(x[i : i + n]).max())
+            if best is None or peak < best[0]:
+                best = (peak, i)
+    if best is None:
+        raise RuntimeError("no pause long enough to take room tone from")
+    return x[best[1] : best[1] + n]
+
+
+def silence(tone: np.ndarray, seconds: float) -> np.ndarray:
+    """Room tone for a held pause: the sample, tiled forwards and backwards so
+    its joins are continuous."""
+    n = max(0, round(seconds * CUT_RATE))
+    lap = np.concatenate([tone, tone[::-1]])
+    return faded(np.tile(lap, n // len(lap) + 1)[:n])
+
+
+@app.command()
+def cut(slug: str) -> None:
+    """Assemble the recorded takes and write voice.wav, timing.json and captions.vtt."""
+    proj = project(slug)
+    plan = json.loads((proj / "cut.json").read_text())
+    lines = parse_script(slug)
+    index = [
+        (i, k) for i, line in enumerate(lines) for k in range(len(line["segments"]))
+    ]
+    texts = [lines[i]["segments"][k] for i, k in index]
+    pauses = [lines[i]["pauses"][k] for i, k in index]
+
+    audio, heard, where = {}, {}, {}
+    meter = pyloudnorm.Meter(CUT_RATE)
+    for name, rel in plan["takes"].items():
+        wav = subprocess.run(
+            ["ffmpeg", "-loglevel", "error", "-i", str(proj / rel), "-ac", "1"]
+            + ["-ar", str(CUT_RATE), "-f", "f32le", "-"],
+            check=True,
+            capture_output=True,
+        ).stdout
+        x = np.frombuffer(wav, dtype=np.float32).astype(np.float64)
+        # every take at one speaking level, so a change of take isn't a change of volume
+        audio[name] = x * 10 ** ((LOUDNESS - meter.integrated_loudness(x)) / 20)
+        heard[name] = transcribe(proj / rel)
+        # a number comes back as one word ("216") timed from its last part:
+        # its start is where the sound begins after the word before
+        for prev, w in itertools.pairwise(heard[name]):
+            if any(c.isdigit() for c in w["text"]):
+                w["start"] = snap(
+                    audio[name], w["start"], -0.01, prev["end"], inside=True
+                )
+        where[name] = locate(texts, heard[name])
+    tone = room_tone(audio[plan["default"]], heard[plan["default"]])
+
+    # each segment's clip: its words, plus the room either side up to the neighbouring word
+    clips = []
+    for n, (i, k) in enumerate(index):
+        choice = plan.get("segments", {})
+        name = choice.get(f"{i + 1}.{k + 1}", choice.get(f"{i + 1}", plan["default"]))
+        span = where[name][n]
+        if span is None:
+            said = " | ".join(
+                " ".join(w["text"] for w in heard[name][j : j + 12])
+                for j, w in enumerate(heard[name])
+                if tokens(w["text"])[:1] == tokens(texts[n])[:1]
+            )
+            raise RuntimeError(
+                f"{slug} {i + 1}.{k + 1}: take {name} doesn't read {texts[n]!r}; it has: {said}"
+            )
+        x, ws = audio[name], heard[name]
+        first, last = span
+        before = ws[first - 1]["end"] if first else 0.0
+        after = ws[last + 1]["start"] if last + 1 < len(ws) else len(x) / CUT_RATE
+        on = snap(x, ws[first]["start"], -0.01, before)
+        off = snap(x, ws[last]["end"], 0.01, after)
+        clips.append(
+            {
+                "take": name,
+                "span": span,
+                "on": on,
+                "off": off,
+                # the room kept either side, cut where the take is quietest
+                "head": on - quietest(x, max(before, on - HEAD), on),
+                "tail": quietest(x, off, min(after, off + TAIL)) - off,
+                "read": None,
+            }
+        )
+    # where the take carries straight on into the next segment, the pause
+    # between them is the one that was read, cut once at its quietest point
+    for clip, nxt in itertools.pairwise(clips):
+        if nxt["take"] == clip["take"] and nxt["span"][0] == clip["span"][1] + 1:
+            split = quietest(audio[clip["take"]], clip["off"], nxt["on"])
+            clip["read"] = nxt["on"] - clip["off"]
+            clip["tail"] = min(TAIL, split - clip["off"])
+            nxt["head"] = min(HEAD, nxt["on"] - split)
+
+    parts = [silence(tone, START_SILENCE - clips[0]["head"])]
+    at = len(parts[0]) / CUT_RATE
+    timing_lines: list[dict] = []
+    for n, ((i, k), clip) in enumerate(zip(index, clips)):
+        x, ws = audio[clip["take"]], heard[clip["take"]]
+        first, last = clip["span"]
+        gap = pauses[n]
+        if n + 1 < len(clips):
+            # the pause is this clip's tail, room tone, and the next clip's head
+            nxt = clips[n + 1]
+            room = clip["tail"] + nxt["head"]
+            if room > gap:
+                clip["tail"], nxt["head"] = (
+                    v * gap / room for v in (clip["tail"], nxt["head"])
+                )
+            fill = gap - clip["tail"] - nxt["head"]
+        else:
+            fill = gap + END_SILENCE - clip["tail"]
+        a = int((clip["on"] - clip["head"]) * CUT_RATE)
+        b = int((clip["off"] + clip["tail"]) * CUT_RATE)
+        shift = at - a / CUT_RATE
+        parts += [
+            faded(x[a:b], min(FADE, clip["head"]), min(FADE, clip["tail"])),
+            silence(tone, fill),
+        ]
+        at += (b - a) / CUT_RATE + len(parts[-1]) / CUT_RATE
+
+        # the script's words, each timed by the transcript word it is (part of);
+        # where one transcript word ("216") is several of the script's, they
+        # share its time out by length
+        flat = [m for m in range(first, last + 1) for _ in tokens(ws[m]["text"])]
+        spans, t = [], 0
+        for w in texts[n].split():
+            m = flat[t : t + len(tokens(w))]
+            t += len(m)
+            if m:  # not punctuation standing alone
+                spans.append((w, m[0], m[-1]))
+        words = []
+        for j, (w, m0, m1) in enumerate(spans):
+            start = clip["on"] if m0 == first else ws[m0]["start"]
+            end = clip["off"] if m1 == last else ws[m1]["end"]
+            sharing = [v for v, a, b in spans if (a, b) == (m0, m1)]
+            if m0 == m1 and len(sharing) > 1:
+                before = sum(len(v) for v, a, b in spans[:j] if (a, b) == (m0, m1))
+                total = sum(len(v) for v in sharing)
+                start, end = (
+                    start + (end - start) * before / total,
+                    start + (end - start) * (before + len(w)) / total,
+                )
+            words.append(
+                {"w": w, "start": round(start + shift, 3), "end": round(end + shift, 3)}
+            )
+        segment = {
+            "caption": texts[n],
+            "start": words[0]["start"],
+            "end": round(words[-1]["end"] + min(0.25, gap / 2), 3),
+        }
+        if k == 0:
+            timing_lines.append(
+                {
+                    "caption": " ".join(lines[i]["segments"]),
+                    "start": segment["start"],
+                    "end": 0.0,
+                    "segments": [],
+                    "words": [],
+                }
+            )
+        line = timing_lines[-1]
+        line["segments"].append(segment)
+        line["words"] += words
+        line["end"] = segment["end"]
+        read = "" if clip["read"] is None else f", read with {clip['read']:.2f}"
+        logger.info(
+            f"{i + 1}.{k + 1} take {clip['take']} {clip['on']:7.2f}-{clip['off']:7.2f}"
+            f"  pause {gap:.2f}{read}  {texts[n]}"
+        )
+
+    dry = np.concatenate(parts).astype(np.float32)
+    duration = len(dry) / CUT_RATE
+    # a rumble filter, breaths and clicks eased down, gentle levelling and a
+    # little room; stereo, so the room has width
+    board = pedalboard.Pedalboard(
+        [
+            pedalboard.HighpassFilter(cutoff_frequency_hz=80),
+            pedalboard.NoiseGate(
+                threshold_db=-42, ratio=2, attack_ms=2, release_ms=120
+            ),
+            pedalboard.Compressor(
+                threshold_db=-24, ratio=2.5, attack_ms=8, release_ms=150
+            ),
+            pedalboard.Reverb(
+                room_size=0.18, damping=0.6, wet_level=0.07, dry_level=1.0, width=1.0
+            ),
+        ]
+    )
+    wet = board(np.stack([dry, dry]), CUT_RATE)
+    wet *= 10 ** ((LOUDNESS - meter.integrated_loudness(wet.T)) / 20)
+    (proj / "assets").mkdir(exist_ok=True)
+    subprocess.run(
+        ["ffmpeg", "-y", "-loglevel", "error", "-f", "f32le", "-ar", str(CUT_RATE)]
+        + [
+            "-ac",
+            "2",
+            "-i",
+            "-",
+            "-af",
+            "alimiter=limit=0.84:attack=5:release=80:level=false",
+        ]
+        + ["-c:a", "pcm_s24le", str(proj / "assets" / "voice.wav")],
+        input=wet.T.astype(np.float32).tobytes(),
+        check=True,
+    )
+    write_timing(slug, timing_lines, duration)
 
 
 def tail(slug: str) -> float:
