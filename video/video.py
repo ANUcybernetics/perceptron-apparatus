@@ -36,6 +36,11 @@ transcript (the last reading of it, so a re-read wins), and the script's
 `[beat]` values set every pause between segments; the pauses inside a segment
 stay as they were read.
 
+`mix` lays the voice over assets/music.mp3, a supplied track or one from
+`music`. A track shorter than the video is lengthened as <slug>/music.json
+directs: `loop` is a pair of times a whole phrase apart, and the music between
+them plays twice.
+
 Needs ELEVENLABS_API_KEY in the environment, and ffmpeg/ffprobe on PATH.
 """
 
@@ -79,6 +84,11 @@ MUSIC_PROMPT = (
 
 CUT_RATE = 48000
 LOUDNESS = -20.0  # LUFS, the level the mix's music and ducking are set against
+# ffmpeg deesser intensity, which acts as a threshold: nothing below 0.4, the
+# loudest sibilants down 6 dB at 0.45, and a lisp from 0.6
+DEESS = 0.45
+MUSIC_LOUDNESS = -25.0  # LUFS, the music where nobody is speaking
+SPLICE = 0.05  # seconds of crossfade where the music's loop joins
 # how much of the recording's own room is kept either side of a segment; the
 # rest of a pause is room tone, which leaves out its clicks and rustles
 HEAD = 0.35
@@ -586,7 +596,8 @@ def cut(slug: str) -> None:
     dry = np.concatenate(parts).astype(np.float32)
     duration = len(dry) / CUT_RATE
     # a rumble filter, breaths and clicks eased down, gentle levelling and a
-    # little room; stereo, so the room has width
+    # little room; stereo, so the room has width. The de-esser follows, once
+    # the level it works against is set
     board = pedalboard.Pedalboard(
         [
             pedalboard.HighpassFilter(cutoff_frequency_hz=80),
@@ -612,7 +623,7 @@ def cut(slug: str) -> None:
             "-i",
             "-",
             "-af",
-            "alimiter=limit=0.84:attack=5:release=80:level=false",
+            f"deesser=i={DEESS}:m=0.6:f=0.5,alimiter=limit=0.84:attack=5:release=80:level=false",
         ]
         + ["-c:a", "pcm_s24le", str(proj / "assets" / "voice.wav")],
         input=wet.T.astype(np.float32).tobytes(),
@@ -663,11 +674,24 @@ def mix(slug: str) -> None:
     inputs = ["-i", "assets/voice.wav"]
     if (proj / "assets" / "music.mp3").is_file():
         inputs += ["-i", "assets/music.mp3"]
+        with pedalboard.io.AudioFile(str(proj / "assets" / "music.mp3")) as f:
+            meter = pyloudnorm.Meter(f.samplerate)
+            gain = MUSIC_LOUDNESS - meter.integrated_loudness(f.read(f.frames).T)
+        music_in = "[1:a]aresample=44100"
+        if (proj / "music.json").is_file():
+            a, b = json.loads((proj / "music.json").read_text())["loop"]
+            music_in = (
+                f"{music_in},asplit=2[m1][m2];[m1]atrim=0:{b}[m1];"
+                f"[m2]atrim=start={a - SPLICE},asetpts=PTS-STARTPTS[m2];"
+                f"[m1][m2]acrossfade=d={SPLICE}:c1=tri:c2=tri"
+            )
+        # the release outlasts the pauses between lines, so the music comes up
+        # at the two ends and not in every gap
         graph = (
             f"{voice_in},asplit=2[v][key];"
-            f"[1:a]aresample=44100,atrim=0:{dur},volume=0.5,"
+            f"{music_in},atrim=0:{dur},volume={gain:.2f}dB,"
             f"afade=t=in:d=1.5,afade=t=out:st={dur - 2.5}:d=2.5[m];"
-            "[m][key]sidechaincompress=threshold=0.03:ratio=6:attack=40:release=700[duck];"
+            "[m][key]sidechaincompress=threshold=0.03:ratio=2:attack=40:release=3000[duck];"
             "[v][duck]amix=inputs=2:normalize=0,alimiter=limit=0.95[out]"
         )
     else:

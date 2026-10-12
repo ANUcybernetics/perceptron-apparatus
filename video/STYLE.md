@@ -74,7 +74,10 @@ apparatus.
 The voice is Ben's recording, assembled from the takes in `assets/` by
 `video.py cut`; its docstring explains `cut.json`. The script's `[beat]` values
 set every pause in the cut, so retiming a pause is one number and a rebuild.
-`video.py voice` makes an ElevenLabs scratch voice for a video not yet recorded,
-and `video.py music` a music bed; the voice, model and music prompt are
-constants at the top of `video.py`. `video.py mix` ducks the music under the
-voice.
+`video.py voice` makes an ElevenLabs scratch voice for a video not yet recorded;
+the voice and model are constants at the top of `video.py`.
+
+The music is a track Ben supplies as `assets/music.mp3` (the explainer's is "QB"
+by Sega Williams). `video.py mix` sets its level, ducks it under the voice and
+fades it to silence at the loop point; `<slug>/music.json` lengthens a track
+shorter than the video, as `video.py`'s docstring explains.
