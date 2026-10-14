@@ -2,7 +2,7 @@
 // Licensed under CC BY-NC-SA 4.0
 
 // Import base template for colors and styling
-#import "@local/anu-typst-template:0.2.0": *
+#import "@local/anu-typst-template:0.3.0": *
 
 #show: doc => anu(
   title: "Perceptron Apparatus",
@@ -14,7 +14,7 @@
   ),
   config: (
     theme: "dark",
-    logos: ("studio",),
+    ornaments: ("studio",),
     hide: ("page-numbers", "title-block"),
   ),
   page-settings: (

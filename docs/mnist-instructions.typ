@@ -1,12 +1,12 @@
 // Copyright (c) 2025 Ben Swift
 // Licensed under CC BY-NC-SA 4.0
-#import "@local/anu-typst-template:0.2.0": anu, anu-colors
+#import "@local/anu-typst-template:0.3.0": anu, anu-colors
 
 #show: doc => anu(
   title: "",
   config: (
     theme: "light",
-    logos: ("studio",),
+    ornaments: ("studio",),
     hide: ("page-numbers", "title-block"),
   ),
   footer_text: text(
