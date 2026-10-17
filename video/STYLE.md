@@ -16,9 +16,9 @@ apparatus.
   composition), `timing.json` and `captions.vtt` (written by `video.py voice` or
   `video.py cut`), `cut.json` (which recorded take each line comes from),
   `assets/` (audio, not committed) and a `kit -> ../_kit` symlink.
-- `_kit/`: `kit.css` (the stage, palette and type), `fonts/`, `photos/`,
-  `socy-logo.svg`, `mnist-digits.json` (from `build-data.mjs`), and two
-  symlinks: `motion ->` astromotion's `video/` engine in `video/node_modules`
+- `_kit/`: `kit.css` (the apparatus's look), `photos/`, `mnist-digits.json`
+  (from `build-data.mjs`), and three symlinks: `motion ->` astromotion's
+  `video/` engine, `brand ->` astro-theme-anu (both in `video/node_modules`),
   and `apparatus -> ../../js/dist`, the digital twin. Run `pnpm install` in
   `video/` first.
 - `out/`: renders, stills and the TTS cache (gitignored).
@@ -33,9 +33,11 @@ apparatus.
   (a video frame must not depend on a clock).
 - **Every number and slider position** comes from `computeTrace` on a real input
   with the bundled weights. Never pick a value because it reads better.
-- **Palette**: `anu-colors` in `anu-typst-template` (gold `#be830e`); `kit.css`
-  carries copies.
-- **Type**: Public Sans, the ANU theme's face, from `_kit/fonts/`.
+- **Stage and brand**: `kit.css` imports astromotion's `video/stage.css` (the
+  stage, the caption band, Public Sans) and astro-theme-anu's `video/anu.css`
+  (the palette, gold `#be830e`), and maps its own names onto their tokens. The
+  opening photographs, title block and closing lockup are astromotion's
+  `video/brand.js`, given astro-theme-anu's `video/brand.js` logos and lockup.
 
 ## The look
 
@@ -64,9 +66,8 @@ apparatus.
 - **It loops.** A video for the display beside the table starts and ends on
   black, with the sound faded to silence at the loop point.
 - **It closes on the lockup.** After the table has returned to rest with the
-  title and credits, the School of Cybernetics lockup (`_kit/socy-logo.svg`,
-  from astro-theme-anu's `SocyLogo.astro`) animates as on the decks' closing
-  slide: the rules grow, then the crest and wordmark fade in.
+  title and credits, the School of Cybernetics lockup animates as on the decks'
+  closing slide: the rules grow, then the crest and wordmark fade in.
 - **Stage** 1920×1080; masters 4K at 50 fps, drafts 1080p25.
 
 ## Sound

@@ -6,6 +6,8 @@
 
 import * as M from "./kit/motion/motion.js";
 import * as C from "./kit/motion/canvas.js";
+import * as B from "./kit/motion/brand.js";
+import { logos, lockups } from "./kit/brand/video/brand.js";
 import { PerceptronApparatus } from "./kit/apparatus/index.mjs";
 import {
   sampleDigits,
@@ -21,22 +23,14 @@ import {
 } from "./kit/apparatus/widgets/index.mjs";
 
 const SAMPLE = await fetch("kit/mnist-digits.json").then((r) => r.json());
-// the School of Cybernetics lockup that closes the video (astro-theme-anu's SocyLogo)
-const LOGO = await fetch("kit/socy-logo.svg").then((r) => r.text());
-// Andrew Meares's photographs of the apparatus: the table, in use, a brass slider
-const loaded = async (src) => {
-  const img = new Image();
-  img.src = src;
-  await img.decode();
-  return img;
-};
+// the School of Cybernetics lockup that closes the video, as on the decks' closing slide
+const LOCKUP = await B.svgText(lockups.socy.src);
 // the ANU and School of Cybernetics lockup, for the opening title
-const HERO_LOGO = await loaded("kit/socy-primary-horizontal-white.svg");
+const HERO_LOGO = await B.image(logos.socy, "Australian National University, School of Cybernetics");
+// Andrew Meares's photographs of the apparatus: the table, in use, a brass slider
 const PHOTOS = await Promise.all(
-  [3317, 3239, 3379].map((n) => loaded(`kit/photos/apparatus-${n}.jpg`)),
+  [3317, 3239, 3379].map((n) => B.image(`kit/photos/apparatus-${n}.jpg`)),
 );
-
-export const FONTS = [300, 400, 500, 600, 700].map((w) => `${w} 20px "Public Sans"`);
 
 const GOLD = "#e5a930";
 const WHITE = "#fff";
@@ -346,42 +340,15 @@ export function build(tl, S, T) {
   // The real thing first: full-frame photographs under the scrim of the decks'
   // hero slide (astro-theme-university's deck.css), with the title block over
   // them. They sit under the scene and run behind the caption band.
-  const photoL = M.el("div", { class: "layer" });
-  Object.assign(photoL.style, { width: "1920px", height: "1080px" });
-  S.root.insertBefore(photoL, scene);
+  // The last photograph gives way to the drawing.
   const tPhoto = [0.1, T.word(0, "No") - 0.2, T.word(0, "brass") - 0.25];
-  PHOTOS.forEach((img, n) => {
-    Object.assign(img.style, {
-      position: "absolute",
-      inset: "0",
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-    });
-    photoL.appendChild(img);
-    M.set(img, { opacity: 0 });
-    fadeIn(img, tPhoto[n], 0.6);
-    // gone once the next one covers it; the last gives way to the drawing
-    if (n < PHOTOS.length - 1) tl.set(img, { opacity: 0 }, tPhoto[n + 1] + 0.6);
-    else fadeOut(img, tDraw, 0.9);
-  });
-  const scrim = M.el("div", {}, photoL);
-  Object.assign(scrim.style, {
-    position: "absolute",
-    inset: "0",
-    background: "linear-gradient(to top, rgb(0 0 0 / 80%), rgb(0 0 0 / 20%))",
-  });
-  const heroL = M.layer(scene, 110, 0);
-  M.set(heroL, { opacity: 0 });
-  HERO_LOGO.alt = "Australian National University, School of Cybernetics";
-  Object.assign(HERO_LOGO.style, { position: "absolute", left: "0", top: "70px", height: "84px" });
-  heroL.appendChild(HERO_LOGO);
-  const heroText = M.el("div", {}, heroL);
-  Object.assign(heroText.style, { position: "absolute", left: "0", top: "580px" });
-  M.el("div", { class: "title hero", text: "Perceptron Apparatus" }, heroText);
-  M.el("div", { class: "hero-rule" }, heroText);
-  M.el("div", { class: "tagline", text: "An abacus for deep learning" }, heroText);
-  M.el("div", { class: "byline", text: "Dr Ben Swift · Cybernetic Studio" }, heroText);
+  B.backdrop(tl, S, { photos: PHOTOS, at: tPhoto, out: tDraw });
+  const heroL = B.titleBlock(scene, S, {
+    logo: HERO_LOGO,
+    title: "Perceptron Apparatus",
+    tagline: "An abacus for deep learning",
+    byline: "Dr Ben Swift · Cybernetic Studio",
+  }).el;
   M.appear(tl, heroL, 0.15, { dur: 0.6 });
   // clear before the drawing's own title arrives, so the two never overlap
   fadeOut(heroL, tDraw - 0.5, 0.45);
@@ -1025,19 +992,6 @@ export function build(tl, S, T) {
   fadeOut([letAnswer, letWinner, trails], tReset, 0.8);
   tl.to(logo, { opacity: (i) => logoRest[i] }, tReset + 0.6, { dur: 0.8 });
 
-  // the closing lockup: its rules grow from the top and bottom edges, then the
-  // crest and wordmark fade in, as on the ANU decks' closing slide
-  const logoL = M.el("div", { class: "layer" });
-  Object.assign(logoL.style, { width: "1920px", height: "1080px" });
-  logoL.innerHTML = LOGO;
-  Object.assign(logoL.firstElementChild.style, { display: "block", width: "100%", height: "100%" });
-  const ruleTop = logoL.querySelector(".logo-rule-top");
-  const ruleBottom = logoL.querySelector(".logo-rule-bottom");
-  for (const rule of [ruleTop, ruleBottom]) rule.removeAttribute("style");
-  const lockup = logoL.querySelector(".logo-group");
-  M.set(lockup, { opacity: 0 });
-  tl.to(lockup, { opacity: 1 }, tLogo + 1, { dur: 2, ease: "in-out-quad" });
-  fadeOut(logoL, TOTAL - 1.0, 0.8);
 
   // ------------------------------------------------- the apparatus, each frame
   const sliders = [...apparatus.svg.querySelectorAll("circle.slider")];
@@ -1069,10 +1023,6 @@ export function build(tl, S, T) {
       const [x1, y1] = azPos("E", k, v);
       trailEls[k].setAttribute("d", v > 0.005 ? `M${x0} ${y0}A130 130 0 0 0 ${x1} ${y1}` : "");
     });
-    const grown = 250 * C.phase(t, tLogo, 1, "out-quart");
-    ruleTop.setAttribute("height", grown);
-    ruleBottom.setAttribute("y", 720 - grown);
-    ruleBottom.setAttribute("height", grown);
     const swept = 276 * C.phase(t, tHand, 2.6, "in-out-quad"); // degrees: 46 minutes of an hour
     const [hx, hy] = polar(180 - swept, 592);
     clock.setAttribute(
@@ -1110,7 +1060,7 @@ export function build(tl, S, T) {
     top: "890px",
     width: "1920px",
     height: "190px",
-    background: "#000",
+    background: "var(--video-ground)",
   });
   M.set(capGround, { opacity: 0 });
   fadeIn(capGround, tDraw, 0.9);
@@ -1125,6 +1075,8 @@ export function build(tl, S, T) {
     // held across a short pause, so the band doesn't blink between sentences
     tl.set(c, { opacity: 0 }, next - cue.end < 1.2 ? next : cue.end + 0.5);
   });
-  // over everything, the caption band included
-  S.root.appendChild(logoL);
+  // the closing lockup, over everything, the caption band included: its rules
+  // grow from the top and bottom edges, then the crest and wordmark fade in
+  const logoL = B.lockup(tl, S.root, S, { mark: LOCKUP, ...lockups.socy, at: tLogo }).el;
+  fadeOut(logoL, TOTAL - 1.0, 0.8);
 }

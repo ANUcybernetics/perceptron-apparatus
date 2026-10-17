@@ -8,9 +8,12 @@ importers:
 
   .:
     dependencies:
+      astro-theme-anu:
+        specifier: git+https://gitlab.anu.edu.au/u2548636/astro-theme-anu.git#astro-theme-anu@v0.10.0&path:/packages/astro-theme-anu
+        version: git+https://gitlab.anu.edu.au/u2548636/astro-theme-anu.git#a382ecf31eb276c786b2dd6dbca3a81430841a21&path:/packages/astro-theme-anu(astro@7.3.8(yaml@2.9.1))
       astromotion:
-        specifier: github:ANUcybernetics/astromotion#v0.34.4
-        version: https://codeload.github.com/ANUcybernetics/astromotion/tar.gz/2458df880b31351915c259f2f2fa4f89325b0243(@astrojs/mdx@8.0.3(@astrojs/markdown-satteri@0.4.3)(astro@7.3.8(yaml@2.9.1)))(astro@7.3.8(yaml@2.9.1))
+        specifier: github:ANUcybernetics/astromotion#v0.35.1
+        version: https://codeload.github.com/ANUcybernetics/astromotion/tar.gz/15c8a7e558ddc0793a153a1fd1743bf5c38f726d(@astrojs/mdx@8.0.3(@astrojs/markdown-satteri@0.4.3)(astro@7.3.8(yaml@2.9.1)))(astro@7.3.8(yaml@2.9.1))
 
 packages:
 
@@ -575,6 +578,13 @@ packages:
   array-iterate@2.0.1:
     resolution: {integrity: sha512-I1jXZMjAgCMmxT4qxXfPXa6SthSoE8h6gkSI9BGGNv8mP8G/v0blc+qFnZu6K42vTOiuME596QaLO0TP3Lk0xg==}
 
+  astro-theme-anu@git+https://gitlab.anu.edu.au/u2548636/astro-theme-anu.git#a382ecf31eb276c786b2dd6dbca3a81430841a21&path:/packages/astro-theme-anu:
+    resolution: {commit: a382ecf31eb276c786b2dd6dbca3a81430841a21, path: /packages/astro-theme-anu, repo: https://gitlab.anu.edu.au/u2548636/astro-theme-anu.git, type: git}
+    version: 0.10.0
+    engines: {node: '>=24'}
+    peerDependencies:
+      astro: ^7.3.1
+
   astro@7.3.8:
     resolution: {integrity: sha512-LHzDHSaV+YzZiR3EFndDYTLLeNeuMtP1qX1FLcCNUUHOCqTTIWPczy2UV3zpA5VqvJe5cWZolqM9Z8JFqR2i9w==}
     engines: {node: '>=22.12.0', npm: '>=9.6.5', pnpm: '>=7.1.0'}
@@ -585,10 +595,10 @@ packages:
       '@astrojs/markdown-remark':
         optional: true
 
-  astromotion@https://codeload.github.com/ANUcybernetics/astromotion/tar.gz/2458df880b31351915c259f2f2fa4f89325b0243:
-    resolution: {gitHosted: true, integrity: sha512-guMXeYI0ms53TBlx20PDVOopjJvfGUjS75kkd76VlujaAYPlPHqMEkKYTZu5j7o8ZN2XR4Um/XIjcWjAt6dvOQ==, tarball: https://codeload.github.com/ANUcybernetics/astromotion/tar.gz/2458df880b31351915c259f2f2fa4f89325b0243}
-    version: 0.34.4
-    engines: {node: '>=24'}
+  astromotion@https://codeload.github.com/ANUcybernetics/astromotion/tar.gz/15c8a7e558ddc0793a153a1fd1743bf5c38f726d:
+    resolution: {gitHosted: true, integrity: sha512-XTrotxUhNDEiHRQEdocVzXIndT9plHlzZaqbwQSCtseS+2FtR4l2R/Sk0o1rQpXwe5uwRsxgI3wBmfLcUdNHag==, tarball: https://codeload.github.com/ANUcybernetics/astromotion/tar.gz/15c8a7e558ddc0793a153a1fd1743bf5c38f726d}
+    version: 0.35.1
+    engines: {node: '>=24', pnpm: '>=11'}
     hasBin: true
     peerDependencies:
       '@astrojs/mdx': ^7.0.0 || ^8.0.0
@@ -2033,6 +2043,10 @@ snapshots:
 
   array-iterate@2.0.1: {}
 
+  astro-theme-anu@git+https://gitlab.anu.edu.au/u2548636/astro-theme-anu.git#a382ecf31eb276c786b2dd6dbca3a81430841a21&path:/packages/astro-theme-anu(astro@7.3.8(yaml@2.9.1)):
+    dependencies:
+      astro: 7.3.8(yaml@2.9.1)
+
   astro@7.3.8(yaml@2.9.1):
     dependencies:
       '@astrojs/compiler-rs': 0.5.1
@@ -2122,7 +2136,7 @@ snapshots:
       - uploadthing
       - yaml
 
-  astromotion@https://codeload.github.com/ANUcybernetics/astromotion/tar.gz/2458df880b31351915c259f2f2fa4f89325b0243(@astrojs/mdx@8.0.3(@astrojs/markdown-satteri@0.4.3)(astro@7.3.8(yaml@2.9.1)))(astro@7.3.8(yaml@2.9.1)):
+  astromotion@https://codeload.github.com/ANUcybernetics/astromotion/tar.gz/15c8a7e558ddc0793a153a1fd1743bf5c38f726d(@astrojs/mdx@8.0.3(@astrojs/markdown-satteri@0.4.3)(astro@7.3.8(yaml@2.9.1)))(astro@7.3.8(yaml@2.9.1)):
     dependencies:
       '@astrojs/mdx': 8.0.3(@astrojs/markdown-satteri@0.4.3)(astro@7.3.8(yaml@2.9.1))
       '@qrgrid/core': 0.2.4

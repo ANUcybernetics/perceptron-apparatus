@@ -1,40 +1,20 @@
 /* The look of the Perceptron Apparatus videos: white line on black with gold
-   accents, in the ANU palette and type (anu-typst-template's anu-colors,
-   astro-theme-anu's Public Sans). STYLE.md next to this directory is the guide. */
+   accents, on astromotion's video stage (motion/stage.css: the stage, the
+   caption band, Public Sans) in the ANU brand (brand/video/anu.css).
+   STYLE.md next to this directory is the guide. */
 
-@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-Light.otf") format("opentype"); font-weight: 300; }
-@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-Regular.otf") format("opentype"); font-weight: 400; }
-@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-Medium.otf") format("opentype"); font-weight: 500; }
-@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-SemiBold.otf") format("opentype"); font-weight: 600; }
-@font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-Bold.otf") format("opentype"); font-weight: 700; }
+@import url("motion/stage.css");
+@import url("brand/video/anu.css");
 
 :root {
-  --ground: #000;
-  --gold: #be830e;                   /* anu-colors.gold */
-  --gold-2: #e5a930;                 /* lighter gold, for thin marks and type on black */
-  --text: rgb(255 255 255 / 95%);
-  --text-2: rgb(255 255 255 / 72%);
+  --ground: var(--video-ground);
+  --gold: var(--video-accent);
+  --gold-2: var(--video-accent-2);
+  --text: var(--video-text);
+  --text-2: var(--video-text-2);
   --muted: rgb(255 255 255 / 50%);
   --line: rgb(255 255 255 / 85%);
-  --font-ui: "Public Sans", sans-serif;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { overflow: hidden; background: var(--ground); }
-body { font-family: var(--font-ui); color: var(--text); }
-.stage { position: relative; overflow: hidden; background: var(--ground); width: 1920px; height: 1080px; }
-
-/* Everything animated is absolutely placed and moved by transform/opacity only. */
-.layer { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
-.scene { isolation: isolate; }
-
-/* ---- caption band: one sentence at a time, in a region nothing else uses ---- */
-.captions { position: absolute; left: 0; right: 0; bottom: 0; height: 190px; background: var(--ground); }
-.caption {
-  position: absolute; left: 160px; right: 160px; top: 0; bottom: 0;
-  display: flex; align-items: center; justify-content: center; text-align: center;
-  font-size: 42px; line-height: 1.3; font-weight: 400; color: var(--text); text-wrap: balance;
-  opacity: 0;
+  --font-ui: var(--video-font);
 }
 
 /* ---- the apparatus: the digital twin's SVG (js/src/board.ts), restyled ---- */
@@ -50,10 +30,6 @@ body { font-family: var(--font-ui); color: var(--text); }
 
 /* ---- type ---- */
 .title { font-size: 104px; font-weight: 300; line-height: 1.02; letter-spacing: -0.02em; color: var(--gold-2); white-space: nowrap; }
-/* the opening title, over a photograph: white with a gold rule, as on the decks' hero slide */
-.title.hero { color: var(--text); }
-.hero-rule { width: 128px; height: 4px; background: var(--gold); margin: 30px 0 34px; }
-.byline { font-size: 32px; font-weight: 300; color: var(--text-2); white-space: nowrap; margin-top: 14px; }
 .tagline { font-size: 40px; font-weight: 300; color: var(--text); white-space: nowrap; }
 .credit { font-size: 28px; font-weight: 400; line-height: 1.45; color: var(--text-2); white-space: nowrap; }
 .credit b { font-weight: 600; color: var(--text); }

@@ -18,8 +18,9 @@
     </div>
     <script type="module">
       import * as M from "./kit/motion/motion.js";
-      import { build, FONTS } from "./explainer.js";
-      M.ready(build, { fonts: FONTS, captions: false }).then(({ tl }) => {
+      import { fonts } from "./kit/motion/brand.js";
+      import { build } from "./explainer.js";
+      M.ready(build, { fonts, captions: false }).then(({ tl }) => {
         window.__timelines["explainer"] = tl;
       });
     </script>
