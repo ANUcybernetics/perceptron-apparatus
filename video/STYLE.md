@@ -23,7 +23,8 @@ apparatus.
   `video/` first.
 - `out/`: renders, stills and the TTS cache (gitignored).
 
-`video.py`'s docstring lists the build commands.
+`video.py` is the skill's `scripts/video.py`, run from anywhere under `video/`
+(it finds the project by `video.toml`); its docstring lists the build commands.
 
 ## Sources of truth
 
@@ -76,7 +77,7 @@ The voice is Ben's recording, assembled from the takes in `assets/` by
 `video.py cut`; its docstring explains `cut.json`. The script's `[beat]` values
 set every pause in the cut, so retiming a pause is one number and a rebuild.
 `video.py voice` makes an ElevenLabs scratch voice for a video not yet recorded;
-the voice and model are constants at the top of `video.py`.
+the voice and model are set in `video.toml`.
 
 The music is a track Ben supplies as `assets/music.mp3` (the explainer's is "QB"
 by Sega Williams). `video.py mix` sets its level, ducks it under the voice and

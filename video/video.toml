@@ -1,0 +1,5 @@
+# Built with the styled-video skill's scripts/video.py, which finds this
+# project by this file. The voice is the skill's default (Charlotte).
+
+[music]
+prompt = "Instrumental ambient underscore for a museum exhibit about a wooden calculating machine. Warm felt piano and soft marimba playing a slow, patient, repeating pattern over a gentle analogue synth pad. Curious and contemplative, quietly mechanical like a clock, no drums, no vocals, no build or climax, even dynamics throughout so it loops unobtrusively. 72 bpm."
