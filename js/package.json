@@ -29,18 +29,13 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  },
   "devDependencies": {
     "@types/node": "^25.3.3",
     "@typescript/native-preview": "latest",
-    "happy-dom": "^20.8.3",
-    "oxlint": "^1.51.0",
-    "tsdown": "^0.21.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "happy-dom": "^21.0.3",
+    "oxlint": "^1.89.0",
+    "tsdown": "^0.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
   }
 }
