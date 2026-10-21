@@ -1,5 +1,4 @@
-import { t as WeightScale } from "../utils-D6vtFthk.mjs";
-
+import { t as WeightScale } from "../utils-CjaQpp0C.mjs";
 //#region src/training/math.d.ts
 type Matrix = {
   data: number[][];
@@ -14,8 +13,8 @@ interface MnistData {
   testImages: Matrix;
   testLabels: Matrix;
 }
-declare function loadMnist(): Promise<MnistData>;
-declare function loadFromJson(json: {
+export declare function loadMnist(): Promise<MnistData>;
+export declare function loadFromJson(json: {
   images: number[][];
   labels: number[];
 }): MnistData;
@@ -37,7 +36,7 @@ interface ForwardCache {
   weights: MLPWeights;
   noise?: MLPWeights;
 }
-declare class MLP {
+export declare class MLP {
   weights: MLPWeights;
   private adamB;
   private adamD;
@@ -54,10 +53,10 @@ interface ExportedWeights {
   B: number[][];
   D: number[][];
 }
-declare function fitWeightsToApparatus(weights: ExportedWeights, inputs: number[][]): ExportedWeights;
+export declare function fitWeightsToApparatus(weights: ExportedWeights, inputs: number[][]): ExportedWeights;
 //#endregion
 //#region src/training/index.d.ts
-interface TrainOptions {
+export interface TrainOptions {
   epochs?: number;
   batchSize?: number;
   learningRate?: number;
@@ -66,12 +65,12 @@ interface TrainOptions {
   weightNoise?: number;
   onEpochEnd?: (epoch: number, loss: number, accuracy: number) => void;
 }
-interface TrainResult {
+export interface TrainResult {
   weights: ExportedWeights;
   testAccuracy: number;
 }
-declare function trainMnist(opts?: TrainOptions & {
+export declare function trainMnist(opts?: TrainOptions & {
   data?: MnistData;
 }): Promise<TrainResult>;
 //#endregion
-export { type ExportedWeights, MLP, type MnistData, TrainOptions, TrainResult, fitWeightsToApparatus, loadFromJson, loadMnist, trainMnist };
+export type { ExportedWeights, MnistData };

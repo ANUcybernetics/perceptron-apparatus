@@ -1,4 +1,4 @@
-import { a as weightRule, i as newRule, n as deg2rad, o as weightScaleFraction, r as formatNumber } from "./utils-DEaGbdjE.mjs";
+import { a as weightRule, i as newRule, n as deg2rad, o as weightScaleFraction, r as formatNumber } from "./utils-CtiTBvWz.mjs";
 //#region src/vnode.ts
 function el(tag, attrs = {}, children = []) {
 	return {
@@ -109,7 +109,7 @@ function buildRuleRing(rule, ctx) {
 			textEl("text", outerLabel ?? "", {
 				class: "top etch",
 				x: "0",
-				y: String(radius + 2 * tickLength),
+				y: String(radius + 20),
 				"text-anchor": "middle",
 				"dominant-baseline": "auto"
 			}),
@@ -338,7 +338,7 @@ function buildBoard(config) {
 	const radialPadding = 30;
 	const centerSpace = 150;
 	const svgPadding = 10;
-	const viewBox = `${-(size / 2 + svgPadding)} ${-(size / 2 + svgPadding)} ${size + 2 * svgPadding} ${size + 2 * svgPadding}`;
+	const viewBox = `${-(size / 2 + svgPadding)} ${-(size / 2 + svgPadding)} ${size + 20} ${size + 20}`;
 	const children = [textEl("style", buildStyles()), el("circle", {
 		class: "full",
 		cx: "0",
@@ -574,12 +574,7 @@ var PerceptronApparatus = class {
 	}
 	findRadialRing(layerIndex) {
 		const radius = this.config.size / 2;
-		const radialPadding = 30;
-		const centerSpace = 150;
-		const ringCount = 6;
-		const fixedWidths = 60;
-		const paddingTotal = radialPadding * (ringCount - 1);
-		const radialWidth = Math.max((radius - centerSpace - fixedWidths - paddingTotal) / 2, 0);
+		const radialWidth = Math.max((radius - 150 - 60 - 150) / 2, 0);
 		return {
 			2: {
 				groups: this.config.nHidden,
@@ -596,11 +591,7 @@ var PerceptronApparatus = class {
 	getRadiusForLayer(layerIndex) {
 		const radius = this.config.size / 2;
 		const radialPadding = 30;
-		const centerSpace = 150;
-		const ringCount = 6;
-		const fixedWidths = 60;
-		const paddingTotal = radialPadding * (ringCount - 1);
-		const radialWidth = Math.max((radius - centerSpace - fixedWidths - paddingTotal) / 2, 0);
+		const radialWidth = Math.max((radius - 150 - 60 - 150) / 2, 0);
 		const widths = [
 			30,
 			10,

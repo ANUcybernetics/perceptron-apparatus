@@ -1,5 +1,4 @@
-import { t as WeightScale } from "./utils-D6vtFthk.mjs";
-
+import { t as WeightScale } from "./utils-CjaQpp0C.mjs";
 //#region src/vnode.d.ts
 interface VNode {
   tag: string;

@@ -1,4 +1,4 @@
-import "../utils-DEaGbdjE.mjs";
+import "../utils-CtiTBvWz.mjs";
 import { gunzipSync } from "node:zlib";
 //#region src/training/math.ts
 function matrix(data) {
@@ -275,7 +275,8 @@ const SAMPLE_INDICES = [
 async function fetchGz(url) {
 	const res = await fetch(url);
 	if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
-	return gunzipSync(Buffer.from(await res.arrayBuffer()));
+	const compressed = Buffer.from(await res.arrayBuffer());
+	return gunzipSync(compressed);
 }
 function parseImages(buf) {
 	const count = buf.readUInt32BE(4);

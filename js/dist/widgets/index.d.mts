@@ -1,5 +1,4 @@
-import { a as ArgmaxStep, c as ReluStep, d as traceResult, f as Weights, h as zooWeights, l as SetInputStep, m as mnistWeights, n as PerceptronApparatus, o as ComputationStep, p as lettersWeights, s as MultiplyAccumulateStep, u as computeTrace } from "../index-kYRWvYft.mjs";
-
+import { a as ArgmaxStep, c as ReluStep, d as traceResult, f as Weights, h as zooWeights, l as SetInputStep, m as mnistWeights, n as PerceptronApparatus, o as ComputationStep, p as lettersWeights, s as MultiplyAccumulateStep, u as computeTrace } from "../index-Brc7XGgU.mjs";
 //#region src/widgets/animator.d.ts
 interface ComputeOptions {
   mode?: "step" | "neuron" | "fast";
@@ -18,7 +17,7 @@ interface ComputeResult {
   output: number[];
   prediction: number;
 }
-declare class ComputationAnimator {
+export declare class ComputationAnimator {
   private readonly apparatus;
   private readonly weights;
   private readonly nInput;
@@ -31,7 +30,7 @@ declare class ComputationAnimator {
 }
 //#endregion
 //#region src/widgets/mnist-input.d.ts
-declare class MnistInputWidget {
+export declare class MnistInputWidget {
   readonly element: HTMLElement;
   private readonly cells;
   private readonly values;
@@ -55,9 +54,9 @@ declare class MnistInputWidget {
 }
 //#endregion
 //#region src/widgets/zoo-input.d.ts
-declare const ZOO_TRAITS: readonly ["hair", "feathers", "eggs", "milk", "airborne", "aquatic", "predator", "toothed", "backbone", "breathes", "venomous", "fins", "tail", "domestic", "catsize"];
-declare const ZOO_LEG_COUNTS: readonly [0, 2, 4, 5, 6, 8];
-declare const ZOO_CLASS_NAMES: readonly ["mammal", "bird", "reptile", "fish", "amphibian", "insect", "invertebrate"];
+export declare const ZOO_TRAITS: readonly ["hair", "feathers", "eggs", "milk", "airborne", "aquatic", "predator", "toothed", "backbone", "breathes", "venomous", "fins", "tail", "domestic", "catsize"];
+export declare const ZOO_LEG_COUNTS: readonly [0, 2, 4, 5, 6, 8];
+export declare const ZOO_CLASS_NAMES: readonly ["mammal", "bird", "reptile", "fish", "amphibian", "insect", "invertebrate"];
 type ZooTrait = (typeof ZOO_TRAITS)[number];
 type LegCount = (typeof ZOO_LEG_COUNTS)[number];
 interface Animal {
@@ -69,9 +68,9 @@ interface ZooExample {
   animal: Animal;
   className: (typeof ZOO_CLASS_NAMES)[number];
 }
-declare function encodeAnimal(animal: Animal): number[];
-declare const ZOO_EXAMPLES: readonly ZooExample[];
-declare class ZooInputWidget {
+export declare function encodeAnimal(animal: Animal): number[];
+export declare const ZOO_EXAMPLES: readonly ZooExample[];
+export declare class ZooInputWidget {
   readonly element: HTMLElement;
   private readonly checkboxes;
   private readonly legsSelect;
@@ -92,10 +91,10 @@ declare class ZooInputWidget {
 }
 //#endregion
 //#region src/widgets/letters-input.d.ts
-declare const LETTERS_ALPHABET = "etaoinshr ";
-declare function symbolName(index: number): string;
-declare function encodeContext(context: string): number[];
-declare class LettersInputWidget {
+export declare const LETTERS_ALPHABET = "etaoinshr ";
+export declare function symbolName(index: number): string;
+export declare function encodeContext(context: string): number[];
+export declare class LettersInputWidget {
   readonly element: HTMLElement;
   private readonly selects;
   private listeners;
@@ -117,6 +116,6 @@ interface SampleDigit {
   label: number;
   pixels: number[];
 }
-declare const sampleDigits: SampleDigit[];
+export declare const sampleDigits: SampleDigit[];
 //#endregion
-export { type Animal, type ArgmaxStep, ComputationAnimator, type ComputationStep, type ComputeOptions, type ComputeResult, LETTERS_ALPHABET, type LegCount, LettersInputWidget, MnistInputWidget, type MultiplyAccumulateStep, type ReluStep, type SampleDigit, type SetInputStep, type StepInfo, type Weights, ZOO_CLASS_NAMES, ZOO_EXAMPLES, ZOO_LEG_COUNTS, ZOO_TRAITS, type ZooExample, ZooInputWidget, type ZooTrait, computeTrace, encodeAnimal, encodeContext, lettersWeights, mnistWeights, sampleDigits, symbolName, traceResult, zooWeights };
+export { type Animal, type ArgmaxStep, type ComputationStep, type ComputeOptions, type ComputeResult, type LegCount, type MultiplyAccumulateStep, type ReluStep, type SampleDigit, type SetInputStep, type StepInfo, type Weights, type ZooExample, type ZooTrait, computeTrace, lettersWeights, mnistWeights, traceResult, zooWeights };

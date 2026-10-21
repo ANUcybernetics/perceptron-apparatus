@@ -52,7 +52,7 @@ function weightScaleFraction(value, scale = "linear") {
 	const magnitude = Math.min(Math.abs(value), 5);
 	if (magnitude < .02) return 0;
 	const logFraction = Math.log(magnitude / WEIGHT_MIN) / Math.log(5 / WEIGHT_MIN);
-	return WEIGHT_ZERO_GAP + (1 - WEIGHT_ZERO_GAP) * logFraction;
+	return WEIGHT_ZERO_GAP + .88 * logFraction;
 }
 function formatNumber(n) {
 	const s = Number(n.toPrecision(10)).toString();
