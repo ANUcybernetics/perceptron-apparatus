@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "astromotion": "github:ANUcybernetics/astromotion#v0.35.1",
+    "astromotion": "github:ANUcybernetics/astromotion#v0.37.0",
     "astro-theme-anu": "git+https://gitlab.anu.edu.au/u2548636/astro-theme-anu.git#astro-theme-anu@v0.10.0&path:/packages/astro-theme-anu"
   }
 }
