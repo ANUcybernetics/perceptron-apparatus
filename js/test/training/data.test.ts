@@ -4,9 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadFromJson, oneHot, SAMPLE_INDICES } from "../../src/training/data.js";
 
-const fixture = JSON.parse(
-  readFileSync(join(__dirname, "../fixtures/mnist-sample.json"), "utf-8"),
-);
+const fixture = JSON.parse(readFileSync(join(__dirname, "../fixtures/mnist-sample.json"), "utf-8"));
 
 describe("SAMPLE_INDICES", () => {
   it("has 6 indices for 6x6 downsampling", () => {

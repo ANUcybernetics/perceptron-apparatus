@@ -11,9 +11,7 @@ export function logRule(): LogRuleTick[] {
   const ticks: LogRuleTick[] = [];
   for (let i = 10; i <= 99; i++) {
     const val = i / 10;
-    const theta =
-      ((Math.log(val) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0))) *
-      360.0;
+    const theta = ((Math.log(val) - Math.log(1.0)) / (Math.log(10.0) - Math.log(1.0))) * 360.0;
     const label = formatNumber(val);
 
     if (val < 2) {
@@ -58,10 +56,7 @@ export interface RuleRingContext {
   ringWidth: number;
 }
 
-export function buildRuleRing(
-  rule: LogRuleTick[],
-  ctx: RuleRingContext,
-): VNode {
+export function buildRuleRing(rule: LogRuleTick[], ctx: RuleRingContext): VNode {
   const radius = ctx.radius - ctx.ringWidth / 2;
   const tickLength = 10;
 

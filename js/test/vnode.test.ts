@@ -55,10 +55,7 @@ describe("findAll", () => {
   });
 
   it("finds nodes by attribute", () => {
-    const sliders = findAll(
-      tree,
-      (n) => n.attrs["class"] === "slider",
-    );
+    const sliders = findAll(tree, (n) => n.attrs["class"] === "slider");
     expect(sliders).toHaveLength(2);
   });
 
@@ -74,10 +71,7 @@ describe("findAll", () => {
 });
 
 describe("find", () => {
-  const tree: VNode = el("g", {}, [
-    el("circle", { class: "a" }),
-    el("circle", { class: "b" }),
-  ]);
+  const tree: VNode = el("g", {}, [el("circle", { class: "a" }), el("circle", { class: "b" })]);
 
   it("returns the first match", () => {
     const result = find(tree, (n) => n.tag === "circle");

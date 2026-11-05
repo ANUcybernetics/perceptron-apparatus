@@ -25,9 +25,7 @@ describe("buildAzimuthalRing", () => {
       ringWidth: 10,
     });
 
-    const ids = findAll(tree, (n) => "data-slider" in n.attrs).map(
-      (n) => n.attrs["data-slider"],
-    );
+    const ids = findAll(tree, (n) => "data-slider" in n.attrs).map((n) => n.attrs["data-slider"]);
     expect(ids).toEqual(["A0", "A1", "A2"]);
   });
 
@@ -38,9 +36,7 @@ describe("buildAzimuthalRing", () => {
       ringWidth: 10,
     });
 
-    const ids = findAll(tree, (n) => "data-slider" in n.attrs).map(
-      (n) => n.attrs["data-slider"],
-    );
+    const ids = findAll(tree, (n) => "data-slider" in n.attrs).map((n) => n.attrs["data-slider"]);
     expect(ids).toEqual(["C0", "C1"]);
   });
 

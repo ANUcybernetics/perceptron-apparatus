@@ -5,26 +5,15 @@ export interface VNode {
   text?: string;
 }
 
-export function el(
-  tag: string,
-  attrs: Record<string, string> = {},
-  children: VNode[] = [],
-): VNode {
+export function el(tag: string, attrs: Record<string, string> = {}, children: VNode[] = []): VNode {
   return { tag, attrs, children };
 }
 
-export function textEl(
-  tag: string,
-  content: string,
-  attrs: Record<string, string> = {},
-): VNode {
+export function textEl(tag: string, content: string, attrs: Record<string, string> = {}): VNode {
   return { tag, attrs, children: [], text: content };
 }
 
-export function findAll(
-  node: VNode,
-  predicate: (n: VNode) => boolean,
-): VNode[] {
+export function findAll(node: VNode, predicate: (n: VNode) => boolean): VNode[] {
   const results: VNode[] = [];
   if (predicate(node)) results.push(node);
   for (const child of node.children) {
@@ -33,10 +22,7 @@ export function findAll(
   return results;
 }
 
-export function find(
-  node: VNode,
-  predicate: (n: VNode) => boolean,
-): VNode | undefined {
+export function find(node: VNode, predicate: (n: VNode) => boolean): VNode | undefined {
   if (predicate(node)) return node;
   for (const child of node.children) {
     const found = find(child, predicate);

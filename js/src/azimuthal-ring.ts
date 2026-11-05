@@ -39,9 +39,7 @@ function buildSlider(
   );
 
   for (const { label, value } of rule) {
-    const theta =
-      azPadding +
-      ((thetaSweep - 2 * azPadding) * (value - rangeMin)) / dynamicRange;
+    const theta = azPadding + ((thetaSweep - 2 * azPadding) * (value - rangeMin)) / dynamicRange;
     const lineClass = label ? "top etch heavy" : "top etch";
     trackChildren.push(
       el("line", {
@@ -77,28 +75,28 @@ function buildSlider(
     }),
   );
 
-  const trackG = el(
-    "g",
-    { transform: `rotate(${-thetaOffset})` },
-    trackChildren,
-  );
+  const trackG = el("g", { transform: `rotate(${-thetaOffset})` }, trackChildren);
 
   const midTheta = 0.5 * thetaSweep;
   const cx = radius * Math.sin(deg2rad(midTheta));
   const cy = radius * Math.cos(deg2rad(midTheta));
 
-  const sliderG = el("g", {
-    "data-slider": `${layerLetter(layerIndex)}${sliderNumber}`,
-    "data-slider-type": "azimuthal",
-    style: `transform: rotate(${-thetaOffset}deg)`,
-  }, [
-    el("circle", {
-      class: "top slider",
-      cx: String(cx),
-      cy: String(cy),
-      r: "5",
-    }),
-  ]);
+  const sliderG = el(
+    "g",
+    {
+      "data-slider": `${layerLetter(layerIndex)}${sliderNumber}`,
+      "data-slider-type": "azimuthal",
+      style: `transform: rotate(${-thetaOffset}deg)`,
+    },
+    [
+      el("circle", {
+        class: "top slider",
+        cx: String(cx),
+        cy: String(cy),
+        r: "5",
+      }),
+    ],
+  );
 
   return [trackG, sliderG];
 }
@@ -112,9 +110,7 @@ export function buildAzimuthalRing(
   const children: VNode[] = [];
 
   for (let i = 0; i < sliderCount; i++) {
-    children.push(
-      ...buildSlider(ctx.radius, thetaSweep, rule, ctx.layerIndex, i),
-    );
+    children.push(...buildSlider(ctx.radius, thetaSweep, rule, ctx.layerIndex, i));
   }
 
   return el("g", { "data-ring-type": "azimuthal" }, children);

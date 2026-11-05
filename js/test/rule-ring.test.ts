@@ -65,9 +65,7 @@ describe("reluRule", () => {
 
   it("has inner labels clamped to 0 for negative values (ReLU)", () => {
     const rule = reluRule(5, 1);
-    const negatives = rule.filter(
-      (t) => t.outerLabel != null && parseFloat(t.outerLabel) < 0,
-    );
+    const negatives = rule.filter((t) => t.outerLabel != null && parseFloat(t.outerLabel) < 0);
     for (const tick of negatives) {
       expect(tick.innerLabel).toBe("0");
     }
@@ -106,10 +104,7 @@ describe("buildRuleRing", () => {
     const rule = logRule();
     const tree = buildRuleRing(rule, { radius: 500, ringWidth: 30 });
 
-    const circle = findAll(
-      tree,
-      (n) => n.tag === "circle",
-    )[0];
+    const circle = findAll(tree, (n) => n.tag === "circle")[0];
     const expectedRadius = 500 - 30 / 2;
     expect(circle.attrs["r"]).toBe(String(expectedRadius));
   });
@@ -132,9 +127,7 @@ describe("buildRuleRing", () => {
       tree,
       (n) => n.tag === "line" && (n.attrs["class"] ?? "").includes("heavy"),
     );
-    const labelledTicks = rule.filter(
-      (t) => t.outerLabel != null || t.innerLabel != null,
-    );
+    const labelledTicks = rule.filter((t) => t.outerLabel != null || t.innerLabel != null);
     expect(heavyLines.length).toBe(labelledTicks.length);
   });
 });

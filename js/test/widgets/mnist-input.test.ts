@@ -29,9 +29,7 @@ describe("MnistInputWidget", () => {
   it("setValues updates values", () => {
     const container = makeContainer();
     const widget = new MnistInputWidget(container);
-    const newValues = Array.from({ length: 36 }, (_, i) =>
-      i < 6 ? 1 : 0,
-    );
+    const newValues = Array.from({ length: 36 }, (_, i) => (i < 6 ? 1 : 0));
     widget.setValues(newValues);
     expect(widget.getValues()).toEqual(newValues);
   });

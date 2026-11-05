@@ -1,10 +1,6 @@
 import type { Weights } from "./weights.js";
 
-export type ComputationStep =
-  | SetInputStep
-  | MultiplyAccumulateStep
-  | ReluStep
-  | ArgmaxStep;
+export type ComputationStep = SetInputStep | MultiplyAccumulateStep | ReluStep | ArgmaxStep;
 
 export interface SetInputStep {
   type: "set-input";
@@ -45,10 +41,7 @@ function slideRuleAngle(absValue: number): number {
   return (Math.log10(mantissa) / Math.log10(10)) * 360;
 }
 
-export function computeTrace(
-  inputs: number[],
-  weights: Weights,
-): ComputationStep[] {
+export function computeTrace(inputs: number[], weights: Weights): ComputationStep[] {
   const nInput = weights.B.length;
   const nHidden = weights.B[0].length;
   const nOutput = weights.D[0].length;
@@ -69,8 +62,7 @@ export function computeTrace(
       acc += product;
 
       const absInput = Math.abs(inputValue);
-      const productSign: 1 | -1 =
-        Math.sign(inputValue) * Math.sign(weightValue) >= 0 ? 1 : -1;
+      const productSign: 1 | -1 = Math.sign(inputValue) * Math.sign(weightValue) >= 0 ? 1 : -1;
 
       steps.push({
         type: "multiply-accumulate",
@@ -102,8 +94,7 @@ export function computeTrace(
       acc += product;
 
       const absInput = Math.abs(inputValue);
-      const productSign: 1 | -1 =
-        Math.sign(inputValue) * Math.sign(weightValue) >= 0 ? 1 : -1;
+      const productSign: 1 | -1 = Math.sign(inputValue) * Math.sign(weightValue) >= 0 ? 1 : -1;
 
       steps.push({
         type: "multiply-accumulate",
@@ -140,9 +131,7 @@ export function traceResult(steps: ComputationStep[]): {
     throw new Error("Trace does not end with argmax step");
   }
 
-  const reluSteps = steps.filter(
-    (s): s is ReluStep => s.type === "relu",
-  );
+  const reluSteps = steps.filter((s): s is ReluStep => s.type === "relu");
   const hidden = reluSteps.map((s) => s.post);
 
   return { hidden, output: last.values, prediction: last.prediction };

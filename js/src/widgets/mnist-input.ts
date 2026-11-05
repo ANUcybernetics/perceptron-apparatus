@@ -25,10 +25,7 @@ export class MnistInputWidget {
       cell.classList.add("pa-mnist-cell");
       cell.dataset.index = String(i);
       cell.setAttribute("role", "gridcell");
-      cell.setAttribute(
-        "aria-label",
-        `Row ${Math.floor(i / 6)}, column ${i % 6}`,
-      );
+      cell.setAttribute("aria-label", `Row ${Math.floor(i / 6)}, column ${i % 6}`);
       cell.style.width = `${cellSize}px`;
       cell.style.height = `${cellSize}px`;
       cell.style.border = "1px solid #ccc";
