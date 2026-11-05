@@ -83,58 +83,19 @@ ring rendering with automatic width calculation and spacing.
 
 ### JS/TS package (`js/`)
 
-- `js/src/utils.ts`: deg2rad, rule generation, the weight scale
-- `js/src/rule-ring.ts`: log and ReLU rule generation + rendering
-- `js/src/azimuthal-ring.ts`: arc slider rendering (layers A, C, E)
-- `js/src/radial-ring.ts`: radial slider rendering (layers B, D)
-- `js/src/board.ts`: ring layout orchestration, full SVG composition
-- `js/src/index.ts`: `PerceptronApparatus` class with animation API
+Source layout is `js/src/` (rings, board, `PerceptronApparatus` class),
+`js/src/training/` (zero-dependency MNIST training mirroring the Elixir MLP) and
+`js/src/widgets/` (input widgets and `ComputationAnimator`, for external sites
+such as Astro). Subpath exports are `perceptron-apparatus/training` and
+`perceptron-apparatus/widgets`.
 
-### JS/TS training module (`js/src/training/`)
-
-Zero-dependency MNIST training that mirrors the Elixir MLP module. Architecture:
-36 → 6 (ReLU, no bias) → 10 (linear, no bias). Implements matmul, ReLU,
-cross-entropy loss, Adam optimiser, weight noise for either weight scale and the
-non-negative output constraint from scratch.
-
-- `js/src/training/math.ts`: matrix operations, Adam optimiser
-- `js/src/training/model.ts`: MLP class with forward/backward/step
-- `js/src/training/data.ts`: MNIST loading (fetch + gunzip IDX), downsampling,
-  normalisation
-- `js/src/training/weights.ts`: weight extraction and `fitWeightsToApparatus`
-- `js/src/training/index.ts`: `trainMnist()` orchestrator, re-exports
-
-Import via `perceptron-apparatus/training`. Training tests use
-`// @vitest-environment node` (need node:zlib). Test fixture at
-`js/test/fixtures/mnist-sample.json` (100 pre-downsampled samples).
-
-### JS/TS interactive widgets (`js/src/widgets/`)
-
-Interactive input widgets and computation animator for the digital twin. Import
-via `perceptron-apparatus/widgets`. Designed as library components for use in
-external sites (e.g. Astro).
-
-- `js/src/widgets/animator.ts`: `ComputationAnimator` --- step-by-step or fast
-  forward pass animation through the apparatus SVG. Step mode animates every
-  individual multiply-accumulate with log ring rotation; speed controlled via
-  `stepDuration`. Supports `AbortSignal` for cancellation.
-- `js/src/widgets/mnist-input.ts`: `MnistInputWidget` --- drawable 6x6 grid,
-  click/drag to paint, returns 36 normalised values
-- `js/src/widgets/zoo-input.ts`: `ZooInputWidget` --- trait checkboxes and leg
-  count, encodes to 36 values matching `PerceptronApparatus.Zoo`. Also exports
-  `encodeAnimal()`, `ZOO_CLASS_NAMES` and `ZOO_EXAMPLES`.
-- `js/src/widgets/letters-input.ts`: `LettersInputWidget` --- three-symbol
-  context picker, encodes to 36 values matching `PerceptronApparatus.Letters`.
-  Also exports `encodeContext()` and `LETTERS_ALPHABET`.
-- `js/src/widgets/weights.ts`: bundled pre-trained weights (`mnistWeights`,
-  `zooWeights`, `lettersWeights`), generated from `docs/*-weights.json`;
-  regenerate it with `uv run scripts/bundle_weights.py` whenever those files
-  change
-- `js/src/widgets/sample-digits.ts`: one sample digit per class that the bundled
-  MNIST weights answer correctly; regenerate it with
-  `uv run scripts/pick_sample_digits.py` whenever the MNIST weights change. The
-  explainer video follows its 7, so re-check the video after regenerating.
-- `js/src/widgets/index.ts`: re-exports all widgets and weights
+- training tests use `// @vitest-environment node` (they need node:zlib); the
+  fixture is `js/test/fixtures/mnist-sample.json`
+- `js/src/widgets/weights.ts` is generated from `docs/*-weights.json`; run
+  `uv run scripts/bundle_weights.py` whenever those files change
+- `js/src/widgets/sample-digits.ts` is generated; run
+  `uv run scripts/pick_sample_digits.py` whenever the MNIST weights change, then
+  re-check the explainer video, which follows its 7
 
 ### Development
 
