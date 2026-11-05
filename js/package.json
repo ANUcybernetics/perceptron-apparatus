@@ -2,6 +2,9 @@
   "name": "perceptron-apparatus",
   "version": "0.1.0",
   "description": "SVG generation and animation for the Perceptron Apparatus digital twin",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "main": "dist/index.mjs",
   "types": "dist/index.d.mts",
@@ -19,23 +22,22 @@
       "types": "./dist/widgets/index.d.mts"
     }
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsdown",
-    "check": "tsgo --noEmit",
+    "check": "tsc --noEmit",
     "lint": "oxlint --ignore-pattern node_modules --ignore-pattern dist",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "@typescript/native-preview": "latest",
-    "happy-dom": "^21.0.3",
-    "oxlint": "^1.89.0",
-    "tsdown": "^0.23.1",
+    "happy-dom": "^21.0.4",
+    "oxfmt": "^0.76.0",
+    "oxlint": "^1.91.0",
+    "tsdown": "^0.23.5",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.0"
   }
 }
