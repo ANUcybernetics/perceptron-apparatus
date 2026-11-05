@@ -30,7 +30,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/node": "^25.3.3",
+    "@types/node": "^26.6.6",
     "@typescript/native-preview": "latest",
     "happy-dom": "^21.0.3",
     "oxlint": "^1.89.0",
