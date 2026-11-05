@@ -1,6 +1,6 @@
 import { type Matrix, matrix } from "./math.js";
 import { MLP } from "./model.js";
-import { loadMnist, loadFromJson, type MnistData } from "./data.js";
+import { loadMnist, type MnistData } from "./data.js";
 import { extractWeights, fitWeightsToApparatus, type ExportedWeights } from "./weights.js";
 import type { WeightScale } from "../utils.js";
 
