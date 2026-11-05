@@ -1,6 +1,6 @@
-import "../utils-CtiTBvWz.mjs";
+import "../utils-Chq4gxVe.mjs";
 import { gunzipSync } from "node:zlib";
-//#region src/training/math.ts
+// src/training/math.ts
 function matrix(data) {
 	return {
 		data,
@@ -158,8 +158,7 @@ function fitWeightsToApparatus(weights, inputs) {
 		D: settable(d)
 	};
 }
-//#endregion
-//#region src/training/model.ts
+// src/training/model.ts
 function offsetWeights(weights, input, level) {
 	const tiny = 1e-6;
 	const { B, D } = weights;
@@ -261,8 +260,7 @@ var MLP = class {
 		return crossEntropyLoss(cache.output, target);
 	}
 };
-//#endregion
-//#region src/training/data.ts
+// src/training/data.ts
 const MNIST_BASE = "https://storage.googleapis.com/cvdf-datasets/mnist/";
 const SAMPLE_INDICES = [
 	0,
@@ -328,8 +326,7 @@ function loadFromJson(json) {
 		testLabels: matrix(json.labels.slice(splitIdx).map((l) => oneHot(l)))
 	};
 }
-//#endregion
-//#region src/training/index.ts
+// src/training/index.ts
 function shuffle(arr) {
 	const a = [...arr];
 	for (let i = a.length - 1; i > 0; i--) {
@@ -398,5 +395,4 @@ async function trainMnist(opts = {}) {
 		testAccuracy: accuracy(model, data.testImages, data.testLabels)
 	};
 }
-//#endregion
 export { MLP, fitWeightsToApparatus, loadFromJson, loadMnist, trainMnist };

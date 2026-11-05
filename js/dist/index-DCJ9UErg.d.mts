@@ -1,5 +1,4 @@
-import { t as WeightScale } from "./utils-CjaQpp0C.mjs";
-//#region src/vnode.d.ts
+import { t as WeightScale } from "./utils-BLX4_wgO.mjs";
 interface VNode {
   tag: string;
   attrs: Record<string, string>;
@@ -11,8 +10,6 @@ declare function textEl(tag: string, content: string, attrs?: Record<string, str
 declare function findAll(node: VNode, predicate: (n: VNode) => boolean): VNode[];
 declare function find(node: VNode, predicate: (n: VNode) => boolean): VNode | undefined;
 declare function render(node: VNode, parent?: Element): Element;
-//#endregion
-//#region src/board.d.ts
 interface BoardConfig {
   size?: number;
   nInput: number;
@@ -22,8 +19,6 @@ interface BoardConfig {
 }
 declare function buildBoard(config: BoardConfig): VNode;
 declare function renderBoard(config: BoardConfig, parent: SVGElement | Element): SVGSVGElement;
-//#endregion
-//#region src/widgets/weights.d.ts
 interface Weights {
   B: number[][];
   D: number[][];
@@ -31,8 +26,6 @@ interface Weights {
 declare const mnistWeights: Weights;
 declare const zooWeights: Weights;
 declare const lettersWeights: Weights;
-//#endregion
-//#region src/widgets/trace.d.ts
 type ComputationStep = SetInputStep | MultiplyAccumulateStep | ReluStep | ArgmaxStep;
 interface SetInputStep {
   type: "set-input";
@@ -68,8 +61,6 @@ declare function traceResult(steps: ComputationStep[]): {
   output: number[];
   prediction: number;
 };
-//#endregion
-//#region src/rule-ring.d.ts
 interface LogRuleTick {
   outerLabel: string | null;
   theta: number;
@@ -77,8 +68,6 @@ interface LogRuleTick {
 }
 declare function logRule(): LogRuleTick[];
 declare function reluRule(maxValue: number, deltaValue: number): LogRuleTick[];
-//#endregion
-//#region src/index.d.ts
 interface AnimationOptions {
   duration?: number;
 }
@@ -99,5 +88,4 @@ declare class PerceptronApparatus {
   setSlideRuleMarkers(mac: MultiplyAccumulateStep, opts?: AnimationOptions): Promise<void>;
   clearSlideRuleMarkers(): void;
 }
-//#endregion
 export { render as C, findAll as S, buildBoard as _, ArgmaxStep as a, el as b, ReluStep as c, traceResult as d, Weights as f, BoardConfig as g, zooWeights as h, reluRule as i, SetInputStep as l, mnistWeights as m, PerceptronApparatus as n, ComputationStep as o, lettersWeights as p, logRule as r, MultiplyAccumulateStep as s, AnimationOptions as t, computeTrace as u, renderBoard as v, textEl as w, find as x, VNode as y };

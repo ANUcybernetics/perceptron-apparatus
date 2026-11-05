@@ -1,12 +1,9 @@
-import { t as WeightScale } from "../utils-CjaQpp0C.mjs";
-//#region src/training/math.d.ts
+import { t as WeightScale } from "../utils-BLX4_wgO.mjs";
 type Matrix = {
   data: number[][];
   rows: number;
   cols: number;
 };
-//#endregion
-//#region src/training/data.d.ts
 interface MnistData {
   trainImages: Matrix;
   trainLabels: Matrix;
@@ -18,8 +15,6 @@ export declare function loadFromJson(json: {
   images: number[][];
   labels: number[];
 }): MnistData;
-//#endregion
-//#region src/training/model.d.ts
 interface MLPWeights {
   B: Matrix;
   D: Matrix;
@@ -47,15 +42,11 @@ export declare class MLP {
   step(grads: MLPGradients, lr: number, nonnegativeOutput?: boolean): void;
   loss(cache: ForwardCache, target: Matrix): number;
 }
-//#endregion
-//#region src/training/weights.d.ts
 interface ExportedWeights {
   B: number[][];
   D: number[][];
 }
 export declare function fitWeightsToApparatus(weights: ExportedWeights, inputs: number[][]): ExportedWeights;
-//#endregion
-//#region src/training/index.d.ts
 export interface TrainOptions {
   epochs?: number;
   batchSize?: number;
@@ -72,5 +63,4 @@ export interface TrainResult {
 export declare function trainMnist(opts?: TrainOptions & {
   data?: MnistData;
 }): Promise<TrainResult>;
-//#endregion
 export type { ExportedWeights, MnistData };

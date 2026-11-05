@@ -1,5 +1,4 @@
-import { a as ArgmaxStep, c as ReluStep, d as traceResult, f as Weights, h as zooWeights, l as SetInputStep, m as mnistWeights, n as PerceptronApparatus, o as ComputationStep, p as lettersWeights, s as MultiplyAccumulateStep, u as computeTrace } from "../index-Brc7XGgU.mjs";
-//#region src/widgets/animator.d.ts
+import { a as ArgmaxStep, c as ReluStep, d as traceResult, f as Weights, h as zooWeights, l as SetInputStep, m as mnistWeights, n as PerceptronApparatus, o as ComputationStep, p as lettersWeights, s as MultiplyAccumulateStep, u as computeTrace } from "../index-DCJ9UErg.mjs";
 interface ComputeOptions {
   mode?: "step" | "neuron" | "fast";
   stepDuration?: number;
@@ -28,8 +27,6 @@ export declare class ComputationAnimator {
   private setWeights;
   private setInputs;
 }
-//#endregion
-//#region src/widgets/mnist-input.d.ts
 export declare class MnistInputWidget {
   readonly element: HTMLElement;
   private readonly cells;
@@ -52,8 +49,6 @@ export declare class MnistInputWidget {
   private updateCellColor;
   private notify;
 }
-//#endregion
-//#region src/widgets/zoo-input.d.ts
 export declare const ZOO_TRAITS: readonly ["hair", "feathers", "eggs", "milk", "airborne", "aquatic", "predator", "toothed", "backbone", "breathes", "venomous", "fins", "tail", "domestic", "catsize"];
 export declare const ZOO_LEG_COUNTS: readonly [0, 2, 4, 5, 6, 8];
 export declare const ZOO_CLASS_NAMES: readonly ["mammal", "bird", "reptile", "fish", "amphibian", "insect", "invertebrate"];
@@ -89,8 +84,6 @@ export declare class ZooInputWidget {
   private onExampleChange;
   private notify;
 }
-//#endregion
-//#region src/widgets/letters-input.d.ts
 export declare const LETTERS_ALPHABET = "etaoinshr ";
 export declare function symbolName(index: number): string;
 export declare function encodeContext(context: string): number[];
@@ -110,12 +103,9 @@ export declare class LettersInputWidget {
   private onUserChange;
   private notify;
 }
-//#endregion
-//#region src/widgets/sample-digits.d.ts
 interface SampleDigit {
   label: number;
   pixels: number[];
 }
 export declare const sampleDigits: SampleDigit[];
-//#endregion
 export { type Animal, type ArgmaxStep, type ComputationStep, type ComputeOptions, type ComputeResult, type LegCount, type MultiplyAccumulateStep, type ReluStep, type SampleDigit, type SetInputStep, type StepInfo, type Weights, type ZooExample, type ZooTrait, computeTrace, lettersWeights, mnistWeights, traceResult, zooWeights };

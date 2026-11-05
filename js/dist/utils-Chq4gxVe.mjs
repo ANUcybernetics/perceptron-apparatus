@@ -1,4 +1,4 @@
-//#region src/utils.ts
+// src/utils.ts
 const RAD_IN_DEG = 180 / Math.PI;
 function deg2rad(degrees) {
 	return degrees / RAD_IN_DEG;
@@ -59,5 +59,4 @@ function formatNumber(n) {
 	if (s === "-0") return "0";
 	return s;
 }
-//#endregion
 export { weightRule as a, newRule as i, deg2rad as n, weightScaleFraction as o, formatNumber as r, WEIGHT_MIN as t };

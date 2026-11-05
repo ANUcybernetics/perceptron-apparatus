@@ -1,4 +1,4 @@
-//#region src/widgets/trace.ts
+// src/widgets/trace.ts
 function slideRuleAngle(absValue) {
 	if (absValue <= 0) return 0;
 	const mantissa = absValue / 10 ** Math.floor(Math.log10(absValue));
@@ -89,8 +89,7 @@ function traceResult(steps) {
 		prediction: last.prediction
 	};
 }
-//#endregion
-//#region src/widgets/animator.ts
+// src/widgets/animator.ts
 var ComputationAnimator = class {
 	apparatus;
 	weights;
@@ -204,8 +203,7 @@ var ComputationAnimator = class {
 		await this.apparatus.setSliders(values, animOpts);
 	}
 };
-//#endregion
-//#region src/widgets/mnist-input.ts
+// src/widgets/mnist-input.ts
 var MnistInputWidget = class {
 	element;
 	cells = [];
@@ -305,8 +303,7 @@ var MnistInputWidget = class {
 		for (const fn of this.listeners) fn(vals);
 	}
 };
-//#endregion
-//#region src/widgets/zoo-input.ts
+// src/widgets/zoo-input.ts
 const ZOO_TRAITS = [
 	"hair",
 	"feathers",
@@ -556,8 +553,7 @@ var ZooInputWidget = class {
 		for (const fn of this.listeners) fn(vals);
 	}
 };
-//#endregion
-//#region src/widgets/letters-input.ts
+// src/widgets/letters-input.ts
 const LETTERS_ALPHABET = "etaoinshr ";
 const CONTEXT_LENGTH = 3;
 function symbolName(index) {
@@ -644,8 +640,7 @@ var LettersInputWidget = class {
 		for (const fn of this.listeners) fn(vals);
 	}
 };
-//#endregion
-//#region src/widgets/sample-digits.ts
+// src/widgets/sample-digits.ts
 const sampleDigits = [
 	{
 		label: 0,
@@ -1058,8 +1053,7 @@ const sampleDigits = [
 		]
 	}
 ];
-//#endregion
-//#region src/widgets/weights.ts
+// src/widgets/weights.ts
 const mnistWeights = {
 	B: [
 		[
@@ -2158,5 +2152,4 @@ const lettersWeights = {
 		]
 	]
 };
-//#endregion
 export { ComputationAnimator, LETTERS_ALPHABET, LettersInputWidget, MnistInputWidget, ZOO_CLASS_NAMES, ZOO_EXAMPLES, ZOO_LEG_COUNTS, ZOO_TRAITS, ZooInputWidget, computeTrace, encodeAnimal, encodeContext, lettersWeights, mnistWeights, sampleDigits, symbolName, traceResult, zooWeights };

@@ -1,5 +1,5 @@
-import { a as weightRule, i as newRule, n as deg2rad, o as weightScaleFraction, r as formatNumber } from "./utils-CtiTBvWz.mjs";
-//#region src/vnode.ts
+import { a as weightRule, i as newRule, n as deg2rad, o as weightScaleFraction, r as formatNumber } from "./utils-Chq4gxVe.mjs";
+// src/vnode.ts
 function el(tag, attrs = {}, children = []) {
 	return {
 		tag,
@@ -37,8 +37,7 @@ function render(node, parent) {
 	if (parent) parent.appendChild(element);
 	return element;
 }
-//#endregion
-//#region src/rule-ring.ts
+// src/rule-ring.ts
 function logRule() {
 	const ticks = [];
 	for (let i = 10; i <= 99; i++) {
@@ -128,8 +127,7 @@ function buildRuleRing(rule, ctx) {
 		r: String(radius)
 	})]);
 }
-//#endregion
-//#region src/azimuthal-ring.ts
+// src/azimuthal-ring.ts
 function layerLetter$1(layerIndex) {
 	return String.fromCharCode(64 + layerIndex);
 }
@@ -197,8 +195,7 @@ function buildAzimuthalRing(sliderCount, rule, ctx) {
 	for (let i = 0; i < sliderCount; i++) children.push(...buildSlider$1(ctx.radius, thetaSweep, rule, ctx.layerIndex, i));
 	return el("g", { "data-ring-type": "azimuthal" }, children);
 }
-//#endregion
-//#region src/radial-ring.ts
+// src/radial-ring.ts
 function layerLetter(layerIndex) {
 	return String.fromCharCode(64 + layerIndex);
 }
@@ -281,8 +278,7 @@ function buildRadialRing(groups, slidersPerGroup, rule, ctx, scale = "linear") {
 	for (let i = 0; i < groups; i++) children.push(...buildGroup(radius, width, slidersPerGroup, thetaSweep, i, ctx.layerIndex));
 	return el("g", { "data-ring-type": "radial" }, children);
 }
-//#endregion
-//#region src/board.ts
+// src/board.ts
 function createRingSequence(nInput, nHidden, nOutput, weightScale) {
 	return [
 		{
@@ -497,8 +493,7 @@ text.logo {
 }
 `;
 }
-//#endregion
-//#region src/index.ts
+// src/index.ts
 const SVG_NS = "http://www.w3.org/2000/svg";
 var PerceptronApparatus = class {
 	svg;
@@ -730,5 +725,4 @@ function applyTransform(el, transform, opts) {
 		setTimeout(done, duration + 50);
 	});
 }
-//#endregion
 export { PerceptronApparatus, buildBoard, el, find, findAll, logRule, reluRule, render, renderBoard, textEl };
