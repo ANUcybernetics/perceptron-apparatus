@@ -37,22 +37,13 @@ the measured results; `CHANGELOG.md` records design changes.
 
 ## Key modules and structure
 
-### Ash resources
+### Ring resources
 
-- `PerceptronApparatus.Board`: main resource for apparatus configuration,
-  contains ring sequence
-- `PerceptronApparatus.RuleRing`: logarithmic and ReLU reference rings
-- `PerceptronApparatus.RadialRing`: weight rings (B and D)
-- `PerceptronApparatus.AzimuthalRing`: input, hidden, and output layer rings (A,
-  C, E/G)
+`Board` holds the ring sequence. By ring letter, A, C and E/G are the input,
+hidden and output layers (`AzimuthalRing`), B and D are the weight rings
+(`RadialRing`), and `RuleRing` holds the logarithmic and ReLU reference rings.
 
 ### Machine learning modules
-
-- `PerceptronApparatus.MLP`: MNIST data, model creation, training, and weight
-  export for any task that fits the board
-- `PerceptronApparatus.Zoo`: animal classification data and encoding (21→6→7)
-- `PerceptronApparatus.Letters`: next-letter prediction data and encoding
-  (30→6→10)
 
 Training uses softmax cross-entropy, non-negative output weights and per-step
 weight noise matched to the weight scale; `MLP.fit_weights_to_apparatus/2`
@@ -66,14 +57,6 @@ step: `PerceptronApparatus.Utils.weight_rule/1` and `weight_scale_fraction/2`,
 and `weightRule()` and `weightScaleFraction()` in `js/src/utils.ts`. The same
 constants are in `scripts/apparatus_sim.py`. The explainer video keeps its own
 copy of the linear slider position (`radPos` in `video/explainer/explainer.js`).
-
-### Mix tasks
-
-- `mix perceptron`: generate apparatus SVG with default or custom parameters
-  (`--weight-scale linear|log`)
-- `mix perceptron.generate`: generate using presets (mnist, xor, language)
-- `mix perceptron.export_weights --task mnist|zoo|letters`: train a model and
-  export its weights, fitted to the apparatus and padded to the 36-6-10 board
 
 ### Rendering
 
@@ -99,18 +82,6 @@ such as Astro). Subpath exports are `perceptron-apparatus/training` and
 
 ### Development
 
-Use mise tasks from the project root to run both components:
-
-- `mise run test` --- run all tests (Elixir + TS)
-- `mise run build` --- build all packages
-- `mise run lint` --- lint TS package
-- `mise run check` --- type-check TS package
-
-Or run each side individually:
-
-- Elixir: `mix test`, `mix compile`
-- TS: `cd js && pnpm test`, `cd js && pnpm build`
-
 `js/dist/` is committed to git so the package can be installed directly from
 GitHub (e.g. `pnpm add github:benswift/perceptron_apparatus?path=js`). The
 `?path=` syntax works with pnpm and yarn but not npm. Rebuild with
@@ -120,53 +91,3 @@ changes.
 ## Video style
 
 Make videos with the `ben:styled-video` skill. Style guide: `video/STYLE.md`.
-
-<!-- usage-rules-start -->
-<!-- usage-rules-header -->
-
-# Usage Rules
-
-**IMPORTANT**: Consult these usage rules early and often when working with the
-packages listed below. Before attempting to use any of these packages or to
-discover if you should use them, review their usage rules to understand the
-correct patterns, conventions, and best practices.
-
-<!-- usage-rules-header-end -->
-
-<!-- ash-start -->
-
-## ash usage
-
-_A declarative, extensible framework for building Elixir applications._
-
-@deps/ash/usage-rules.md
-<!-- ash-end -->
-<!-- usage_rules:elixir-start -->
-
-## usage_rules:elixir usage
-
-@deps/usage_rules/usage-rules/elixir.md
-<!-- usage_rules:elixir-end -->
-<!-- usage_rules:otp-start -->
-
-## usage_rules:otp usage
-
-@deps/usage_rules/usage-rules/otp.md
-<!-- usage_rules:otp-end -->
-<!-- igniter-start -->
-
-## igniter usage
-
-_A code generation and project patching framework_
-
-@deps/igniter/usage-rules.md
-<!-- igniter-end -->
-<!-- usage_rules-start -->
-
-## usage_rules usage
-
-_A dev tool for Elixir projects to gather LLM usage rules from dependencies_
-
-@deps/usage_rules/usage-rules.md
-<!-- usage_rules-end -->
-<!-- usage-rules-end -->
