@@ -8,13 +8,31 @@ defmodule PerceptronApparatus.MixProject do
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       consolidate_protocols: Mix.env() != :dev,
-      deps: deps()
+      deps: deps(),
+      usage_rules: usage_rules()
     ]
   end
 
   def application do
     [
       extra_applications: [:logger]
+    ]
+  end
+
+  # `mix usage_rules.sync` writes these into .claude/skills, which is gitignored
+  defp usage_rules do
+    [
+      file: "AGENTS.md",
+      skills: [
+        location: ".claude/skills",
+        build: [
+          "ash-framework": [
+            description:
+              "Load before changing or debugging anything in lib/perceptron_apparatus/ (modules that use Ash.Resource or Ash.Domain): the Board and ring resources, actions, calculations, changes or an Ash.Error.* in test output.",
+            usage_rules: [:ash]
+          ]
+        ]
+      ]
     ]
   end
 
