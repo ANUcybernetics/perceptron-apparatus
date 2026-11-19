@@ -133,7 +133,7 @@ function accumulationPeaks(values, weights) {
 	return peaks;
 }
 function boundRatio(bound, peak) {
-	return peak > 0 ? bound / peak : Infinity;
+	return peak > 0 ? bound / peak : 1e400;
 }
 function settable(matrix) {
 	return matrix.map((row) => row.map((v) => Math.abs(v) < .02 ? 0 : v));
@@ -348,7 +348,7 @@ function accuracy(model, images, labels) {
 	const cache = model.forward(images);
 	let correct = 0;
 	for (let i = 0; i < images.rows; i++) {
-		let predMax = -Infinity;
+		let predMax = -1e400;
 		let predIdx = 0;
 		let trueIdx = 0;
 		for (let j = 0; j < cache.output.cols; j++) {
